@@ -23,7 +23,7 @@ public class MainPage extends AppCompatActivity {
 //Public Vars
     char dayLetter = 'z';
     //int currentHour = Calendar.HOUR_OF_DAY;
-    int currentHour = 13;
+    int currentHour = 14;
     //int currentMinute = Calendar.MINUTE;
     int currentMinute = 30;
     //int currentSecond = Calendar.SECOND;
