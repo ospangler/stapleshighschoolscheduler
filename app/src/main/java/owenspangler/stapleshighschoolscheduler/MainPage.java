@@ -15,40 +15,34 @@ public class MainPage extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
 
 
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_page);
 
         int temp = PeriodNumber();
         int[] tempsced = ScheduleFormat('d');
-        int periodforreals = tempsced[temp-1];
+        int periodforreals = tempsced[temp - 1];
         String tempstring = Integer.toString(periodforreals);
         TextView textView1 = findViewById(R.id.textView1);
         textView1.setText(tempstring);
 
     }
-//Public Vars
+
+    //Public Vars
     char dayLetter = 'z';
     //TimeZone tz;
+    boolean passingTime = false;
+    boolean noSchool = false;
+
     Calendar cal = Calendar.getInstance();
+    int currentDayNum = cal.get(Calendar.DAY_OF_MONTH);
+    int currentDayDay = cal.get(Calendar.DAY_OF_WEEK);
+    int currentMonth = cal.get(Calendar.MONTH);
+
     int currentHour = cal.get(Calendar.HOUR_OF_DAY);
     //int currentHour = 8;
     int currentMinute = cal.get(Calendar.MINUTE);
     //int currentMinute = 15;
     int currentSecond = cal.get(Calendar.SECOND);
-    //
-    /*
-    dayLetter = 'z';
-    cal = Calendar.getInstance();
-    currentHour = cal.get(Calendar.HOUR_OF_DAY);
-    //int currentHour = 8;
-    currentMinute = cal.get(Calendar.MINUTE);
-    //int currentMinute = 15;
-    currentSecond = cal.get(Calendar.SECOND);
-    int temp = PeriodNumber();
-    */
-
-
 
 
     int[] ScheduleFormat(char inputDayType) {//edit here for schedule changes
@@ -70,49 +64,39 @@ public class MainPage extends AppCompatActivity {
         }
     }
 
-    boolean NormalDay(){// REPLACE WITH A SYNC ADAPTER TO DO THIS REMOTELY IN THE FUTURE. HARDCODED DATES
-        int[] scheduleChanges = {}; //format MDDYY
-        //int currentMonth = Calendar.get(Calendar.MONTH);
-        //for( i = 0 ; i<scheduleChanges.length(); i++){
-        return true;
-    }
-    int PeriodNumber(){
+    int PeriodNumber() {
         int i = 0; //array position
-        boolean passingTime = false;
+        passingTime = false;//If set to true in function, school is in passing time, this line resets.
+        noSchool = false;//If set to tru in function, is before or after school, this line resets.
 
-        if((currentHour<7)||((currentHour==7)&&(currentMinute<30))||(currentHour>14)||((currentHour == 14)&&(currentMinute>=15))){
+        if ((currentHour < 7) || ((currentHour == 7) && (currentMinute < 30)) || (currentHour > 14) || ((currentHour == 14) && (currentMinute >= 15))) {
+            noSchool = true;
             return -1;
         }
 
         int[][] periodTimes = //CHANGE BELOW TIMES WHEN SCHEDULE CHANGES
-                {{ 7, 8, 9,10,12,13},//START HOUR
-                 {30,25,50,45,30,25},//START MINUTE
+                {{7, 8, 9, 10, 12, 13},//START HOUR
+                        {30, 25, 50, 45, 30, 25},//START MINUTE
 
-                 { 8, 9,10,12,13,14},//END HOUR
-                 {25,45,40,25,20,15}};//END MINUTE
+                        {8, 9, 10, 12, 13, 14},//END HOUR
+                        {25, 45, 40, 25, 20, 15}};//END MINUTE
 
-        while(true){
-            if ((currentHour > periodTimes[2][i])){
+        while (true) {
+            if ((currentHour > periodTimes[2][i])) {
                 i++;
-            }else if ((currentHour == periodTimes[2][i])&&(currentMinute > periodTimes[3][i])){
+            } else if ((currentHour == periodTimes[2][i]) && (currentMinute > periodTimes[3][i])) {
                 i++;
-            }else if((currentHour == periodTimes[0][i])&&(currentMinute > periodTimes[1][i])) {
+            } else if ((currentHour == periodTimes[0][i]) && (currentMinute > periodTimes[1][i])) {
                 break;
-            }else if(currentHour > periodTimes[0][i]){
+            } else if (currentHour > periodTimes[0][i]) {
                 break;
-            }else{
+            } else {
                 passingTime = true;
-                break;
+                return -1;
             }
         }
-
-        if(passingTime){
-            return -1;
-        }
-        else{
-            return (i+1);
-
-        }
+        return (i + 1);
     }
 }
+
 
