@@ -5,29 +5,52 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
-
 import java.util.Calendar;
+import java.util.Locale;
+import java.util.TimeZone;
 
 public class MainPage extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_page);
+
         int temp = PeriodNumber();
-        String tempstring = Integer.toString(temp);
+        int[] tempsced = ScheduleFormat('d');
+        int periodforreals = tempsced[temp-1];
+        String tempstring = Integer.toString(periodforreals);
         TextView textView1 = findViewById(R.id.textView1);
         textView1.setText(tempstring);
 
     }
 //Public Vars
     char dayLetter = 'z';
-    //int currentHour = Calendar.HOUR_OF_DAY;
-    int currentHour = 14;
-    //int currentMinute = Calendar.MINUTE;
-    int currentMinute = 30;
-    //int currentSecond = Calendar.SECOND;
+    //TimeZone tz;
+    Calendar cal = Calendar.getInstance();
+    int currentHour = cal.get(Calendar.HOUR_OF_DAY);
+    //int currentHour = 8;
+    int currentMinute = cal.get(Calendar.MINUTE);
+    //int currentMinute = 15;
+    int currentSecond = cal.get(Calendar.SECOND);
     //
+    /*
+    dayLetter = 'z';
+    cal = Calendar.getInstance();
+    currentHour = cal.get(Calendar.HOUR_OF_DAY);
+    //int currentHour = 8;
+    currentMinute = cal.get(Calendar.MINUTE);
+    //int currentMinute = 15;
+    currentSecond = cal.get(Calendar.SECOND);
+    int temp = PeriodNumber();
+    */
+
+
+
+
     int[] ScheduleFormat(char inputDayType) {//edit here for schedule changes
 
         if (inputDayType == 'a') {
@@ -54,14 +77,13 @@ public class MainPage extends AppCompatActivity {
         return true;
     }
     int PeriodNumber(){
-        boolean alwaysTrue = true;
         int i = 0; //array position
         boolean passingTime = false;
-        /*
-        if(((currentHour<=7)&&(currentMinute<30))||((currentHour>=2)&&(currentMinute>=15))){
+
+        if((currentHour<7)||((currentHour==7)&&(currentMinute<30))||(currentHour>14)||((currentHour == 14)&&(currentMinute>=15))){
             return -1;
         }
-*/
+
         int[][] periodTimes = //CHANGE BELOW TIMES WHEN SCHEDULE CHANGES
                 {{ 7, 8, 9,10,12,13},//START HOUR
                  {30,25,50,45,30,25},//START MINUTE
@@ -69,10 +91,10 @@ public class MainPage extends AppCompatActivity {
                  { 8, 9,10,12,13,14},//END HOUR
                  {25,45,40,25,20,15}};//END MINUTE
 
-        while(alwaysTrue){
+        while(true){
             if ((currentHour > periodTimes[2][i])){
                 i++;
-            }else if ((currentMinute > periodTimes[3][i])&&(currentHour == periodTimes[2][i])){
+            }else if ((currentHour == periodTimes[2][i])&&(currentMinute > periodTimes[3][i])){
                 i++;
             }else if((currentHour == periodTimes[0][i])&&(currentMinute > periodTimes[1][i])) {
                 break;
