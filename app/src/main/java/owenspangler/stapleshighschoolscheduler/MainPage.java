@@ -3,6 +3,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 //import android.view.View;
 //import android.widget.Button;
+import android.util.Log;
 import android.widget.TextView;
 import java.util.Calendar;
 //import java.util.Arrays;
@@ -22,11 +23,14 @@ public class MainPage extends AppCompatActivity {
         JSONfetcher process = new JSONfetcher();
         process.execute();
         ///
+        /*
         int temp = PeriodNumber();
         int[] tempsced = ScheduleFormat('b');
         //int periodforreals = tempsced[temp - 1];
         //String tempstring = Integer.toString(periodforreals);
-        String tempstring = (process.geter());
+        */
+        String tempstring = process.dayletter;
+        Log.d("watwat",process.dayletter);
                 //Arrays.toString(process.getNewscheduleformat());
         TextView textView1 = findViewById(R.id.textView1);
         textView1.setText(tempstring);
