@@ -5,7 +5,11 @@ import android.os.AsyncTask;
 import org.json.JSONObject;
 import org.json.JSONArray;
 import org.json.JSONException;
+//import org.json.simple.parser.*;
+import java.io.FileReader;
 ///
+import java.io.FileReader;
+import java.io.LineNumberReader;
 import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -21,15 +25,16 @@ public class JSONfetcher extends AsyncTask<Void,Void,Void>{
     String dayletter;
     int month;
     int day;
-    String newscheduleformatSTR;
+    //String newscheduleformatSTR;
     String starttimesSTR;
     String endtimesSTR;
-    int[] newscheduleformat;
+    //int[] newscheduleformat;
+    String newscheduleformat;
     int[][] starttimes;
     int[][] endtimes;
     String notice;
     String linktopdf;
-
+    String[] arr;
 
 
     ///
@@ -44,38 +49,36 @@ public class JSONfetcher extends AsyncTask<Void,Void,Void>{
             InputStream inputStream = httpURLConnection.getInputStream();
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
             String line = "";
+
             while(line != null){
-                line = bufferedReader.readLine();
+                bufferedReader.readLine();
+                dayletter =  bufferedReader.readLine();
                 data = data + line;
             }
 
-            JSONObject jsonfile = new JSONObject(data);
+       JSONObject JO = new JSONObject(data);
+            //dayletter = JO.get("dayletter");
+            //JSONArray arr = new JSONArray(data);
+            //JSONObject jObj = arr.getJSONObject(1);
+            //dayletter = jObj.getString("dayletter");
+            //Object obj = new ().parse(new FileReader("JSONExample.json"));
+            //JSONArray JA = new JSONArray(data);
 
+
+/*
             dayletter = jsonfile.getString("dayletter");
             month = jsonfile.getInt("month");
             day = jsonfile.getInt("day");
-            //newscheduleformat = jsonfile.getString("newscheduleformat");
+            newscheduleformat = jsonfile.getString("newscheduleformat");
             //starttimes = jsonfile.getString("starttimes");
             //endtimes = jsonfile.getString("endtimes");
-            //notice = jsonfile.getString("notice");
+            notice = jsonfile.getString("notice");
             linktopdf = jsonfile.getString("linktopdf");
-/////
-            String s="[[4, 2, 2, 4], [3, 4, 5, 6], [6, 7, 8, 9], [3, 2, 1, 4]]";
-            s=s.replace("[","");//replacing all [ to ""
-            s=s.substring(0,s.length()-2);//ignoring last two ]]
-            String s1[]=s.split("],");//separating all by "],"
+*/
+            //JSONArray arraynewscheduleformat = jsonfile.optJSONArray("newscheduleformat");
 
-            String my_matrics[][] = new String[s1.length][s1.length];//declaring two dimensional matrix for input
+// = jsonObj.optJSONObject("data");
 
-            for(int i=0;i<s1.length;i++){
-                s1[i]=s1[i].trim();//ignoring all extra space if the string s1[i] has
-                String single_int[]=s1[i].split(", ");//separating integers by ", "
-
-                for(int j=0;j<single_int.length;j++){
-                    my_matrics[i][j]=single_int[j];//adding single values
-                }
-            }
-////
 
 
         } catch (MalformedURLException e) {
@@ -83,12 +86,14 @@ public class JSONfetcher extends AsyncTask<Void,Void,Void>{
         } catch (IOException e) {
             e.printStackTrace();
         } catch (JSONException e) {
-            e.printStackTrace();
+          e.printStackTrace();
         }
 
         return null;
     }
-
+    public String geter(){
+        return dayletter;
+    }
     @Override
     protected void onPostExecute(Void aVoid) {
         super.onPostExecute(aVoid);
