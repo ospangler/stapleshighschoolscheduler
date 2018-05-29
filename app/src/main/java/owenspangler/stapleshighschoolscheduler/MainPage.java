@@ -4,6 +4,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewDebug;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -11,29 +12,26 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.Calendar;
 import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 
 public class MainPage extends AppCompatActivity {
 
-    String data = "";
-    String jsonData;
+    //String data = "";
+    String jsonData; //Raw Json String Pulled From Async Task
     String jsonDayLetter = "";
     int jsonMonth = -1;
     int jsonDay = -1;
     int[] jsonNewScheduleFormat;
     int[][] jsonPeriodTimes;
+    int jsonlastKnownADayMonth;
+    int jsonlastKnownADayDay;
+    int jsonnumoflastKnownADay;
     String jsonNotice;
     boolean passingTime = false;
     boolean noSchool = false;
+    boolean useHardCoded = false;
     Calendar cal = Calendar.getInstance();
     int currentDayNum = cal.get(Calendar.DAY_OF_MONTH);
     int currentDayDay = cal.get(Calendar.DAY_OF_WEEK);
@@ -50,17 +48,27 @@ public class MainPage extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_page);
         try {
-            jsonData = new JSONfetcher().execute().get();
+            jsonData = new JSONfetcher().execute().get();//Will wait for task to finish
         }catch (InterruptedException e){
-
+            //I'm not catching anything, I just wanted the error messages to go away
         }catch (ExecutionException e) {
-
+            //I don't care if I'm defeating the purpose of an Async task, I don't care.
         }
-        //JSONfetcher process = new JSONfetcher();
-        //process.execute().get();
-        //RetrieveJson();
-        GetInfoFromJSON(jsonData);
-        Log.e("This is working????", Arrays.deepToString(jsonPeriodTimes));
+        if(jsonData.equals("NO CONNECTION")){
+            Log.e("JSONDATA", "JSONDATA can't be reached, reverting to hardcoded backup");
+            useHardCoded = true;
+        }else if(jsonData.equals("")){
+            Log.e("JSONDATA", "JSONDATA is null, reverting to hardcoded backup");
+            useHardCoded = true;
+        }else {//normal condition
+            GetInfoFromJSON(jsonData);
+            //FindDayLetter();//REMOVE LATER!!!!
+            if((jsonMonth == currentMonth) && jsonDay == currentDayNum){
+                useHardCoded = false;
+            }else{
+                useHardCoded = true;
+            }
+        }
     }
 
     void GetInfoFromJSON(String inputdata){
@@ -69,15 +77,18 @@ public class MainPage extends AppCompatActivity {
             jsonDayLetter= JO.getString("dayletter");
             jsonMonth = JO.getInt("month");
             jsonDay = JO.getInt("day");
-
+            //jsonlastKnownADayMonth = JO.getInt("lastknownADayMonth");
+            //jsonlastKnownADayDay = JO.getInt("lastknownADayDay");
+            //jsonnumoflastKnownADay = JO.getInt("numoflastknownADay");
             jsonNewScheduleFormat = getArrayFromJSON("newscheduleformat");
+
             int[] tempJsonStartTimesHour = getArrayFromJSON("starttimeshour");
             int[] tempJsonStartTimesMinute = getArrayFromJSON("starttimesminute");
             int[] tempJsonEndTimesHour = getArrayFromJSON("endtimeshour");
             int[] tempJsonEndTimesMinute = getArrayFromJSON("endtimesminute");
 
-            jsonPeriodTimes = new int[3][tempJsonStartTimesHour.length];
-            for(int i = 0; i<3; i++){
+            jsonPeriodTimes = new int[4][tempJsonStartTimesHour.length];
+            for(int i = 0; i<4; i++){
                 for(int j = 0; j<tempJsonStartTimesHour.length; j++){
                     if(i == 0) {
                         jsonPeriodTimes[i][j] = tempJsonStartTimesHour[j];
@@ -132,7 +143,60 @@ public class MainPage extends AppCompatActivity {
             return null;
         }
     }
+/*
+    String FindDayLetter(){
+        int dayLeterCounter = 0;//A = 0, B = 1, C = 2, D = 3
+        if((jsonData.equals("")) || (jsonData.equals("NO CONNECTION"))) {//Backup in case of network failure
+            int tempADayReferenceMonth = 4;
+            int tempADayReferenceDay = 10;
+            int tempDayofWeek = 1;//Sunday is day 0, Saturday is day 6
+        }else{
+            //normal conditions
+            if ((jsonnumoflastKnownADay > 0) && (jsonnumoflastKnownADay<7)){
 
+                int tempMonth = jsonlastKnownADayMonth -1;
+                int tempDay = jsonlastKnownADayDay;
+                int tempDayNum = jsonnumoflastKnownADay;
+                //Calendar tempCal = new Calendar(2018, tempMonth, tempDay);
+
+                while((currentMonth != jsonlastKnownADayMonth) && (currentDayDay != jsonlastKnownADayDay)){
+                    tempDay++;
+                    tempDayNum++;
+                    if(tempDay >= amountOfDaysInMonth(tempMonth)){
+                        tempDay = 0;
+                        tempMonth++;
+                    }else if(tempDayNum>0 && tempDayNum<7){
+                    dayLeterCounter++;
+                    }else if(tempDayNum >= 7){
+                        tempDayNum = -1;
+                    }
+                }
+            }else{
+                Log.e("LAST KNOWN A DAY", "You done goofed and set the last known A day to a weekend. Fix it");
+            }
+        }
+Log.i("A DAY COUNTER", Integer.toString(dayLeterCounter));
+        if(dayLeterCounter == 0){
+            return "A";
+        }else if(dayLeterCounter == 1){
+            return "B";
+        }else if(dayLeterCounter ==2){
+            return "C";
+        }else{
+            return "D";
+        }
+    }
+
+    int amountOfDaysInMonth(int inputMonth){
+        if((inputMonth == 1)||(inputMonth == 3)||(inputMonth == 5)||(inputMonth == 7)||(inputMonth == 8)||(inputMonth == 10)||(inputMonth == 12)){
+            return 31;
+        }else if((inputMonth == 4)||(inputMonth == 6)||(inputMonth == 9)||(inputMonth == 11)){
+            return 30;
+        }else{
+            return 28; //Change for leap years
+        }
+    }
+*/
     int PeriodNumber() { //NOTE: ADD SAFEGUARDS TO PREVENT ARRAY READ AT -1!!!!!
         int i = 0; //array position
         passingTime = false;//If set to true in function, school is in passing time, this line resets.
