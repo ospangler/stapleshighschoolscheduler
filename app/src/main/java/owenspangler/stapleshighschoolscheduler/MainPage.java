@@ -61,7 +61,8 @@ public class MainPage extends AppCompatActivity {
             useHardCoded = true;
         }else {//normal condition
             GetInfoFromJSON(jsonData);
-
+            String tempstring = FindDayLetter();
+            Log.i("tempstring", tempstring);
             if((jsonMonth == currentMonth) && jsonDay == currentDayNum){
                 useHardCoded = false;
             }else{
@@ -143,6 +144,28 @@ public class MainPage extends AppCompatActivity {
         }
     }
 
+    String FindDayLetter() {
+        int tempday;
+        int temppos = -1;
+        for (int i = 0; i < jsondayLetterDayNumber.length; i++) {
+            if (jsondayLetterDayNumber[i] == currentDayNum) {
+                temppos = i;
+            }
+        }
+        if(temppos == -1){
+            Log.e("TEMPPOS","Today's date is not found on the json file");
+        }
+        tempday = jsondayLetterList[temppos];
+        if(tempday == 1){
+            return "A";
+        }else if(tempday == 2){
+            return "B";
+        }else if(tempday ==3){
+            return "C";
+        }else{
+            return "D";
+        }
+    }
 /*
     String FindDayLetter(){
         Log.i("LOOP??","REACHED STEP 1");
