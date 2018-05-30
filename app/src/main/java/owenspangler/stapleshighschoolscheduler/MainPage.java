@@ -24,10 +24,9 @@ public class MainPage extends AppCompatActivity {
     int jsonMonth = -1;
     int jsonDay = -1;
     int[] jsonNewScheduleFormat;
+    int[] jsondayLetterList;
+    int[] jsondayLetterDayNumber;
     int[][] jsonPeriodTimes;
-    int jsonlastKnownADayMonth;
-    int jsonlastKnownADayDay;
-    int jsonnumoflastKnownADay;
     String jsonNotice;
     boolean passingTime = false;
     boolean noSchool = false;
@@ -62,7 +61,7 @@ public class MainPage extends AppCompatActivity {
             useHardCoded = true;
         }else {//normal condition
             GetInfoFromJSON(jsonData);
-            //FindDayLetter();//REMOVE LATER!!!!
+
             if((jsonMonth == currentMonth) && jsonDay == currentDayNum){
                 useHardCoded = false;
             }else{
@@ -77,10 +76,10 @@ public class MainPage extends AppCompatActivity {
             jsonDayLetter= JO.getString("dayletter");
             jsonMonth = JO.getInt("month");
             jsonDay = JO.getInt("day");
-            //jsonlastKnownADayMonth = JO.getInt("lastknownADayMonth");
-            //jsonlastKnownADayDay = JO.getInt("lastknownADayDay");
-            //jsonnumoflastKnownADay = JO.getInt("numoflastknownADay");
+
             jsonNewScheduleFormat = getArrayFromJSON("newscheduleformat");
+            jsondayLetterList = getArrayFromJSON("dayletterlist");
+            jsondayLetterDayNumber = getArrayFromJSON("dayletterdaynumber");
 
             int[] tempJsonStartTimesHour = getArrayFromJSON("starttimeshour");
             int[] tempJsonStartTimesMinute = getArrayFromJSON("starttimesminute");
@@ -96,7 +95,7 @@ public class MainPage extends AppCompatActivity {
                         jsonPeriodTimes[i][j] = tempJsonStartTimesMinute[j];
                     }else if(i==2){
                         jsonPeriodTimes[i][j] = tempJsonEndTimesHour[j];
-                    }else if(i==3){
+                    }else{
                         jsonPeriodTimes[i][j] = tempJsonEndTimesMinute[j];
                     }
                 }
@@ -143,44 +142,57 @@ public class MainPage extends AppCompatActivity {
             return null;
         }
     }
+
 /*
     String FindDayLetter(){
-        int dayLeterCounter = 0;//A = 0, B = 1, C = 2, D = 3
-        if((jsonData.equals("")) || (jsonData.equals("NO CONNECTION"))) {//Backup in case of network failure
-            int tempADayReferenceMonth = 4;
-            int tempADayReferenceDay = 10;
-            int tempDayofWeek = 1;//Sunday is day 0, Saturday is day 6
-        }else{
+        Log.i("LOOP??","REACHED STEP 1");
+        int dayLetterCounter = 0;//A = 0, B = 1, C = 2, D = 3
+        //if((jsonData.equals("")) || (jsonData.equals("NO CONNECTION"))) {//Backup in case of network failure
+            //int tempADayReferenceMonth = 4;
+            //int tempADayReferenceDay = 10;
+            //int tempDayofWeek = 1;//Sunday is day 0, Saturday is day 6
+        //}else{
             //normal conditions
-            if ((jsonnumoflastKnownADay > 0) && (jsonnumoflastKnownADay<7)){
 
-                int tempMonth = jsonlastKnownADayMonth -1;
+            if ((jsonnumoflastKnownADay >= 0) && (jsonnumoflastKnownADay<=7)){
+
+                int tempMonth = jsonlastKnownADayMonth;
                 int tempDay = jsonlastKnownADayDay;
                 int tempDayNum = jsonnumoflastKnownADay;
                 //Calendar tempCal = new Calendar(2018, tempMonth, tempDay);
 
-                while((currentMonth != jsonlastKnownADayMonth) && (currentDayDay != jsonlastKnownADayDay)){
-                    tempDay++;
-                    tempDayNum++;
-                    if(tempDay >= amountOfDaysInMonth(tempMonth)){
-                        tempDay = 0;
-                        tempMonth++;
-                    }else if(tempDayNum>0 && tempDayNum<7){
-                    dayLeterCounter++;
-                    }else if(tempDayNum >= 7){
-                        tempDayNum = -1;
+                Log.i("LOOP??","REACHED STEP 2");
+
+                while((currentMonth != tempMonth) && (currentDayDay != tempDay)){
+                    //Log.i("LOOP??","REACHED STEP 3");
+                    if(tempDay >= amountOfDaysInMonth(tempMonth)) {
+                        tempDay = 1;
+                        if (tempMonth == 12) {
+                            tempMonth = 1;
+                        } else {
+                            tempMonth++;
+                        }
+                        //dayLeterCounter++;
+                    }
+                    if(tempDayNum == 7){
+                    dayLetterCounter++;
+                    tempDayNum = 1;
+                    }else if ((tempDayNum>=1) && (tempDayNum <=6)){
+                        dayLetterCounter++;
+                        tempDayNum++;
                     }
                 }
             }else{
                 Log.e("LAST KNOWN A DAY", "You done goofed and set the last known A day to a weekend. Fix it");
             }
-        }
-Log.i("A DAY COUNTER", Integer.toString(dayLeterCounter));
-        if(dayLeterCounter == 0){
+            Log.i("LOOP??","REACHED STEP 4");
+        //}
+Log.i("A DAY COUNTER", Integer.toString(dayLetterCounter));
+        if(dayLetterCounter%4 == 0){
             return "A";
-        }else if(dayLeterCounter == 1){
+        }else if(dayLetterCounter%4 == 1){
             return "B";
-        }else if(dayLeterCounter ==2){
+        }else if(dayLetterCounter%4 ==2){
             return "C";
         }else{
             return "D";
