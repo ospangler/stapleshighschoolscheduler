@@ -24,10 +24,11 @@ public class MainPage extends AppCompatActivity {
     int jsonMonth = -1;
     int jsonDay = -1;
     int[] jsonNewScheduleFormat;
-    int[] jsondayLetterList;
+    int jsondayLetterListStart;
     int[] jsondayLetterDayNumber;
     int[][] jsonPeriodTimes;
     String jsonNotice;
+    boolean offline = false;
     boolean passingTime = false;
     boolean noSchool = false;
     boolean useHardCoded = false;
@@ -56,9 +57,11 @@ public class MainPage extends AppCompatActivity {
         if(jsonData.equals("NO CONNECTION")){
             Log.e("JSONDATA", "JSONDATA can't be reached, reverting to hardcoded backup");
             useHardCoded = true;
+            offline = true;
         }else if(jsonData.equals("")){
             Log.e("JSONDATA", "JSONDATA is null, reverting to hardcoded backup");
             useHardCoded = true;
+            offline = true;
         }else {//normal condition
             GetInfoFromJSON(jsonData);
             String tempstring = FindDayLetter();
@@ -77,9 +80,9 @@ public class MainPage extends AppCompatActivity {
             jsonDayLetter= JO.getString("dayletter");
             jsonMonth = JO.getInt("month");
             jsonDay = JO.getInt("day");
+            jsondayLetterListStart = JO.getInt("dayletterliststart");
 
             jsonNewScheduleFormat = getArrayFromJSON("newscheduleformat");
-            jsondayLetterList = getArrayFromJSON("dayletterlist");
             jsondayLetterDayNumber = getArrayFromJSON("dayletterdaynumber");
 
             int[] tempJsonStartTimesHour = getArrayFromJSON("starttimeshour");
@@ -155,12 +158,12 @@ public class MainPage extends AppCompatActivity {
         if(temppos == -1){
             Log.e("TEMPPOS","Today's date is not found on the json file");
         }
-        tempday = jsondayLetterList[temppos];
-        if(tempday == 1){
+
+        if(((temppos%4)+jsondayLetterListStart) == 0){
             return "A";
-        }else if(tempday == 2){
+        }else if(((temppos%4)+jsondayLetterListStart) == 2){
             return "B";
-        }else if(tempday ==3){
+        }else if(((temppos%4)+jsondayLetterListStart) ==3){
             return "C";
         }else{
             return "D";
