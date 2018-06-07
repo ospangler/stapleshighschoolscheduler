@@ -26,8 +26,9 @@ public class MainPage extends AppCompatActivity {
     String jsonDayLetter = "";
     int jsonMonth = -1;
     int jsonDay = -1;
-    int[] jsonNewScheduleFormat;
     int jsondayLetterListStart;
+    int[] todayScheduleFormat;
+    int[] jsonNewScheduleFormat;
     int[] jsondayLetterDayNumber;
     int[][] jsonPeriodTimes;
     String jsonNotice;
@@ -50,33 +51,44 @@ public class MainPage extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_page);
-        try {
-            jsonData = new JSONfetcher().execute().get();//Will wait for task to finish
-        }catch (InterruptedException e){
-            //I'm not catching anything, I just wanted the error messages to go away
-        }catch (ExecutionException e) {
-            //I don't care if I'm defeating the purpose of an Async task, I don't care.
-        }
-        if(jsonData.equals("NO CONNECTION")){
-            Log.e("JSONDATA", "JSONDATA can't be reached, reverting to hardcoded backup");
-            useHardCoded = true;
-            offline = true;
-        }else if(jsonData.equals("")){
-            Log.e("JSONDATA", "JSONDATA is null, reverting to hardcoded backup");
-            useHardCoded = true;
-            offline = true;
-        }else {//normal condition
-            GetInfoFromJSON(jsonData);
-            String tempstring = FindDayLetter();
-            Log.i("tempstring", tempstring);
+        GetJson();
+    }
 
-            if((jsonMonth == currentMonth) && jsonDay == currentDayNum){
-                useHardCoded = false;
-            }else{
+    void GetJson(){
+            try {
+                jsonData = new JSONfetcher().execute().get();//Will wait for task to finish
+            }catch (InterruptedException e){
+                //I'm not catching anything, I just wanted the error messages to go away
+            }catch (ExecutionException e) {
+                //I don't care if I'm defeating the purpose of an Async task, I don't care.
+            }
+            if(jsonData.equals("NO CONNECTION")){
+                Log.e("JSONDATA", "JSONDATA can't be reached, reverting to hardcoded backup");
                 useHardCoded = true;
+                offline = true;
+            }else if(jsonData.equals("")){
+                Log.e("JSONDATA", "JSONDATA is null, reverting to hardcoded backup");
+                useHardCoded = true;
+                offline = true;
+            }else {//normal condition
+                GetInfoFromJSON(jsonData);
+                //String tempstring = FindDayLetter();
+                //Log.i("tempstring", tempstring);
+                //String tempdayletter = "";
+                //if(useHardCoded == false){
+                    String tempdayletter = FindDayLetter();
+                    Log.i("tempdayletter", tempdayletter);
+                //}
+                todayScheduleFormat = ScheduleFormat(tempdayletter);
+                Log.i("This is today's schedule", Arrays.toString(todayScheduleFormat));
+
+                if((jsonMonth == currentMonth) && jsonDay == currentDayNum){
+                    useHardCoded = false;
+                }else{
+                    useHardCoded = true;
+                }
             }
         }
-    }
 
     void GetInfoFromJSON(String inputdata){
         try {
@@ -132,7 +144,6 @@ public class MainPage extends AppCompatActivity {
     }
 
     int[] ScheduleFormat(String inputDayType) { //edit here for schedule changes
-
         if (inputDayType.equals("a")) {
             int[] tempA = {1, 2, 3, 5, 8, 7}; //'A' day
             return tempA;
@@ -147,98 +158,38 @@ public class MainPage extends AppCompatActivity {
             return tempD;
         } else {
             //CALL FUNCTION TO PULL DATA FROM SERVER HERE
-            return null;
+            return /*SERVER DATA IN HERE*/ null;
         }
     }
 
     String FindDayLetter() {
-        int tempday;
+        //int tempday;
         int temppos = -1;
         for (int i = 0; i < jsondayLetterDayNumber.length; i++) {
             if (jsondayLetterDayNumber[i] == currentDayNum) {
+                Log.i("currentdaynum", Integer.toString(currentDayNum));
                 temppos = i;
+                Log.i("temppos", Integer.toString(temppos));
+                Log.i("jsondayletterliststart", Integer.toString(jsondayLetterListStart));
+                break;
             }
         }
         if(temppos == -1){
             Log.e("TEMPPOS","Today's date is not found on the json file");
+            return null;
         }
 
         if(((temppos%4)+jsondayLetterListStart) == 0){
-            return "A";
+            return "a";
+        }else if(((temppos%4)+jsondayLetterListStart) == 1){
+            return "b";
         }else if(((temppos%4)+jsondayLetterListStart) == 2){
-            return "B";
-        }else if(((temppos%4)+jsondayLetterListStart) ==3){
-            return "C";
+            return "c";
         }else{
-            return "D";
-        }
-    }
-/*
-    String FindDayLetter(){
-        Log.i("LOOP??","REACHED STEP 1");
-        int dayLetterCounter = 0;//A = 0, B = 1, C = 2, D = 3
-        //if((jsonData.equals("")) || (jsonData.equals("NO CONNECTION"))) {//Backup in case of network failure
-            //int tempADayReferenceMonth = 4;
-            //int tempADayReferenceDay = 10;
-            //int tempDayofWeek = 1;//Sunday is day 0, Saturday is day 6
-        //}else{
-            //normal conditions
-
-            if ((jsonnumoflastKnownADay >= 0) && (jsonnumoflastKnownADay<=7)){
-
-                int tempMonth = jsonlastKnownADayMonth;
-                int tempDay = jsonlastKnownADayDay;
-                int tempDayNum = jsonnumoflastKnownADay;
-                //Calendar tempCal = new Calendar(2018, tempMonth, tempDay);
-
-                Log.i("LOOP??","REACHED STEP 2");
-
-                while((currentMonth != tempMonth) && (currentDayDay != tempDay)){
-                    //Log.i("LOOP??","REACHED STEP 3");
-                    if(tempDay >= amountOfDaysInMonth(tempMonth)) {
-                        tempDay = 1;
-                        if (tempMonth == 12) {
-                            tempMonth = 1;
-                        } else {
-                            tempMonth++;
-                        }
-                        //dayLeterCounter++;
-                    }
-                    if(tempDayNum == 7){
-                    dayLetterCounter++;
-                    tempDayNum = 1;
-                    }else if ((tempDayNum>=1) && (tempDayNum <=6)){
-                        dayLetterCounter++;
-                        tempDayNum++;
-                    }
-                }
-            }else{
-                Log.e("LAST KNOWN A DAY", "You done goofed and set the last known A day to a weekend. Fix it");
-            }
-            Log.i("LOOP??","REACHED STEP 4");
-        //}
-Log.i("A DAY COUNTER", Integer.toString(dayLetterCounter));
-        if(dayLetterCounter%4 == 0){
-            return "A";
-        }else if(dayLetterCounter%4 == 1){
-            return "B";
-        }else if(dayLetterCounter%4 ==2){
-            return "C";
-        }else{
-            return "D";
+            return "d";
         }
     }
 
-    int amountOfDaysInMonth(int inputMonth){
-        if((inputMonth == 1)||(inputMonth == 3)||(inputMonth == 5)||(inputMonth == 7)||(inputMonth == 8)||(inputMonth == 10)||(inputMonth == 12)){
-            return 31;
-        }else if((inputMonth == 4)||(inputMonth == 6)||(inputMonth == 9)||(inputMonth == 11)){
-            return 30;
-        }else{
-            return 28; //Change for leap years
-        }
-    }
-*/
     int PeriodNumber() { //NOTE: ADD SAFEGUARDS TO PREVENT ARRAY READ AT -1!!!!!
         int i = 0; //array position
         passingTime = false;//If set to true in function, school is in passing time, this line resets.
