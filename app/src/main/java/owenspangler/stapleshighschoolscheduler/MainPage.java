@@ -1,11 +1,14 @@
 package owenspangler.stapleshighschoolscheduler;
 
+import android.animation.ObjectAnimator;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewDebug;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import org.json.JSONArray;
@@ -66,6 +69,7 @@ public class MainPage extends AppCompatActivity {
             GetInfoFromJSON(jsonData);
             String tempstring = FindDayLetter();
             Log.i("tempstring", tempstring);
+
             if((jsonMonth == currentMonth) && jsonDay == currentDayNum){
                 useHardCoded = false;
             }else{
