@@ -31,6 +31,7 @@ public class MainPage extends AppCompatActivity {
     int[] jsonNewScheduleFormat;
     int[] jsondayLetterDayNumber;
     int[][] jsonPeriodTimes;
+    int currentPeriodNumber = -1;
     String jsonNotice;
     boolean offline = false;
     boolean passingTime = false;
@@ -45,6 +46,14 @@ public class MainPage extends AppCompatActivity {
     int currentMinute = cal.get(Calendar.MINUTE);
     //int currentMinute = 15;
     int currentSecond = cal.get(Calendar.SECOND);
+    ProgressBar progressBar;
+    ///
+    int[][] normalPeriodTimes = //CHANGE BELOW TIMES WHEN SCHEDULE CHANGES
+            {{7, 8, 9, 10, 12, 13},//START HOUR
+                    {30, 25, 50, 45, 30, 25},//START MINUTE
+
+                    {8, 9, 10, 12, 13, 14},//END HOUR
+                    {25, 45, 40, 25, 20, 15}};//END MINUTE
     ///END VARS///
 
     @Override
@@ -52,6 +61,15 @@ public class MainPage extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_page);
         GetJson();
+        progressBar = (ProgressBar) findViewById(R.id.progressBar);
+        progressBar.setProgress(5,true);
+        onStart();
+
+    }
+
+    protected void onStart(Bundle savedInstanceState){
+Log.i("hi","this got to onStart");
+
     }
 
     void GetJson(){
@@ -62,29 +80,25 @@ public class MainPage extends AppCompatActivity {
             }catch (ExecutionException e) {
                 //I don't care if I'm defeating the purpose of an Async task, I don't care.
             }
-            if(jsonData.equals("NO CONNECTION")){
-                Log.e("JSONDATA", "JSONDATA can't be reached, reverting to hardcoded backup");
+
+            if((jsonData.equals("NO CONNECTION"))||(jsonData.equals(""))){
+                Log.e("JSONDATA Error", "JSONDATA can't be reached, reverting to hardcoded backup");
                 useHardCoded = true;
                 offline = true;
-            }else if(jsonData.equals("")){
-                Log.e("JSONDATA", "JSONDATA is null, reverting to hardcoded backup");
-                useHardCoded = true;
-                offline = true;
-            }else {//normal condition
+                currentPeriodNumber = PeriodNumber(normalPeriodTimes);
+            }else{//normal condition
+
                 GetInfoFromJSON(jsonData);
-                //String tempstring = FindDayLetter();
-                //Log.i("tempstring", tempstring);
-                //String tempdayletter = "";
-                //if(useHardCoded == false){
-                    String tempdayletter = FindDayLetter();
-                    Log.i("tempdayletter", tempdayletter);
-                //}
+                String tempdayletter = FindDayLetter();
+                Log.i("This is today's day letter", tempdayletter);
                 todayScheduleFormat = ScheduleFormat(tempdayletter);
                 Log.i("This is today's schedule", Arrays.toString(todayScheduleFormat));
 
-                if((jsonMonth == currentMonth) && jsonDay == currentDayNum){
+                if((jsonMonth == currentMonth) && (jsonDay == currentDayNum)){
+                    currentPeriodNumber = PeriodNumber(jsonPeriodTimes);
                     useHardCoded = false;
                 }else{
+                    currentPeriodNumber = PeriodNumber(normalPeriodTimes);
                     useHardCoded = true;
                 }
             }
@@ -140,6 +154,9 @@ public class MainPage extends AppCompatActivity {
         } catch (JSONException e) {
             e.printStackTrace();
             return null;
+        } catch (NullPointerException e){
+            e.printStackTrace();
+            return null;
         }
     }
 
@@ -190,31 +207,25 @@ public class MainPage extends AppCompatActivity {
         }
     }
 
-    int PeriodNumber() { //NOTE: ADD SAFEGUARDS TO PREVENT ARRAY READ AT -1!!!!!
+    int PeriodNumber(int[][] inputPeriodTimes) { //NOTE: ADD SAFEGUARDS TO PREVENT ARRAY READ AT -1!!!!!
         int i = 0; //array position
         passingTime = false;//If set to true in function, school is in passing time, this line resets.
         noSchool = false;//If set to true in function, is before or after school, this line resets.
 
-        if ((currentHour < 7) || ((currentHour == 7) && (currentMinute < 30)) || (currentHour > 14) || ((currentHour == 14) && (currentMinute >= 15))) {
+        /*if ((currentHour < 7) || ((currentHour == 7) && (currentMinute < 30)) || (currentHour > 14) || ((currentHour == 14) && (currentMinute >= 15))) {
             noSchool = true;
             return -1;
-        }
+        }*/
 
-        int[][] periodTimes = //CHANGE BELOW TIMES WHEN SCHEDULE CHANGES
-                {{7, 8, 9, 10, 12, 13},//START HOUR
-                        {30, 25, 50, 45, 30, 25},//START MINUTE
-
-                        {8, 9, 10, 12, 13, 14},//END HOUR
-                        {25, 45, 40, 25, 20, 15}};//END MINUTE
 
         while (true) {
-            if ((currentHour > periodTimes[2][i])) {
+            if ((currentHour > inputPeriodTimes[2][i])) {
                 i++;
-            } else if ((currentHour == periodTimes[2][i]) && (currentMinute > periodTimes[3][i])) {
+            } else if ((currentHour == inputPeriodTimes[2][i]) && (currentMinute > inputPeriodTimes[3][i])) {
                 i++;
-            } else if ((currentHour == periodTimes[0][i]) && (currentMinute > periodTimes[1][i])) {
+            } else if ((currentHour == inputPeriodTimes[0][i]) && (currentMinute > inputPeriodTimes[1][i])) {
                 break;
-            } else if (currentHour > periodTimes[0][i]) {
+            } else if (currentHour > inputPeriodTimes[0][i]) {
                 break;
             } else {
                 passingTime = true;
