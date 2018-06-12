@@ -1,8 +1,15 @@
 package owenspangler.stapleshighschoolscheduler;
 
 import android.animation.ObjectAnimator;
+import android.graphics.Color;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.SpannableStringBuilder;
+import android.text.style.BackgroundColorSpan;
+import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewDebug;
@@ -62,52 +69,55 @@ public class MainPage extends AppCompatActivity {
         setContentView(R.layout.activity_main_page);
         GetJson();
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
-        progressBar.setProgress(5,true);
+        progressBar.setProgress(5, true);
+        displayPeriodString();
         onStart();
 
     }
 
-    protected void onStart(Bundle savedInstanceState){
-Log.i("hi","this got to onStart");
+    protected void onStart(Bundle savedInstanceState) {
+        Log.i("hi", "this got to onStart");
 
     }
 
-    void GetJson(){
-            try {
-                jsonData = new JSONfetcher().execute().get();//Will wait for task to finish
-            }catch (InterruptedException e){
-                //I'm not catching anything, I just wanted the error messages to go away
-            }catch (ExecutionException e) {
-                //I don't care if I'm defeating the purpose of an Async task, I don't care.
-            }
+    void GetJson() {
+        try {
+            jsonData = new JSONfetcher().execute().get();//Will wait for task to finish
+        } catch (InterruptedException e) {
+            //I'm not catching anything, I just wanted the error messages to go away
+        } catch (ExecutionException e) {
+            //I don't care if I'm defeating the purpose of an Async task, I don't care.
+        }
 
-            if((jsonData.equals("NO CONNECTION"))||(jsonData.equals(""))){
-                Log.e("JSONDATA Error", "JSONDATA can't be reached, reverting to hardcoded backup");
-                useHardCoded = true;
-                offline = true;
-                currentPeriodNumber = PeriodNumber(normalPeriodTimes);
-            }else{//normal condition
+        if ((jsonData.equals("NO CONNECTION")) || (jsonData.equals(""))) {
+            Log.e("JSONDATA Error", "JSONDATA can't be reached, reverting to hardcoded backup");
+            useHardCoded = true;
+            offline = true;
+            currentPeriodNumber = PeriodNumber(normalPeriodTimes);
+        } else {//normal condition
 
-                GetInfoFromJSON(jsonData);
+            GetInfoFromJSON(jsonData);
+
+
+            if ((jsonMonth == currentMonth) && (jsonDay == currentDayNum)) {//special schedule
+                todayScheduleFormat = jsonNewScheduleFormat;
+                currentPeriodNumber = PeriodNumber(jsonPeriodTimes);
+                useHardCoded = false;
+            } else {//normal
                 String tempdayletter = FindDayLetter();
                 Log.i("This is today's day letter", tempdayletter);
                 todayScheduleFormat = ScheduleFormat(tempdayletter);
                 Log.i("This is today's schedule", Arrays.toString(todayScheduleFormat));
-
-                if((jsonMonth == currentMonth) && (jsonDay == currentDayNum)){
-                    currentPeriodNumber = PeriodNumber(jsonPeriodTimes);
-                    useHardCoded = false;
-                }else{
-                    currentPeriodNumber = PeriodNumber(normalPeriodTimes);
-                    useHardCoded = true;
-                }
+                currentPeriodNumber = PeriodNumber(normalPeriodTimes);
+                useHardCoded = true;
             }
         }
+    }
 
-    void GetInfoFromJSON(String inputdata){
+    void GetInfoFromJSON(String inputdata) {
         try {
             JSONObject JO = new JSONObject(inputdata);
-            jsonDayLetter= JO.getString("dayletter");
+            jsonDayLetter = JO.getString("dayletter");
             jsonMonth = JO.getInt("month");
             jsonDay = JO.getInt("day");
             jsondayLetterListStart = JO.getInt("dayletterliststart");
@@ -121,22 +131,22 @@ Log.i("hi","this got to onStart");
             int[] tempJsonEndTimesMinute = getArrayFromJSON("endtimesminute");
 
             jsonPeriodTimes = new int[4][tempJsonStartTimesHour.length];
-            for(int i = 0; i<4; i++){
-                for(int j = 0; j<tempJsonStartTimesHour.length; j++){
-                    if(i == 0) {
+            for (int i = 0; i < 4; i++) {
+                for (int j = 0; j < tempJsonStartTimesHour.length; j++) {
+                    if (i == 0) {
                         jsonPeriodTimes[i][j] = tempJsonStartTimesHour[j];
-                    }else if(i==1){
+                    } else if (i == 1) {
                         jsonPeriodTimes[i][j] = tempJsonStartTimesMinute[j];
-                    }else if(i==2){
+                    } else if (i == 2) {
                         jsonPeriodTimes[i][j] = tempJsonEndTimesHour[j];
-                    }else{
+                    } else {
                         jsonPeriodTimes[i][j] = tempJsonEndTimesMinute[j];
                     }
                 }
 
             }
             Log.i("wwwww", Arrays.deepToString(jsonPeriodTimes));
-        }catch (JSONException e) {
+        } catch (JSONException e) {
             e.printStackTrace();
         }
     }
@@ -154,7 +164,7 @@ Log.i("hi","this got to onStart");
         } catch (JSONException e) {
             e.printStackTrace();
             return null;
-        } catch (NullPointerException e){
+        } catch (NullPointerException e) {
             e.printStackTrace();
             return null;
         }
@@ -191,18 +201,18 @@ Log.i("hi","this got to onStart");
                 break;
             }
         }
-        if(temppos == -1){
-            Log.e("TEMPPOS","Today's date is not found on the json file");
+        if (temppos == -1) {
+            Log.e("TEMPPOS", "Today's date is not found on the json file");
             return null;
         }
 
-        if(((temppos%4)+jsondayLetterListStart) == 0){
+        if (((temppos % 4) + jsondayLetterListStart) == 0) {
             return "a";
-        }else if(((temppos%4)+jsondayLetterListStart) == 1){
+        } else if (((temppos % 4) + jsondayLetterListStart) == 1) {
             return "b";
-        }else if(((temppos%4)+jsondayLetterListStart) == 2){
+        } else if (((temppos % 4) + jsondayLetterListStart) == 2) {
             return "c";
-        }else{
+        } else {
             return "d";
         }
     }
@@ -233,5 +243,26 @@ Log.i("hi","this got to onStart");
             }
         }
         return (i + 1);//returns period number, must subtract one to get proper array position
+    }
+
+
+    void displayPeriodString() {
+        int tempStartPos = currentPeriodNumber*2;
+        int tempEndPos = (currentPeriodNumber*2) + 1;
+        SpannableString res = new SpannableString(Arrays.toString(todayScheduleFormat));
+        //res.setSpan(new ForegroundColorSpan(0xd61111), 0, 1, SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE);
+        //res.setSpan(new ForegroundColorSpan(0xd61111), res.length()-1, res.length(), SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE);
+        SpannableStringBuilder sb = new SpannableStringBuilder(Arrays.toString(todayScheduleFormat));
+        int tempcolor = ContextCompat.getColor(this, R.color.colorScheduleHighlighted);
+        ForegroundColorSpan fcs = new ForegroundColorSpan(tempcolor);
+        sb.setSpan(fcs, tempStartPos, tempEndPos, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+       // res.setSpan(new BackgroundColorSpan(0x010000), tempStartPos, tempEndPos, SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE);
+        TextView scheduleTextView = findViewById(R.id.ScheduleLayout);
+        scheduleTextView.setText(sb);
+
+
+        //scheduleTextView.setContentView();
+        //scheduleTextView.setText
     }
 }
