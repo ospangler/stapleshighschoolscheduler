@@ -39,6 +39,7 @@ public class MainPage extends AppCompatActivity {
     int[] jsondayLetterDayNumber;
     int[][] jsonPeriodTimes;
     int currentPeriodNumber = -1;
+    int progressForBar = 0;
     String jsonNotice;
     boolean offline = false;
     boolean passingTime = false;
@@ -49,14 +50,15 @@ public class MainPage extends AppCompatActivity {
     int currentDayDay = cal.get(Calendar.DAY_OF_WEEK);
     int currentMonth = cal.get(Calendar.MONTH);
     int currentHour = cal.get(Calendar.HOUR_OF_DAY);
-    //int currentHour = 8;
+    //int currentHour = 14;
     int currentMinute = cal.get(Calendar.MINUTE);
-    //int currentMinute = 15;
+    //int currentMinute = 25;
     int currentSecond = cal.get(Calendar.SECOND);
     ProgressBar progressBar;
     ///
     int[][] normalPeriodTimes = //CHANGE BELOW TIMES WHEN SCHEDULE CHANGES
-            {{7, 8, 9, 10, 12, 13},//START HOUR
+            {
+                {7, 8, 9, 10, 12, 13},//START HOUR
                     {30, 25, 50, 45, 30, 25},//START MINUTE
 
                     {8, 9, 10, 12, 13, 14},//END HOUR
@@ -124,6 +126,8 @@ public class MainPage extends AppCompatActivity {
 
             jsonNewScheduleFormat = getArrayFromJSON("newscheduleformat");
             jsondayLetterDayNumber = getArrayFromJSON("dayletterdaynumber");
+
+            jsonNotice = JO.getString("notice");
 
             int[] tempJsonStartTimesHour = getArrayFromJSON("starttimeshour");
             int[] tempJsonStartTimesMinute = getArrayFromJSON("starttimesminute");
@@ -221,13 +225,17 @@ public class MainPage extends AppCompatActivity {
         int i = 0; //array position
         passingTime = false;//If set to true in function, school is in passing time, this line resets.
         noSchool = false;//If set to true in function, is before or after school, this line resets.
+        //0 start times hour, 1 start times min, 2 end times hour, 3 end times minute
 
-        /*if ((currentHour < 7) || ((currentHour == 7) && (currentMinute < 30)) || (currentHour > 14) || ((currentHour == 14) && (currentMinute >= 15))) {
+        if((currentHour < inputPeriodTimes[0][0])||
+                (currentHour > inputPeriodTimes[2][inputPeriodTimes.length-1])||
+                (currentHour == inputPeriodTimes[0][0] && currentMinute < inputPeriodTimes[1][0])||
+                (currentHour == inputPeriodTimes[2][inputPeriodTimes.length-1] && currentMinute > inputPeriodTimes[3][inputPeriodTimes.length-1]))
+        {
+            Log.i("There is no school", "We don't need no education");
             noSchool = true;
             return -1;
-        }*/
-
-
+        }
         while (true) {
             if ((currentHour > inputPeriodTimes[2][i])) {
                 i++;
@@ -247,22 +255,29 @@ public class MainPage extends AppCompatActivity {
 
 
     void displayPeriodString() {
-        int tempStartPos = currentPeriodNumber*2;
-        int tempEndPos = (currentPeriodNumber*2) + 1;
-        SpannableString res = new SpannableString(Arrays.toString(todayScheduleFormat));
-        //res.setSpan(new ForegroundColorSpan(0xd61111), 0, 1, SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE);
-        //res.setSpan(new ForegroundColorSpan(0xd61111), res.length()-1, res.length(), SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE);
-        SpannableStringBuilder sb = new SpannableStringBuilder(Arrays.toString(todayScheduleFormat));
-        int tempcolor = ContextCompat.getColor(this, R.color.colorScheduleHighlighted);
-        ForegroundColorSpan fcs = new ForegroundColorSpan(tempcolor);
-        sb.setSpan(fcs, tempStartPos, tempEndPos, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
-       // res.setSpan(new BackgroundColorSpan(0x010000), tempStartPos, tempEndPos, SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE);
+        //Log.i("current period num", Integer.toString(currentPeriodNumber));
+
+        String tempScheduleString = "";
+        for (int i = 0; i < todayScheduleFormat.length; i++) {
+            tempScheduleString += todayScheduleFormat[i];
+            if (i < todayScheduleFormat.length - 1) tempScheduleString += " ";
+        }
+
+        int tempStartPos;
+        int tempEndPos;
+        if(currentPeriodNumber == 1){
+            tempStartPos = 0;
+            tempEndPos = 1;
+        }else {
+            tempStartPos = ((currentPeriodNumber-1)*2);
+            tempEndPos = ((currentPeriodNumber-1)*2)+1;
+        }
+        SpannableStringBuilder sb = new SpannableStringBuilder(tempScheduleString);
+        int tempColor = ContextCompat.getColor(this, R.color.colorScheduleHighlighted);
+        ForegroundColorSpan fcs = new ForegroundColorSpan(tempColor);
+        sb.setSpan(fcs, tempStartPos, tempEndPos, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
         TextView scheduleTextView = findViewById(R.id.ScheduleLayout);
         scheduleTextView.setText(sb);
-
-
-        //scheduleTextView.setContentView();
-        //scheduleTextView.setText
     }
 }
