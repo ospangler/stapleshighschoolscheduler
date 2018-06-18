@@ -1,8 +1,10 @@
 package owenspangler.stapleshighschoolscheduler;
 
 import android.animation.ObjectAnimator;
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Spannable;
@@ -17,6 +19,7 @@ import android.view.animation.DecelerateInterpolator;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -45,6 +48,7 @@ public class MainPage extends AppCompatActivity {
     boolean passingTime = false;
     boolean noSchool = false;
     boolean useHardCoded = false;
+    boolean dialogAnswered = false;
     Calendar cal = Calendar.getInstance();
     int currentDayNum = cal.get(Calendar.DAY_OF_MONTH);
     int currentDayDay = cal.get(Calendar.DAY_OF_WEEK);
@@ -69,12 +73,12 @@ public class MainPage extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_page);
-        GetJson();
-        progressBar = (ProgressBar) findViewById(R.id.progressBar);
-        progressBar.setProgress(5, true);
-        displayPeriodString();
-        onStart();
 
+        GetJson();
+
+        if(!offline) {
+           FinalizingSetupProcedures();
+        }
     }
 
     protected void onStart(Bundle savedInstanceState) {
@@ -91,21 +95,21 @@ public class MainPage extends AppCompatActivity {
             //I don't care if I'm defeating the purpose of an Async task, I don't care.
         }
 
-        if ((jsonData.equals("NO CONNECTION")) || (jsonData.equals(""))) {
+        if ((jsonData.equals("NO CONNECTION")) || (jsonData.equals(""))) { //NO CONNECTION CONDITION
             Log.e("JSONDATA Error", "JSONDATA can't be reached, reverting to hardcoded backup");
             useHardCoded = true;
             offline = true;
-            currentPeriodNumber = PeriodNumber(normalPeriodTimes);
-        } else {//normal condition
+            OfflineDayAlertPopup();
+            //currentPeriodNumber = PeriodNumber(normalPeriodTimes);
+        } else {//WITH CONNECTION WITH SUB CONDITIONS
 
             GetInfoFromJSON(jsonData);
 
-
-            if ((jsonMonth == currentMonth) && (jsonDay == currentDayNum)) {//special schedule
+            if ((jsonMonth == currentMonth) && (jsonDay == currentDayNum)) {//SPECIAL SCHEDULE WITH CONNECTION CONDITION
                 todayScheduleFormat = jsonNewScheduleFormat;
                 currentPeriodNumber = PeriodNumber(jsonPeriodTimes);
                 useHardCoded = false;
-            } else {//normal
+            } else {//NORMAL SCHEDULE WITH CONNECTION CONDITION
                 String tempdayletter = FindDayLetter();
                 Log.i("This is today's day letter", tempdayletter);
                 todayScheduleFormat = ScheduleFormat(tempdayletter);
@@ -207,7 +211,7 @@ public class MainPage extends AppCompatActivity {
         }
         if (temppos == -1) {
             Log.e("TEMPPOS", "Today's date is not found on the json file");
-            return null;
+            return "";
         }
 
         if (((temppos % 4) + jsondayLetterListStart) == 0) {
@@ -258,6 +262,8 @@ public class MainPage extends AppCompatActivity {
 
         //Log.i("current period num", Integer.toString(currentPeriodNumber));
 
+        //The below code was adapted from a StackOverflow answer by Jave
+        //The full answer can be found here: https://stackoverflow.com/a/8518613
         String tempScheduleString = "";
         for (int i = 0; i < todayScheduleFormat.length; i++) {
             tempScheduleString += todayScheduleFormat[i];
@@ -279,5 +285,65 @@ public class MainPage extends AppCompatActivity {
         sb.setSpan(fcs, tempStartPos, tempEndPos, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
         TextView scheduleTextView = findViewById(R.id.ScheduleLayout);
         scheduleTextView.setText(sb);
+        //END CODE ATTRIBUTION by Jave
     }
+
+    void DisplayNoticeText(){
+        TextView noticetext = findViewById(R.id.noticeOfTheDay);
+        noticetext.setText(jsonNotice);
+    }
+
+    void FinalizingSetupProcedures(){
+        progressBar = (ProgressBar) findViewById(R.id.progressBar);
+        progressBar.setProgress(5, true);
+        displayPeriodString();
+        DisplayNoticeText();
+    }
+
+    void OfflineDayAlertPopup() {
+        // The Below Code was adapted from a StackOverflow Answer by WhereDatApp
+        //The full answer can be found here: https://stackoverflow.com/a/19658646
+        AlertDialog.Builder alertbuilder = new AlertDialog.Builder(MainPage.this);
+        alertbuilder.setTitle("Servers Can't Be Reached. Please Select Today's Day Letter.");
+        alertbuilder.setItems(new CharSequence[]
+                        {"A Day", "B Day", "C Day", "D Day", "Goddamit I don't know what day it is"},
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // The 'which' argument contains the index position
+                        // of the selected item
+                        switch (which) {
+                            case 0:
+                                Toast.makeText(MainPage.this , "A Day", Toast.LENGTH_SHORT).show();
+                                Log.i("this would have run", "yes");
+                                FinalizingSetupProcedures();
+                                //dialogAnswered = true;
+                                break;
+                            case 1:
+                                Toast.makeText(MainPage.this, "B Day", Toast.LENGTH_SHORT).show();
+                                FinalizingSetupProcedures();
+                                break;
+                            case 2:
+                                Toast.makeText(MainPage.this, "C Day", Toast.LENGTH_SHORT).show();
+                                FinalizingSetupProcedures();
+                                break;
+                            case 3:
+                                Toast.makeText(MainPage.this, "D Day", Toast.LENGTH_SHORT).show();
+                                FinalizingSetupProcedures();
+                                break;
+                            case 4:
+                                Toast.makeText(MainPage.this, "Goddamit I don't know what day it is", Toast.LENGTH_SHORT).show();
+                                String tempdumString = "lol ur dum";
+                                TextView scheduleTextView = findViewById(R.id.ScheduleLayout);
+                                scheduleTextView.setText(tempdumString);
+                                //FinalizingSetupProcedures();
+                                break;
+
+                        }
+                    }
+                });
+        alertbuilder.create();
+        alertbuilder.show();
+
+    }
+    //END CODE ATTRIBUTION FROM WhatDatApp
 }

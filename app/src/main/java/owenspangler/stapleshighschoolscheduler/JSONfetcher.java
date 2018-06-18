@@ -1,8 +1,14 @@
 package owenspangler.stapleshighschoolscheduler;
 
+import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.widget.Toast;
+
+import com.google.android.gms.common.api.Response;
+
 import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -66,18 +72,26 @@ void RetrieveJson(){
 }
 
     public boolean InternetConnected() {
+        //The below code was adapted from a StackOverflow answer by YLS
+        //The full answer can be found here: https://stackoverflow.com/a/40111665
         boolean success = false;
+        int responseCode = 0;
         try {
             URL url = new URL("https://ospangler.github.io");
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setConnectTimeout(10000);
             connection.connect();
-            success = connection.getResponseCode() == 200;
+            responseCode = connection.getResponseCode();
+            success = responseCode == 200;
         } catch (IOException e) {
             e.printStackTrace();
+            //Maybe Add Response Codes Here Later
         }
         return success;
+        //END CODE ATTRIBUTION by YLS
     }
+
+
 
     @Override
     protected void onPostExecute(String result) {
