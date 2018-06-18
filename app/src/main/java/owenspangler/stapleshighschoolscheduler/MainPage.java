@@ -43,6 +43,10 @@ public class MainPage extends AppCompatActivity {
     int[][] jsonPeriodTimes;
     int currentPeriodNumber = -1;
     int progressForBar = 0;
+    int timeUntilEndHour = 0;
+    int timeUntilEndMinute = 0;
+    int totalTimeHour = 0;
+    int totalTimeMinute = 0;
     String jsonNotice;
     boolean offline = false;
     boolean passingTime = false;
@@ -51,12 +55,12 @@ public class MainPage extends AppCompatActivity {
     boolean dialogAnswered = false;
     Calendar cal = Calendar.getInstance();
     int currentDayNum = cal.get(Calendar.DAY_OF_MONTH);
-    int currentDayDay = cal.get(Calendar.DAY_OF_WEEK);
-    int currentMonth = cal.get(Calendar.MONTH);
-    int currentHour = cal.get(Calendar.HOUR_OF_DAY);
-    //int currentHour = 14;
-    int currentMinute = cal.get(Calendar.MINUTE);
-    //int currentMinute = 25;
+    //int currentDayDay = cal.get(Calendar.DAY_OF_WEEK);
+    int currentMonth = (cal.get(Calendar.MONTH) + 1);
+    //int currentHour = cal.get(Calendar.HOUR_OF_DAY);
+    int currentHour = 9;
+    //int currentMinute = cal.get(Calendar.MINUTE);
+    int currentMinute = 25;
     int currentSecond = cal.get(Calendar.SECOND);
     ProgressBar progressBar;
     ///
@@ -76,8 +80,30 @@ public class MainPage extends AppCompatActivity {
 
         GetJson();
 
-        if(!offline) {
+        Log.i("offline value", Boolean.toString(offline));
+        Log.i("noSchool value", Boolean.toString(noSchool));
+        Log.i("passingTime value", Boolean.toString(passingTime));
+        Log.i("currentmonth value", Integer.toString(currentMonth));
+        Log.i("currentday value", Integer.toString(currentDayNum));
+        Log.i("jsonMonth value", Integer.toString(jsonMonth));
+        Log.i("jsonDay value", Integer.toString(jsonDay));
+        if((!offline)&&(!noSchool)&&(!passingTime)) {
+            Log.i("finalizing setup" , "ok");
            FinalizingSetupProcedures();
+        }else if ((!offline)&&(passingTime)){
+            FinalizingSetupProcedures();
+        }else if ((!offline)&&(noSchool)){
+            Log.i("reached no school","yay");
+            AlertDialog.Builder noSchoolDialog = new AlertDialog.Builder(this);
+            noSchoolDialog.setMessage("There's no school right now you dum dum")
+                    .setCancelable(false)
+                    .setPositiveButton("OK Owen, But For Reals Now, You Have No Chill", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            DisplayNoticeText();
+                        }
+                    });
+            AlertDialog alert = noSchoolDialog.create();
+            alert.show();
         }
     }
 
@@ -108,14 +134,21 @@ public class MainPage extends AppCompatActivity {
             if ((jsonMonth == currentMonth) && (jsonDay == currentDayNum)) {//SPECIAL SCHEDULE WITH CONNECTION CONDITION
                 todayScheduleFormat = jsonNewScheduleFormat;
                 currentPeriodNumber = PeriodNumber(jsonPeriodTimes);
-                useHardCoded = false;
+                if(!noSchool) {
+                    findTimeUntilEnd(jsonPeriodTimes);
+                }
             } else {//NORMAL SCHEDULE WITH CONNECTION CONDITION
                 String tempdayletter = FindDayLetter();
-                Log.i("This is today's day letter", tempdayletter);
-                todayScheduleFormat = ScheduleFormat(tempdayletter);
-                Log.i("This is today's schedule", Arrays.toString(todayScheduleFormat));
-                currentPeriodNumber = PeriodNumber(normalPeriodTimes);
-                useHardCoded = true;
+                if(!offline) {
+                    Log.i("This is today's day letter", tempdayletter);
+                    todayScheduleFormat = ScheduleFormat(tempdayletter);
+                    Log.i("This is today's schedule", Arrays.toString(todayScheduleFormat));
+                    currentPeriodNumber = PeriodNumber(normalPeriodTimes);
+                    if(!noSchool) {
+                        findTimeUntilEnd(normalPeriodTimes);
+                    }
+                }
+                //useHardCoded = true;
             }
         }
     }
@@ -153,7 +186,7 @@ public class MainPage extends AppCompatActivity {
                 }
 
             }
-            Log.i("wwwww", Arrays.deepToString(jsonPeriodTimes));
+            //Log.i("wwwww", Arrays.deepToString(jsonPeriodTimes));
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -209,8 +242,16 @@ public class MainPage extends AppCompatActivity {
                 break;
             }
         }
+
         if (temppos == -1) {
-            Log.e("TEMPPOS", "Today's date is not found on the json file");
+
+            if ((jsonMonth == currentMonth) && (jsonDay == currentDayNum)) {
+                Log.i("Day Letter", "Today's date has a special schedule according to the json file");
+                offline = false;
+            }else{
+                Log.e("Day Letter", "Today's date is not found on the json file");
+                offline = true;
+            }
             return "";
         }
 
@@ -231,12 +272,16 @@ public class MainPage extends AppCompatActivity {
         noSchool = false;//If set to true in function, is before or after school, this line resets.
         //0 start times hour, 1 start times min, 2 end times hour, 3 end times minute
 
+        Log.i("Input Period Times Length 1", Integer.toString(inputPeriodTimes[0].length));
+        Log.i("Input Period Times Length 2", Integer.toString(inputPeriodTimes.length));
+
         if((currentHour < inputPeriodTimes[0][0])||
-                (currentHour > inputPeriodTimes[2][inputPeriodTimes.length-1])||
+                (currentHour > inputPeriodTimes[2][((inputPeriodTimes[0].length)-1)])||
                 (currentHour == inputPeriodTimes[0][0] && currentMinute < inputPeriodTimes[1][0])||
-                (currentHour == inputPeriodTimes[2][inputPeriodTimes.length-1] && currentMinute > inputPeriodTimes[3][inputPeriodTimes.length-1]))
+                (currentHour == inputPeriodTimes[2][((inputPeriodTimes[0].length)-1)] &&
+                        currentMinute > inputPeriodTimes[3][((inputPeriodTimes[0].length)-1)]))
         {
-            Log.i("There is no school", "We don't need no education");
+            Log.i("No School", "The time of day is out of bounds offered by the schedule. We don't need no education");
             noSchool = true;
             return -1;
         }
@@ -251,7 +296,8 @@ public class MainPage extends AppCompatActivity {
                 break;
             } else {
                 passingTime = true;
-                return -1;
+                return (i+1);
+                //return -1;
             }
         }
         return (i + 1);//returns period number, must subtract one to get proper array position
@@ -283,6 +329,21 @@ public class MainPage extends AppCompatActivity {
         int tempColor = ContextCompat.getColor(this, R.color.colorScheduleHighlighted);
         ForegroundColorSpan fcs = new ForegroundColorSpan(tempColor);
         sb.setSpan(fcs, tempStartPos, tempEndPos, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        if(passingTime){
+            int tempPeriodPlacement = (currentPeriodNumber - 1);
+
+            if(tempPeriodPlacement == 1){
+                tempStartPos = 0;
+                tempEndPos = 1;
+            }else {
+                tempStartPos = ((tempPeriodPlacement-1)*2);
+                tempEndPos = ((tempPeriodPlacement-1)*2)+1;
+            }
+            Log.i("we reached it", "good job");
+            int tempLastColor = ContextCompat.getColor(this, R.color.colorLastPeriodScheduleHighlighted);
+            ForegroundColorSpan fcslast = new ForegroundColorSpan(tempLastColor);
+            sb.setSpan(fcslast, (tempStartPos), (tempEndPos), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        }
         TextView scheduleTextView = findViewById(R.id.ScheduleLayout);
         scheduleTextView.setText(sb);
         //END CODE ATTRIBUTION by Jave
@@ -293,48 +354,117 @@ public class MainPage extends AppCompatActivity {
         noticetext.setText(jsonNotice);
     }
 
+    void findTimeUntilEnd(int finderinputPeriodTimes[][]) {
+        Log.i("currentPeriodNumber", Integer.toString(currentPeriodNumber));
+        int PeriodArrayPosition = (currentPeriodNumber - 1);
+        int tempCurrentHour = currentHour;
+        //int tempCurrentMinute = currentMinute;
+        while (true) {
+            if (tempCurrentHour < finderinputPeriodTimes[2][PeriodArrayPosition]) {
+                timeUntilEndHour++;
+                tempCurrentHour++;
+            } else if (currentMinute < finderinputPeriodTimes[3][PeriodArrayPosition]) {
+                timeUntilEndMinute = ((finderinputPeriodTimes[3][PeriodArrayPosition]) - currentMinute);
+                break;
+            } else if (currentMinute >= finderinputPeriodTimes[3][PeriodArrayPosition]) {
+                timeUntilEndMinute = (currentMinute - (finderinputPeriodTimes[3][PeriodArrayPosition]) );
+                break;
+            }else{
+                Log.e("Time Until Error", "Incorrect Subtraction of Times, Time Left may be incorrect.");
+                break;
+            }
+        }
+        tempCurrentHour = finderinputPeriodTimes[0][PeriodArrayPosition];
+        while (true) {
+            if (tempCurrentHour < finderinputPeriodTimes[2][PeriodArrayPosition]) {
+                totalTimeHour++;
+                tempCurrentHour++;
+            } else if ((finderinputPeriodTimes[1][PeriodArrayPosition]) < (finderinputPeriodTimes[3][PeriodArrayPosition])) {
+                totalTimeMinute = ((finderinputPeriodTimes[3][PeriodArrayPosition]) - (finderinputPeriodTimes[1][PeriodArrayPosition]));
+                break;
+            } else  if((finderinputPeriodTimes[1][PeriodArrayPosition]) >= (finderinputPeriodTimes[3][PeriodArrayPosition])) {
+                totalTimeMinute = ((finderinputPeriodTimes[1][PeriodArrayPosition]) - (finderinputPeriodTimes[3][PeriodArrayPosition]));
+                break;
+            }else{
+                Log.e("Time Total Error", "Incorrect Subtraction of Times, Time Total may be incorrect.");
+                break;
+            }
+        }
+
+        float tempTotalMinutes = (totalTimeHour*60)+totalTimeMinute;
+        float tempLeftMinutes = (timeUntilEndHour*60)+timeUntilEndMinute;
+        progressForBar = Math.round(100-((tempLeftMinutes/tempTotalMinutes)*100));
+        Log.i("progressforbar again", Integer.toString(progressForBar));
+        Log.i("templeftminutes", Float.toString(tempLeftMinutes));
+        if(progressForBar > 100) Log.e("Progress Bar Error", "Progress Bar Value is too high. Current value is: " + Integer.toString(progressForBar));
+        Log.i("timeUntilHour",Integer.toString(timeUntilEndHour));
+        Log.i("timeUntilMinute",Integer.toString(timeUntilEndMinute));
+    }
+
     void FinalizingSetupProcedures(){
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
-        progressBar.setProgress(5, true);
-        displayPeriodString();
-        DisplayNoticeText();
+        Log.i("progressforbar", Integer.toString(progressForBar));
+        progressBar.setProgress(progressForBar, true);
+        if(!noSchool) {
+            displayPeriodString();
+            DisplayNoticeText();
+        }
+    }
+
+    void AdditionalOfflineProcedures(){
+        findTimeUntilEnd(normalPeriodTimes);
     }
 
     void OfflineDayAlertPopup() {
         // The Below Code was adapted from a StackOverflow Answer by WhereDatApp
         //The full answer can be found here: https://stackoverflow.com/a/19658646
         AlertDialog.Builder alertbuilder = new AlertDialog.Builder(MainPage.this);
-        alertbuilder.setTitle("Servers Can't Be Reached. Please Select Today's Day Letter.");
+        alertbuilder.setTitle("No Interr");
         alertbuilder.setItems(new CharSequence[]
-                        {"A Day", "B Day", "C Day", "D Day", "Goddamit I don't know what day it is"},
+                        {"A Day", "B Day", "C Day", "D Day", "Help"},
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         // The 'which' argument contains the index position
                         // of the selected item
                         switch (which) {
                             case 0:
-                                Toast.makeText(MainPage.this , "A Day", Toast.LENGTH_SHORT).show();
-                                Log.i("this would have run", "yes");
+                                Toast.makeText(MainPage.this , "Set as A Day", Toast.LENGTH_SHORT).show();
+                                Log.i("This is today's day letter", "A");
+                                todayScheduleFormat = ScheduleFormat("a");
+                                Log.i("This is today's schedule", Arrays.toString(todayScheduleFormat));
+                                currentPeriodNumber = PeriodNumber(normalPeriodTimes);
                                 FinalizingSetupProcedures();
                                 //dialogAnswered = true;
                                 break;
                             case 1:
-                                Toast.makeText(MainPage.this, "B Day", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(MainPage.this, "Set as B Day", Toast.LENGTH_SHORT).show();
+                                Log.i("This is today's day letter", "B");
+                                todayScheduleFormat = ScheduleFormat("b");
+                                Log.i("This is today's schedule", Arrays.toString(todayScheduleFormat));
+                                currentPeriodNumber = PeriodNumber(normalPeriodTimes);
                                 FinalizingSetupProcedures();
                                 break;
                             case 2:
-                                Toast.makeText(MainPage.this, "C Day", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(MainPage.this, "Set as C Day", Toast.LENGTH_SHORT).show();
+                                Log.i("This is today's day letter", "C");
+                                todayScheduleFormat = ScheduleFormat("c");
+                                Log.i("This is today's schedule", Arrays.toString(todayScheduleFormat));
+                                currentPeriodNumber = PeriodNumber(normalPeriodTimes);
                                 FinalizingSetupProcedures();
                                 break;
                             case 3:
-                                Toast.makeText(MainPage.this, "D Day", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(MainPage.this, "Set as D Day", Toast.LENGTH_SHORT).show();
+                                Log.i("This is today's day letter", "D");
+                                todayScheduleFormat = ScheduleFormat("d");
+                                Log.i("This is today's schedule", Arrays.toString(todayScheduleFormat));
+                                currentPeriodNumber = PeriodNumber(normalPeriodTimes);
                                 FinalizingSetupProcedures();
                                 break;
                             case 4:
-                                Toast.makeText(MainPage.this, "Goddamit I don't know what day it is", Toast.LENGTH_SHORT).show();
-                                String tempdumString = "lol ur dum";
+                                Toast.makeText(MainPage.this, "Wow just look at a TV Screen, Alright?", Toast.LENGTH_LONG).show();
+                                String tempDumString = "";
                                 TextView scheduleTextView = findViewById(R.id.ScheduleLayout);
-                                scheduleTextView.setText(tempdumString);
+                                scheduleTextView.setText(tempDumString);
                                 //FinalizingSetupProcedures();
                                 break;
 

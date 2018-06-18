@@ -3,6 +3,6 @@
         android:useLevel="true"
         android:innerRadiusRatio="2.3"
         android:shape="ring"
-        android:thickness="4sp">
+        android:thickness="14sp">
     <solid android:color="@color/progressBarColor" />
     </shape>

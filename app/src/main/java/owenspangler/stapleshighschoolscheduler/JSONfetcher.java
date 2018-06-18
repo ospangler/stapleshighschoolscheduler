@@ -24,7 +24,7 @@ class JSONfetcher extends AsyncTask<String,Integer,String> {
 
     @Override
     protected void onPreExecute() {
-        //ADD SOME SORT OF LOADING SCREEN HERE IF POSSIBLE WHILE NEW DATA IS RETRIVED
+        //ADD SOME SORT OF LOADING SCREEN HERE IF POSSIBLE WHILE NEW DATA IS RETRIEVED
 
         //progress.setMessage("Analysing");
         //progress.setIndeterminate(true);
@@ -34,19 +34,19 @@ class JSONfetcher extends AsyncTask<String,Integer,String> {
     @Override
     protected String doInBackground(String...String){
         if(InternetConnected()) {
-            Log.i("INTERNET CONNECTION", "There is an internet connection, will check for changes");
+            Log.i("INTERNET CONNECTION", "There is an internet connection, will download data from server");
             RetrieveJson();
             return data;
         }else{
-            Log.e("INTERNET CONNECTION","There is no internet connection, relying on hardcoded backup");
+            Log.e("INTERNET CONNECTION","There is no internet connection, user will have to input day letter");
             return "NO CONNECTION";
         }
     }
 
 void RetrieveJson(){
         //START CODE ATTRIBUTION HERE
-        //Portions of Below Code are from code made by Abhishek Panwar (2017)
-        //The original code can be found at https://github.com/panwarabhishek345/Receive-JSON-Data
+        //Portions of Below Code are from code made by Abhishek Panwar
+        //The original code can be found at: https://github.com/panwarabhishek345/Receive-JSON-Data
     try {
         URL url = new URL("https://ospangler.github.io/schedulechangedatabase.json");
         HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
@@ -61,7 +61,7 @@ void RetrieveJson(){
             }
             data = data + line;
         }
-    //END CODE ATTRIBUTION HERE
+    //END CODE ATTRIBUTION FROM Abhishek Panwar
     } catch (MalformedURLException e) {
         Log.e("MalformedURL", "Something is wrong with the URL you put in here. Fix it.");
         e.printStackTrace();
@@ -75,17 +75,15 @@ void RetrieveJson(){
         //The below code was adapted from a StackOverflow answer by YLS
         //The full answer can be found here: https://stackoverflow.com/a/40111665
         boolean success = false;
-        int responseCode = 0;
+
         try {
             URL url = new URL("https://ospangler.github.io");
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setConnectTimeout(10000);
             connection.connect();
-            responseCode = connection.getResponseCode();
-            success = responseCode == 200;
+            success = connection.getResponseCode() == 200;
         } catch (IOException e) {
             e.printStackTrace();
-            //Maybe Add Response Codes Here Later
         }
         return success;
         //END CODE ATTRIBUTION by YLS

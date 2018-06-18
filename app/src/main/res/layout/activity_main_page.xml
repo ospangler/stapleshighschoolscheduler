@@ -4,25 +4,46 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainPage">
+    tools:context=".MainPage"
+    tools:layout_editor_absoluteY="81dp">
 
-<!--
+    <ProgressBar
+        android:id="@+id/progressBarShadow"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="215dp"
+        android:layout_height="215dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginEnd="84dp"
+        android:layout_marginStart="85dp"
+        android:layout_marginTop="16dp"
+        android:max="100"
+        android:progress="100"
+        android:progressDrawable="@drawable/circular2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!--
     The Below Code of "ProgressBar" is copied from a StackOverflow answer by Murtaza Khursheed Hussain that can be found at:
     https://stackoverflow.com/a/27269329
 -->
     <ProgressBar
         android:id="@+id/progressBar"
         style="?android:attr/progressBarStyleHorizontal"
-        android:layout_width="150dp"
-        android:layout_height="150dp"
+        android:layout_width="215dp"
+        android:layout_height="215dp"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
+        android:layout_marginEnd="84dp"
+        android:layout_marginStart="85dp"
+        android:layout_marginTop="16dp"
         android:max="100"
         android:progress="50"
         android:progressDrawable="@drawable/circular"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <!--
     End Code Attribution
@@ -32,26 +53,34 @@
         android:id="@+id/ScheduleLayout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="307dp"
-        android:layout_marginEnd="163dp"
-        android:layout_marginStart="163dp"
+        android:layout_marginEnd="191dp"
+        android:layout_marginStart="192dp"
+        android:layout_marginTop="274dp"
         android:textSize="30sp"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/noticeOfTheDay"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="196dp"
-        android:layout_marginEnd="163dp"
-        android:layout_marginStart="163dp"
-        android:layout_marginTop="92dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginEnd="191dp"
+        android:layout_marginStart="192dp"
+        android:layout_marginTop="368dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/ScheduleLayout" />
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="TextView"
+        app:layout_constraintEnd_toStartOf="@+id/progressBarShadow"
+        app:layout_constraintHorizontal_bias="0.501"
+        app:layout_constraintStart_toEndOf="@+id/progressBarShadow"
+        tools:layout_editor_absoluteY="116dp" />
 
 
 </android.support.constraint.ConstraintLayout>
