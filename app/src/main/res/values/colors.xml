@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimary">#0872db</color>
     <color name="progressBarColor">#0872db</color>
     <color name="ProgressBarShadow">#c6c6c6</color>
     <color name="colorPrimaryDark">#303F9F</color>
@@ -8,4 +8,5 @@
     <color name="colorScheduleNormal">#0d8e8f</color>
     <color name="colorScheduleHighlighted">#64E207</color>
     <color name="colorLastPeriodScheduleHighlighted">#f44842</color>
+    <color name="overallDayProgressColor">#040054</color>
 </resources>

@@ -2,7 +2,10 @@ package owenspangler.stapleshighschoolscheduler;
 
 import android.animation.ObjectAnimator;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -28,6 +31,7 @@ import org.json.JSONObject;
 import java.util.Calendar;
 import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
+import android.graphics.drawable.Drawable;
 
 public class MainPage extends AppCompatActivity {
 
@@ -43,11 +47,15 @@ public class MainPage extends AppCompatActivity {
     int[][] jsonPeriodTimes;
     int currentPeriodNumber = -1;
     int progressForBar = 0;
+    int progressForOverallBar = 0;
     int timeUntilEndHour = 0;
     int timeUntilEndMinute = 0;
     int totalTimeHour = 0;
     int totalTimeMinute = 0;
     String jsonNotice;
+    String progressBarTextPercent = "";
+    String progressBarTextTime = "";
+    String progressBarTextDescription = "Remaining";
     boolean offline = false;
     boolean passingTime = false;
     boolean noSchool = false;
@@ -55,14 +63,16 @@ public class MainPage extends AppCompatActivity {
     boolean dialogAnswered = false;
     Calendar cal = Calendar.getInstance();
     int currentDayNum = cal.get(Calendar.DAY_OF_MONTH);
-    //int currentDayDay = cal.get(Calendar.DAY_OF_WEEK);
+    //int currentDayNum = 19;
+    int currentDayDay = cal.get(Calendar.DAY_OF_WEEK);
     int currentMonth = (cal.get(Calendar.MONTH) + 1);
-    //int currentHour = cal.get(Calendar.HOUR_OF_DAY);
-    int currentHour = 9;
-    //int currentMinute = cal.get(Calendar.MINUTE);
-    int currentMinute = 25;
-    int currentSecond = cal.get(Calendar.SECOND);
+    int currentHour = cal.get(Calendar.HOUR_OF_DAY);
+    //int currentHour = 10;
+    int currentMinute = cal.get(Calendar.MINUTE);
+    //int currentMinute = 35;
+    //int currentSecond = cal.get(Calendar.SECOND);
     ProgressBar progressBar;
+    ProgressBar overallProgressBar;
     ///
     int[][] normalPeriodTimes = //CHANGE BELOW TIMES WHEN SCHEDULE CHANGES
             {
@@ -77,9 +87,8 @@ public class MainPage extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_page);
-
-        GetJson();
-
+        Beginning();
+/*
         Log.i("offline value", Boolean.toString(offline));
         Log.i("noSchool value", Boolean.toString(noSchool));
         Log.i("passingTime value", Boolean.toString(passingTime));
@@ -87,9 +96,16 @@ public class MainPage extends AppCompatActivity {
         Log.i("currentday value", Integer.toString(currentDayNum));
         Log.i("jsonMonth value", Integer.toString(jsonMonth));
         Log.i("jsonDay value", Integer.toString(jsonDay));
+        */
+
+    }
+
+    void Beginning() {
+        GetJson();
+        ////
         if((!offline)&&(!noSchool)&&(!passingTime)) {
             Log.i("finalizing setup" , "ok");
-           FinalizingSetupProcedures();
+            FinalizingSetupProcedures();
         }else if ((!offline)&&(passingTime)){
             FinalizingSetupProcedures();
         }else if ((!offline)&&(noSchool)){
@@ -107,11 +123,6 @@ public class MainPage extends AppCompatActivity {
         }
     }
 
-    protected void onStart(Bundle savedInstanceState) {
-        Log.i("hi", "this got to onStart");
-
-    }
-
     void GetJson() {
         try {
             jsonData = new JSONfetcher().execute().get();//Will wait for task to finish
@@ -125,7 +136,7 @@ public class MainPage extends AppCompatActivity {
             Log.e("JSONDATA Error", "JSONDATA can't be reached, reverting to hardcoded backup");
             useHardCoded = true;
             offline = true;
-            OfflineDayAlertPopup();
+            OfflineDayAlertPopup("No Connection. Pick a Day.");
             //currentPeriodNumber = PeriodNumber(normalPeriodTimes);
         } else {//WITH CONNECTION WITH SUB CONDITIONS
 
@@ -135,7 +146,12 @@ public class MainPage extends AppCompatActivity {
                 todayScheduleFormat = jsonNewScheduleFormat;
                 currentPeriodNumber = PeriodNumber(jsonPeriodTimes);
                 if(!noSchool) {
-                    findTimeUntilEnd(jsonPeriodTimes);
+                    FindTimeUntilEndOfDay(jsonPeriodTimes);
+                    if(!passingTime) {
+                        findTimeUntilEndNormal(jsonPeriodTimes);
+                    }else{
+                        FindTimeUntilEndPassingTime(jsonPeriodTimes);
+                    }
                 }
             } else {//NORMAL SCHEDULE WITH CONNECTION CONDITION
                 String tempdayletter = FindDayLetter();
@@ -145,7 +161,14 @@ public class MainPage extends AppCompatActivity {
                     Log.i("This is today's schedule", Arrays.toString(todayScheduleFormat));
                     currentPeriodNumber = PeriodNumber(normalPeriodTimes);
                     if(!noSchool) {
-                        findTimeUntilEnd(normalPeriodTimes);
+                        FindTimeUntilEndOfDay(normalPeriodTimes);
+                        if(!passingTime) {
+                            findTimeUntilEndNormal(normalPeriodTimes);
+                        }else{
+                            FindTimeUntilEndPassingTime(normalPeriodTimes);
+                        }
+                    }else{
+                        //add no School Condition
                     }
                 }
                 //useHardCoded = true;
@@ -244,13 +267,15 @@ public class MainPage extends AppCompatActivity {
         }
 
         if (temppos == -1) {
-
+            //String tempresult = "";
             if ((jsonMonth == currentMonth) && (jsonDay == currentDayNum)) {
                 Log.i("Day Letter", "Today's date has a special schedule according to the json file");
                 offline = false;
             }else{
                 Log.e("Day Letter", "Today's date is not found on the json file");
-                offline = true;
+                //
+                OfflineDayAlertPopup("Server Corruption Detected. Please Pick a Day.");
+                //offline = true;
             }
             return "";
         }
@@ -332,7 +357,7 @@ public class MainPage extends AppCompatActivity {
         if(passingTime){
             int tempPeriodPlacement = (currentPeriodNumber - 1);
 
-            if(tempPeriodPlacement == 1){
+            if(tempPeriodPlacement == 0){
                 tempStartPos = 0;
                 tempEndPos = 1;
             }else {
@@ -354,7 +379,7 @@ public class MainPage extends AppCompatActivity {
         noticetext.setText(jsonNotice);
     }
 
-    void findTimeUntilEnd(int finderinputPeriodTimes[][]) {
+    void findTimeUntilEndNormal(int finderinputPeriodTimes[][]) {
         Log.i("currentPeriodNumber", Integer.toString(currentPeriodNumber));
         int PeriodArrayPosition = (currentPeriodNumber - 1);
         int tempCurrentHour = currentHour;
@@ -399,27 +424,152 @@ public class MainPage extends AppCompatActivity {
         if(progressForBar > 100) Log.e("Progress Bar Error", "Progress Bar Value is too high. Current value is: " + Integer.toString(progressForBar));
         Log.i("timeUntilHour",Integer.toString(timeUntilEndHour));
         Log.i("timeUntilMinute",Integer.toString(timeUntilEndMinute));
+        progressBarTextPercent = (Integer.toString(progressForBar) + "%");
+        progressBarTextTime = (Integer.toString(timeUntilEndHour)+":"+Integer.toString(timeUntilEndMinute));
+        progressBarTextDescription = "Remaining";
     }
 
+    void FindTimeUntilEndPassingTime(int[][] finderinputPeriodTimes){
+        int PeriodArrayPosition = (currentPeriodNumber - 1);
+        int tempCurrentHour = currentHour;
+        //int tempCurrentMinute = currentMinute;
+        while (true) {
+            if (tempCurrentHour < finderinputPeriodTimes[0][PeriodArrayPosition]) {
+                timeUntilEndHour++;
+                tempCurrentHour++;
+            } else if (currentMinute < finderinputPeriodTimes[1][PeriodArrayPosition]) {
+                timeUntilEndMinute = ((finderinputPeriodTimes[1][PeriodArrayPosition]) - currentMinute);
+                break;
+            } else if (currentMinute >= finderinputPeriodTimes[1][PeriodArrayPosition]) {
+                timeUntilEndMinute = (currentMinute - (finderinputPeriodTimes[1][PeriodArrayPosition]) );
+                break;
+            }else{
+                Log.e("Time Until Error", "Incorrect Subtraction of Times, Time Left may be incorrect.");
+                break;
+            }
+        }
+        tempCurrentHour = finderinputPeriodTimes[2][PeriodArrayPosition];
+        while (true) {
+            if (tempCurrentHour < finderinputPeriodTimes[0][PeriodArrayPosition]) {
+                totalTimeHour++;
+                tempCurrentHour++;
+            } else if ((finderinputPeriodTimes[3][PeriodArrayPosition-1]) < (finderinputPeriodTimes[1][PeriodArrayPosition])) {
+                totalTimeMinute = ((finderinputPeriodTimes[1][PeriodArrayPosition]) - (finderinputPeriodTimes[3][PeriodArrayPosition-1]));
+                break;
+            } else  if((finderinputPeriodTimes[3][PeriodArrayPosition-1]) >= (finderinputPeriodTimes[1][PeriodArrayPosition])) {
+                totalTimeMinute = ((finderinputPeriodTimes[3][PeriodArrayPosition-1]) - (finderinputPeriodTimes[1][PeriodArrayPosition]));
+                break;
+            }else{
+                Log.e("Time Total Error", "Incorrect Subtraction of Times, Time Total may be incorrect.");
+                break;
+            }
+        }
+
+        float tempTotalMinutes = (totalTimeHour*60)+totalTimeMinute;
+        float tempLeftMinutes = (timeUntilEndHour*60)+timeUntilEndMinute;
+        progressForBar = Math.round(((tempLeftMinutes/tempTotalMinutes)*100));
+        Log.i("progressforbar again", Integer.toString(progressForBar));
+        Log.i("templeftminutes", Float.toString(tempLeftMinutes));
+        if(progressForBar > 100) Log.e("Progress Bar Error", "Progress Bar Value is too high. Current value is: " + Integer.toString(progressForBar));
+        Log.i("timeUntilHour",Integer.toString(timeUntilEndHour));
+        Log.i("timeUntilMinute",Integer.toString(timeUntilEndMinute));
+        progressBarTextPercent = (Integer.toString(progressForBar) + "%");
+        progressBarTextTime = (Integer.toString(timeUntilEndHour)+":"+Integer.toString(timeUntilEndMinute));
+        progressBarTextDescription = "Remaining";
+    }
+
+    void FindTimeUntilEndOfDay(int[][] finderinputPeriodTimes){
+        //int PeriodArrayPosition = (currentPeriodNumber - 1);
+        int tempCurrentHour = currentHour;
+        int tempTimeUntilHour = 0;
+        int tempTimeUntilMinute = 0;
+        int tempTotalTimeHour = 0;
+        int tempTotalTimeMinute = 0;
+        //int tempCurrentMinute = currentMinute;
+        while (true) {
+            if (tempCurrentHour < finderinputPeriodTimes[2][(finderinputPeriodTimes[0].length)-1]) {
+                tempTimeUntilHour++;
+                tempCurrentHour++;
+            } else if (currentMinute < finderinputPeriodTimes[3][(finderinputPeriodTimes[0].length)-1]) {
+                tempTimeUntilMinute = ((finderinputPeriodTimes[3][(finderinputPeriodTimes[0].length)-1]) - currentMinute);
+                break;
+            } else if (currentMinute >= finderinputPeriodTimes[3][(finderinputPeriodTimes[0].length)-1]) {
+                tempTimeUntilMinute = (currentMinute - (finderinputPeriodTimes[3][(finderinputPeriodTimes[0].length)-1]) );
+                break;
+            }else{
+                Log.e("Time Until Error", "Incorrect Subtraction of Times, Time Left may be incorrect.");
+                break;
+            }
+        }
+        tempCurrentHour = finderinputPeriodTimes[0][0];
+        while (true) {
+            if (tempCurrentHour < finderinputPeriodTimes[2][(finderinputPeriodTimes[0].length)-1]) {
+                tempTotalTimeHour++;
+                tempCurrentHour++;
+            } else if ((finderinputPeriodTimes[1][0]) < (finderinputPeriodTimes[3][(finderinputPeriodTimes[0].length)-1])) {
+                tempTotalTimeMinute = ((finderinputPeriodTimes[3][(finderinputPeriodTimes[0].length)-1]) - (finderinputPeriodTimes[1][0]));
+                break;
+            } else  if((finderinputPeriodTimes[1][0]) >= (finderinputPeriodTimes[3][(finderinputPeriodTimes[0].length)-1])) {
+                tempTotalTimeMinute = ((finderinputPeriodTimes[1][0]) - (finderinputPeriodTimes[3][(finderinputPeriodTimes[0].length)-1]));
+                break;
+            }else{
+                Log.e("Time Total Error", "Incorrect Subtraction of Times, Time Total may be incorrect.");
+                break;
+            }
+        }
+
+        float tempTotalMinutes = (tempTotalTimeHour*60)+tempTotalTimeMinute;
+        Log.i("temptotalminutes", Float.toString(tempTotalMinutes));
+        float tempLeftMinutes = (tempTimeUntilHour*60)+tempTimeUntilMinute;
+        Log.i("templeftminutes", Float.toString(tempLeftMinutes));
+        progressForOverallBar = Math.round(100-((tempLeftMinutes/tempTotalMinutes)*100));
+        if(progressForOverallBar > 100) Log.e("Progress Bar Error", "Progress Bar Value is too high. Current value is: " + Integer.toString(progressForBar));
+
+    }
+
+
     void FinalizingSetupProcedures(){
-        progressBar = (ProgressBar) findViewById(R.id.progressBar);
-        Log.i("progressforbar", Integer.toString(progressForBar));
+        //progressForBar = 40;
+        progressBar = findViewById(R.id.progressBar);
+        overallProgressBar = findViewById(R.id.OverallDayProgressBar);
+        //Log.i("progressforbar", Integer.toString(progressForBar));
         progressBar.setProgress(progressForBar, true);
+        overallProgressBar.setProgress(progressForOverallBar, true);
+        Log.i("progressforoverall",Integer.toString(progressForOverallBar));
+        TextView ProgressBarTextPercent = findViewById(R.id.ProgressBarTextPercent);
+        ProgressBarTextPercent.setText(progressBarTextPercent);
+        TextView ProgressBarTextTime = findViewById(R.id.ProgressBarTextTime);
+        ProgressBarTextTime.setText(progressBarTextTime);
+        TextView ProgressBarTextDescription = findViewById(R.id.ProgressBarTextDescription);
+        ProgressBarTextDescription.setText(progressBarTextDescription);
         if(!noSchool) {
             displayPeriodString();
             DisplayNoticeText();
+        }else{
+            //Set Period String to Read No School
         }
+
+        if(passingTime){
+            //Drawable circular = getDrawable(R.drawable.circular);
+            //circular.setColorFilter(ContextCompat.getColor(this, R.color.colorLastPeriodScheduleHighlighted), PorterDuff.Mode.DST);
+        }
+        final Button refreshButton = findViewById(R.id.RefreshButton);
+        refreshButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                reset();
+            }
+        });
     }
 
     void AdditionalOfflineProcedures(){
-        findTimeUntilEnd(normalPeriodTimes);
+        findTimeUntilEndNormal(normalPeriodTimes);
     }
 
-    void OfflineDayAlertPopup() {
+    void OfflineDayAlertPopup(String title) {
         // The Below Code was adapted from a StackOverflow Answer by WhereDatApp
         //The full answer can be found here: https://stackoverflow.com/a/19658646
         AlertDialog.Builder alertbuilder = new AlertDialog.Builder(MainPage.this);
-        alertbuilder.setTitle("No Interr");
+        alertbuilder.setTitle(title);
         alertbuilder.setItems(new CharSequence[]
                         {"A Day", "B Day", "C Day", "D Day", "Help"},
                 new DialogInterface.OnClickListener() {
@@ -476,4 +626,28 @@ public class MainPage extends AppCompatActivity {
 
     }
     //END CODE ATTRIBUTION FROM WhatDatApp
+
+    void reset(){
+        Intent i = getBaseContext().getPackageManager()
+                .getLaunchIntentForPackage( getBaseContext().getPackageName() );
+        i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(i);
+        /*
+        offline = false;
+        passingTime = false;
+        noSchool = false;
+        useHardCoded = false;
+        dialogAnswered = false;
+        currentDayNum = cal.get(Calendar.DAY_OF_MONTH);
+        //int currentDayNum = 19;
+        //currentDayDay = cal.get(Calendar.DAY_OF_WEEK);
+        currentMonth = (cal.get(Calendar.MONTH) + 1);
+        currentHour = cal.get(Calendar.HOUR_OF_DAY);
+        //currentHour = 10;
+        currentMinute = cal.get(Calendar.MINUTE);
+        //int currentMinute = 35;
+        //int currentSecond = cal.get(Calendar.SECOND);
+        Beginning();
+        */
+    }
 }
