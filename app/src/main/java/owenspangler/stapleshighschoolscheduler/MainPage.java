@@ -1,24 +1,27 @@
 package owenspangler.stapleshighschoolscheduler;
 
-import android.animation.ObjectAnimator;
+//import android.animation.ObjectAnimator;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Color;
-import android.graphics.PorterDuff;
-import android.graphics.drawable.Drawable;
+//import android.graphics.Color;
+//import android.graphics.PorterDuff;
+//import android.graphics.drawable.Drawable;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Spannable;
-import android.text.SpannableString;
+//import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
-import android.text.style.BackgroundColorSpan;
+//import android.text.style.BackgroundColorSpan;
 import android.text.style.ForegroundColorSpan;
-//import android.util.Log;
+
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
-import android.view.ViewDebug;
-import android.view.animation.DecelerateInterpolator;
+//import android.view.ViewDebug;
+//import android.view.animation.DecelerateInterpolator;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -48,10 +51,6 @@ public class MainPage extends AppCompatActivity {
     int currentPeriodNumber = -1;
     int progressForBar = 0;
     int progressForOverallBar = 0;
-    int timeUntilEndHour = 0;
-    int timeUntilEndMinute = 0;
-    int totalTimeHour = 0;
-    int totalTimeMinute = 0;
     String jsonNotice;
     String progressBarTextPercent = "";
     String progressBarTextTime = "";
@@ -66,10 +65,10 @@ public class MainPage extends AppCompatActivity {
     //int currentDayNum = 19;
     int currentDayDay = cal.get(Calendar.DAY_OF_WEEK);
     int currentMonth = (cal.get(Calendar.MONTH) + 1);
-    int currentHour = cal.get(Calendar.HOUR_OF_DAY);
-    //int currentHour = 10;
-    int currentMinute = cal.get(Calendar.MINUTE);
-    //int currentMinute = 43;
+    //int currentHour = cal.get(Calendar.HOUR_OF_DAY);
+    int currentHour = 8;
+    //int currentMinute = cal.get(Calendar.MINUTE);
+    int currentMinute = 5;
     //int currentSecond = cal.get(Calendar.SECOND);
     ProgressBar progressBar;
     ProgressBar overallProgressBar;
@@ -88,16 +87,13 @@ public class MainPage extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_page);
         Beginning();
-/*
-        //Log.i("offline value", Boolean.toString(offline));
-        //Log.i("noSchool value", Boolean.toString(noSchool));
-        //Log.i("passingTime value", Boolean.toString(passingTime));
-        //Log.i("currentmonth value", Integer.toString(currentMonth));
-        //Log.i("currentday value", Integer.toString(currentDayNum));
-        //Log.i("jsonMonth value", Integer.toString(jsonMonth));
-        //Log.i("jsonDay value", Integer.toString(jsonDay));
-        */
+    }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.mainmenu, menu);
+        return true;
     }
 
     void Beginning() {
@@ -156,9 +152,7 @@ public class MainPage extends AppCompatActivity {
             } else {//NORMAL SCHEDULE WITH CONNECTION CONDITION
                 String tempdayletter = FindDayLetter();
                 if(!offline) {
-                    //Log.i("This is today's day letter", tempdayletter);
                     todayScheduleFormat = ScheduleFormat(tempdayletter);
-                    //Log.i("This is today's schedule", Arrays.toString(todayScheduleFormat));
                     currentPeriodNumber = PeriodNumber(normalPeriodTimes);
                     if(!noSchool) {
                         FindTimeUntilEndOfDay(normalPeriodTimes);
@@ -381,6 +375,10 @@ public class MainPage extends AppCompatActivity {
 
     void findTimeUntilEndNormal(int finderinputPeriodTimes[][]) {
         //Log.i("currentPeriodNumber", Integer.toString(currentPeriodNumber));
+        int timeUntilEndHour = 0;
+        int timeUntilEndMinute = 0;
+        int totalTimeHour = 0;
+        int totalTimeMinute = 0;
         int PeriodArrayPosition = (currentPeriodNumber - 1);
         int tempCurrentHour = currentHour;
         //int tempCurrentMinute = currentMinute;
@@ -389,10 +387,10 @@ public class MainPage extends AppCompatActivity {
                 timeUntilEndHour++;
                 tempCurrentHour++;
             } else if (currentMinute < finderinputPeriodTimes[3][PeriodArrayPosition]) {
-                timeUntilEndMinute = ((finderinputPeriodTimes[3][PeriodArrayPosition]) - currentMinute);
+                timeUntilEndMinute = (currentMinute - (finderinputPeriodTimes[3][PeriodArrayPosition]));
                 break;
             } else if (currentMinute >= finderinputPeriodTimes[3][PeriodArrayPosition]) {
-                timeUntilEndMinute = (currentMinute - (finderinputPeriodTimes[3][PeriodArrayPosition]) );
+                timeUntilEndMinute = ((finderinputPeriodTimes[3][PeriodArrayPosition])-currentMinute);
                 break;
             }else{
                 //Log.e("Time Until Error", "Incorrect Subtraction of Times, Time Left may be incorrect.");
@@ -419,21 +417,30 @@ public class MainPage extends AppCompatActivity {
         float tempTotalMinutes = (totalTimeHour*60)+totalTimeMinute;
         float tempLeftMinutes = (timeUntilEndHour*60)+timeUntilEndMinute;
         progressForBar = Math.round(100-((tempLeftMinutes/tempTotalMinutes)*100));
-        //Log.i("progressforbar again", Integer.toString(progressForBar));
-        //Log.i("templeftminutes", Float.toString(tempLeftMinutes));
-        if(progressForBar > 100) //Log.e("Progress Bar Error", "Progress Bar Value is too high. Current value is: " + Integer.toString(progressForBar));
-        //Log.i("timeUntilHour",Integer.toString(timeUntilEndHour));
-        //Log.i("timeUntilMinute",Integer.toString(timeUntilEndMinute));
-        progressBarTextPercent = (Integer.toString(progressForBar) + "%");
-        if(timeUntilEndMinute>=10) {
-            progressBarTextTime = (Integer.toString(timeUntilEndHour) + ":" + Integer.toString(timeUntilEndMinute));
-        }else{
-            progressBarTextTime = (Integer.toString(timeUntilEndHour) + ":0" + Integer.toString(timeUntilEndMinute));
+        progressBarTextPercent = (Integer.toString(100-progressForBar) + "%");
+        int tempoftempLeftMinutes = (timeUntilEndHour*60)+timeUntilEndMinute;
+        int tempDisplayHour = 0;
+        while(true){
+            if(tempoftempLeftMinutes-60 >= 0) {
+                tempoftempLeftMinutes = tempoftempLeftMinutes - 60;
+                tempDisplayHour++;
+            }else{
+                if(tempoftempLeftMinutes>=10) {
+                    progressBarTextTime = (Integer.toString(tempDisplayHour) + ":" + Integer.toString(tempoftempLeftMinutes));
+                }else{
+                    progressBarTextTime = (Integer.toString(tempDisplayHour) + ":0" + Integer.toString(tempoftempLeftMinutes));
+                }
+                break;
+            }
         }
         progressBarTextDescription = "Remaining";
     }
 
-    void FindTimeUntilEndPassingTime(int[][] finderinputPeriodTimes){
+    void FindTimeUntilEndPassingTime(int[][] finderinputPeriodTimes) {
+        int timeUntilEndHour = 0;
+        int timeUntilEndMinute = 0;
+        int totalTimeHour = 0;
+        int totalTimeMinute = 0;
         int PeriodArrayPosition = (currentPeriodNumber - 1);
         int tempCurrentHour = currentHour;
         //int tempCurrentMinute = currentMinute;
@@ -442,12 +449,12 @@ public class MainPage extends AppCompatActivity {
                 timeUntilEndHour++;
                 tempCurrentHour++;
             } else if (currentMinute < finderinputPeriodTimes[1][PeriodArrayPosition]) {
-                timeUntilEndMinute = ((finderinputPeriodTimes[1][PeriodArrayPosition]) - currentMinute);
+                timeUntilEndMinute = (currentMinute - (finderinputPeriodTimes[1][PeriodArrayPosition]));
                 break;
             } else if (currentMinute >= finderinputPeriodTimes[1][PeriodArrayPosition]) {
-                timeUntilEndMinute = (currentMinute - (finderinputPeriodTimes[1][PeriodArrayPosition]) );
+                timeUntilEndMinute = ((finderinputPeriodTimes[1][PeriodArrayPosition]) - currentMinute);
                 break;
-            }else{
+            } else {
                 //Log.e("Time Until Error", "Incorrect Subtraction of Times, Time Left may be incorrect.");
                 break;
             }
@@ -457,33 +464,37 @@ public class MainPage extends AppCompatActivity {
             if (tempCurrentHour < finderinputPeriodTimes[0][PeriodArrayPosition]) {
                 totalTimeHour++;
                 tempCurrentHour++;
-            } else if ((finderinputPeriodTimes[3][PeriodArrayPosition-1]) < (finderinputPeriodTimes[1][PeriodArrayPosition])) {
-                totalTimeMinute = ((finderinputPeriodTimes[1][PeriodArrayPosition]) - (finderinputPeriodTimes[3][PeriodArrayPosition-1]));
+            } else if ((finderinputPeriodTimes[3][PeriodArrayPosition - 1]) > (finderinputPeriodTimes[1][PeriodArrayPosition])) {
+                totalTimeMinute = ((finderinputPeriodTimes[1][PeriodArrayPosition]) - (finderinputPeriodTimes[3][PeriodArrayPosition - 1]));
                 break;
-            } else  if((finderinputPeriodTimes[3][PeriodArrayPosition-1]) >= (finderinputPeriodTimes[1][PeriodArrayPosition])) {
-                totalTimeMinute = ((finderinputPeriodTimes[3][PeriodArrayPosition-1]) - (finderinputPeriodTimes[1][PeriodArrayPosition]));
+            } else if ((finderinputPeriodTimes[3][PeriodArrayPosition - 1]) <= (finderinputPeriodTimes[1][PeriodArrayPosition])) {
+                totalTimeMinute = ((finderinputPeriodTimes[3][PeriodArrayPosition - 1]) - (finderinputPeriodTimes[1][PeriodArrayPosition]));
                 break;
-            }else{
+            } else {
                 //Log.e("Time Total Error", "Incorrect Subtraction of Times, Time Total may be incorrect.");
                 break;
             }
         }
 
-        float tempTotalMinutes = (totalTimeHour*60)+totalTimeMinute;
-        float tempLeftMinutes = (timeUntilEndHour*60)+timeUntilEndMinute;
-        progressForBar = Math.round(((tempLeftMinutes/tempTotalMinutes)*100));
-        //Log.i("progressforbar again", Integer.toString(progressForBar));
-        //Log.i("templeftminutes", Float.toString(tempLeftMinutes));
-        if(progressForBar > 100) //Log.e("Progress Bar Error", "Progress Bar Value is too high. Current value is: " + Integer.toString(progressForBar));
-        //Log.i("timeUntilHour",Integer.toString(timeUntilEndHour));
-        //Log.i("timeUntilMinute",Integer.toString(timeUntilEndMinute));
-        progressBarTextPercent = (Integer.toString(progressForBar) + "%");
-        if(timeUntilEndMinute>=10) {
-            progressBarTextTime = (Integer.toString(timeUntilEndHour) + ":" + Integer.toString(timeUntilEndMinute));
-        }else{
-            progressBarTextTime = (Integer.toString(timeUntilEndHour) + ":0" + Integer.toString(timeUntilEndMinute));
+        float tempTotalMinutes = (totalTimeHour * 60) + totalTimeMinute;
+        float tempLeftMinutes = (timeUntilEndHour * 60) + timeUntilEndMinute;
+        progressForBar = Math.round(((tempLeftMinutes / tempTotalMinutes) * 100));
+        progressBarTextPercent = (Integer.toString(100 - progressForBar) + "%");
+        int tempoftempLeftMinutes = (timeUntilEndHour * 60) + timeUntilEndMinute;
+        int tempDisplayHour = 0;
+        while (true) {
+            if (tempoftempLeftMinutes - 60 >= 0) {
+                tempoftempLeftMinutes = tempoftempLeftMinutes - 60;
+                tempDisplayHour++;
+            } else {
+                if (tempoftempLeftMinutes >= 10) {
+                    progressBarTextTime = (Integer.toString(tempDisplayHour) + ":" + Integer.toString(tempoftempLeftMinutes));
+                } else {
+                    progressBarTextTime = (Integer.toString(tempDisplayHour) + ":0" + Integer.toString(tempoftempLeftMinutes));
+                }
+                break;
+            }
         }
-        progressBarTextDescription = "Remaining";
     }
 
     void FindTimeUntilEndOfDay(int[][] finderinputPeriodTimes){
@@ -527,9 +538,9 @@ public class MainPage extends AppCompatActivity {
         }
 
         float tempTotalMinutes = (tempTotalTimeHour*60)+tempTotalTimeMinute;
-        //Log.i("temptotalminutes", Float.toString(tempTotalMinutes));
+        Log.i("temptotalminutestotal", Float.toString(tempTotalMinutes));
         float tempLeftMinutes = (tempTimeUntilHour*60)+tempTimeUntilMinute;
-        //Log.i("templeftminutes", Float.toString(tempLeftMinutes));
+        Log.i("templeftminutestotal", Float.toString(tempLeftMinutes));
         progressForOverallBar = Math.round(100-((tempLeftMinutes/tempTotalMinutes)*100));
         //if(progressForOverallBar > 100) //Log.e("Progress Bar Error", "Progress Bar Value is too high. Current value is: " + Integer.toString(progressForBar));
 
@@ -541,8 +552,8 @@ public class MainPage extends AppCompatActivity {
         progressBar = findViewById(R.id.progressBar);
         overallProgressBar = findViewById(R.id.OverallDayProgressBar);
         ////Log.i("progressforbar", Integer.toString(progressForBar));
-        progressBar.setProgress(progressForBar, true);
-        overallProgressBar.setProgress(progressForOverallBar, true);
+        progressBar.setProgress(progressForBar);
+        overallProgressBar.setProgress(progressForOverallBar);
         //Log.i("progressforoverall",Integer.toString(progressForOverallBar));
         TextView ProgressBarTextPercent = findViewById(R.id.ProgressBarTextPercent);
         ProgressBarTextPercent.setText(progressBarTextPercent);
@@ -569,8 +580,11 @@ public class MainPage extends AppCompatActivity {
         });
     }
 
-    void AdditionalOfflineProcedures(){
+    void OfflineProcedures(){
+        FindTimeUntilEndOfDay(normalPeriodTimes);
         findTimeUntilEndNormal(normalPeriodTimes);
+        currentPeriodNumber = PeriodNumber(normalPeriodTimes);
+        FinalizingSetupProcedures();
     }
 
     void OfflineDayAlertPopup(String title) {
@@ -589,40 +603,30 @@ public class MainPage extends AppCompatActivity {
                                 Toast.makeText(MainPage.this , "Set as A Day", Toast.LENGTH_SHORT).show();
                                 //Log.i("This is today's day letter", "A");
                                 todayScheduleFormat = ScheduleFormat("a");
-                                //Log.i("This is today's schedule", Arrays.toString(todayScheduleFormat));
-                                currentPeriodNumber = PeriodNumber(normalPeriodTimes);
-                                FinalizingSetupProcedures();
-                                //dialogAnswered = true;
+                                OfflineProcedures();
                                 break;
                             case 1:
                                 Toast.makeText(MainPage.this, "Set as B Day", Toast.LENGTH_SHORT).show();
                                 //Log.i("This is today's day letter", "B");
                                 todayScheduleFormat = ScheduleFormat("b");
-                                //Log.i("This is today's schedule", Arrays.toString(todayScheduleFormat));
-                                currentPeriodNumber = PeriodNumber(normalPeriodTimes);
-                                FinalizingSetupProcedures();
+                                OfflineProcedures();
                                 break;
                             case 2:
                                 Toast.makeText(MainPage.this, "Set as C Day", Toast.LENGTH_SHORT).show();
                                 //Log.i("This is today's day letter", "C");
                                 todayScheduleFormat = ScheduleFormat("c");
-                                //Log.i("This is today's schedule", Arrays.toString(todayScheduleFormat));
-                                currentPeriodNumber = PeriodNumber(normalPeriodTimes);
-                                FinalizingSetupProcedures();
+                                OfflineProcedures();
                                 break;
                             case 3:
                                 Toast.makeText(MainPage.this, "Set as D Day", Toast.LENGTH_SHORT).show();
                                 //Log.i("This is today's day letter", "D");
                                 todayScheduleFormat = ScheduleFormat("d");
-                                //Log.i("This is today's schedule", Arrays.toString(todayScheduleFormat));
-                                currentPeriodNumber = PeriodNumber(normalPeriodTimes);
                                 FinalizingSetupProcedures();
                                 break;
                             case 4:
-                                Toast.makeText(MainPage.this, "Wow just look at a TV Screen, Alright?", Toast.LENGTH_LONG).show();
-                                String tempDumString = "";
+                                Toast.makeText(MainPage.this, "Help", Toast.LENGTH_LONG).show();
                                 TextView scheduleTextView = findViewById(R.id.ScheduleLayout);
-                                scheduleTextView.setText(tempDumString);
+                                scheduleTextView.setText("WILL ADD PICTURE OF YEAR LONG SCHEDULE HERE");
                                 //FinalizingSetupProcedures();
                                 break;
 

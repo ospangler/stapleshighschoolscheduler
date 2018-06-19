@@ -8,7 +8,7 @@
     tools:layout_editor_absoluteY="81dp">
 
     <ProgressBar
-        android:id="@+id/OverallDayProgressBar"
+            android:id="@+id/OverallDayProgressBar"
         style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="246dp"
         android:layout_height="237dp"
