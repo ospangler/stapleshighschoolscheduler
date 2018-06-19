@@ -4,7 +4,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.os.AsyncTask;
-import android.util.Log;
+//import android.util.Log;
 import android.widget.Toast;
 
 import com.google.android.gms.common.api.Response;
@@ -34,11 +34,11 @@ class JSONfetcher extends AsyncTask<String,Integer,String> {
     @Override
     protected String doInBackground(String...String){
         if(InternetConnected()) {
-            Log.i("INTERNET CONNECTION", "There is an internet connection, will download data from server");
+            //Log.i("INTERNET CONNECTION", "There is an internet connection, will download data from server");
             RetrieveJson();
             return data;
         }else{
-            Log.e("INTERNET CONNECTION","There is no internet connection, user will have to input day letter");
+            //Log.e("INTERNET CONNECTION","There is no internet connection, user will have to input day letter");
             return "NO CONNECTION";
         }
     }
@@ -63,10 +63,10 @@ void RetrieveJson(){
         }
     //END CODE ATTRIBUTION FROM Abhishek Panwar
     } catch (MalformedURLException e) {
-        Log.e("MalformedURL", "Something is wrong with the URL you put in here. Fix it.");
+        //Log.e("MalformedURL", "Something is wrong with the URL you put in here. Fix it.");
         e.printStackTrace();
     } catch (IOException e) {
-        Log.e("IOException", "I don't know what you did, but you better fix it");
+        //Log.e("IOException", "I don't know what you did, but you better fix it");
         e.printStackTrace();
     }
 }
