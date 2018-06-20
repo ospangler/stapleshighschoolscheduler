@@ -262,7 +262,7 @@ public class MainPage extends AppCompatActivity {
                 //Log.e("Day Letter", "Today's date is not found on the json file");
                 //
                 OfflineDayAlertPopup("Server Corruption Detected. Please Pick a Day.");
-                //offline = true;
+                offline = true;
             }
             return "";
         }
