@@ -6,6 +6,8 @@ import android.content.Intent;
 //import android.graphics.Color;
 //import android.graphics.PorterDuff;
 //import android.graphics.drawable.Drawable;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -16,7 +18,8 @@ import android.text.SpannableStringBuilder;
 //import android.text.style.BackgroundColorSpan;
 import android.text.style.ForegroundColorSpan;
 
-import android.util.Log;
+//import android.util.Log;
+//import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
@@ -32,9 +35,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Calendar;
-import java.util.Arrays;
+//import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
-import android.graphics.drawable.Drawable;
+//import android.graphics.drawable.Drawable;
 
 public class MainPage extends AppCompatActivity {
 
@@ -65,10 +68,10 @@ public class MainPage extends AppCompatActivity {
     //int currentDayNum = 19;
     int currentDayDay = cal.get(Calendar.DAY_OF_WEEK);
     int currentMonth = (cal.get(Calendar.MONTH) + 1);
-    //int currentHour = cal.get(Calendar.HOUR_OF_DAY);
-    int currentHour = 8;
-    //int currentMinute = cal.get(Calendar.MINUTE);
-    int currentMinute = 5;
+    int currentHour = cal.get(Calendar.HOUR_OF_DAY);
+    //int currentHour = 10;
+    int currentMinute = cal.get(Calendar.MINUTE);
+    //int currentMinute = 20;
     //int currentSecond = cal.get(Calendar.SECOND);
     ProgressBar progressBar;
     ProgressBar overallProgressBar;
@@ -99,23 +102,13 @@ public class MainPage extends AppCompatActivity {
     void Beginning() {
         GetJson();
         ////
-        if((!offline)&&(!noSchool)&&(!passingTime)) {
+        if ((!offline) && (!noSchool) && (!passingTime)) {
             //Log.i("finalizing setup" , "ok");
             FinalizingSetupProcedures();
-        }else if ((!offline)&&(passingTime)){
+        } else if ((!offline) && (passingTime)) {
             FinalizingSetupProcedures();
-        }else if ((!offline)&&(noSchool)){
-            //Log.i("reached no school","yay");
-            AlertDialog.Builder noSchoolDialog = new AlertDialog.Builder(this);
-            noSchoolDialog.setMessage("There's no school right now you dum dum")
-                    .setCancelable(false)
-                    .setPositiveButton("OK Owen, But For Reals Now, You Have No Chill", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            DisplayNoticeText();
-                        }
-                    });
-            AlertDialog alert = noSchoolDialog.create();
-            alert.show();
+        } else if ((!offline) && (noSchool)) {
+            NoSchoolProcedures();
         }
     }
 
@@ -327,7 +320,7 @@ public class MainPage extends AppCompatActivity {
 
         ////Log.i("current period num", Integer.toString(currentPeriodNumber));
 
-        //The below code was adapted from a StackOverflow answer by Jave
+        //The below code was inspired from a StackOverflow answer by Jave
         //The full answer can be found here: https://stackoverflow.com/a/8518613
         String tempScheduleString = "";
         for (int i = 0; i < todayScheduleFormat.length; i++) {
@@ -386,14 +379,8 @@ public class MainPage extends AppCompatActivity {
             if (tempCurrentHour < finderinputPeriodTimes[2][PeriodArrayPosition]) {
                 timeUntilEndHour++;
                 tempCurrentHour++;
-            } else if (currentMinute < finderinputPeriodTimes[3][PeriodArrayPosition]) {
-                timeUntilEndMinute = (currentMinute - (finderinputPeriodTimes[3][PeriodArrayPosition]));
-                break;
-            } else if (currentMinute >= finderinputPeriodTimes[3][PeriodArrayPosition]) {
-                timeUntilEndMinute = ((finderinputPeriodTimes[3][PeriodArrayPosition])-currentMinute);
-                break;
-            }else{
-                //Log.e("Time Until Error", "Incorrect Subtraction of Times, Time Left may be incorrect.");
+            } else {
+                timeUntilEndMinute = ((finderinputPeriodTimes[3][PeriodArrayPosition]) - currentMinute);
                 break;
             }
         }
@@ -402,22 +389,16 @@ public class MainPage extends AppCompatActivity {
             if (tempCurrentHour < finderinputPeriodTimes[2][PeriodArrayPosition]) {
                 totalTimeHour++;
                 tempCurrentHour++;
-            } else if ((finderinputPeriodTimes[1][PeriodArrayPosition]) < (finderinputPeriodTimes[3][PeriodArrayPosition])) {
-                totalTimeMinute = ((finderinputPeriodTimes[3][PeriodArrayPosition]) - (finderinputPeriodTimes[1][PeriodArrayPosition]));
-                break;
-            } else  if((finderinputPeriodTimes[1][PeriodArrayPosition]) >= (finderinputPeriodTimes[3][PeriodArrayPosition])) {
+            } else {
                 totalTimeMinute = ((finderinputPeriodTimes[1][PeriodArrayPosition]) - (finderinputPeriodTimes[3][PeriodArrayPosition]));
-                break;
-            }else{
-                //Log.e("Time Total Error", "Incorrect Subtraction of Times, Time Total may be incorrect.");
                 break;
             }
         }
 
-        float tempTotalMinutes = (totalTimeHour*60)+totalTimeMinute;
-        float tempLeftMinutes = (timeUntilEndHour*60)+timeUntilEndMinute;
-        progressForBar = Math.round(100-((tempLeftMinutes/tempTotalMinutes)*100));
-        progressBarTextPercent = (Integer.toString(100-progressForBar) + "%");
+        float tempTotalMinutes = Math.abs((totalTimeHour*60)+totalTimeMinute);
+        float tempLeftMinutes = Math.abs((timeUntilEndHour*60)+timeUntilEndMinute);
+        progressForBar = Math.round((tempLeftMinutes/tempTotalMinutes)*100);
+        progressBarTextPercent = (Integer.toString(progressForBar) + "%");
         int tempoftempLeftMinutes = (timeUntilEndHour*60)+timeUntilEndMinute;
         int tempDisplayHour = 0;
         while(true){
@@ -448,38 +429,29 @@ public class MainPage extends AppCompatActivity {
             if (tempCurrentHour < finderinputPeriodTimes[0][PeriodArrayPosition]) {
                 timeUntilEndHour++;
                 tempCurrentHour++;
-            } else if (currentMinute < finderinputPeriodTimes[1][PeriodArrayPosition]) {
-                timeUntilEndMinute = (currentMinute - (finderinputPeriodTimes[1][PeriodArrayPosition]));
-                break;
-            } else if (currentMinute >= finderinputPeriodTimes[1][PeriodArrayPosition]) {
+            } else {
                 timeUntilEndMinute = ((finderinputPeriodTimes[1][PeriodArrayPosition]) - currentMinute);
-                break;
-            } else {
-                //Log.e("Time Until Error", "Incorrect Subtraction of Times, Time Left may be incorrect.");
-                break;
-            }
-        }
-        tempCurrentHour = finderinputPeriodTimes[2][PeriodArrayPosition];
-        while (true) {
-            if (tempCurrentHour < finderinputPeriodTimes[0][PeriodArrayPosition]) {
-                totalTimeHour++;
-                tempCurrentHour++;
-            } else if ((finderinputPeriodTimes[3][PeriodArrayPosition - 1]) > (finderinputPeriodTimes[1][PeriodArrayPosition])) {
-                totalTimeMinute = ((finderinputPeriodTimes[1][PeriodArrayPosition]) - (finderinputPeriodTimes[3][PeriodArrayPosition - 1]));
-                break;
-            } else if ((finderinputPeriodTimes[3][PeriodArrayPosition - 1]) <= (finderinputPeriodTimes[1][PeriodArrayPosition])) {
-                totalTimeMinute = ((finderinputPeriodTimes[3][PeriodArrayPosition - 1]) - (finderinputPeriodTimes[1][PeriodArrayPosition]));
-                break;
-            } else {
-                //Log.e("Time Total Error", "Incorrect Subtraction of Times, Time Total may be incorrect.");
+                //timeUntilEndMinute = (currentMinute - (finderinputPeriodTimes[1][PeriodArrayPosition]));
                 break;
             }
         }
 
-        float tempTotalMinutes = (totalTimeHour * 60) + totalTimeMinute;
-        float tempLeftMinutes = (timeUntilEndHour * 60) + timeUntilEndMinute;
+            tempCurrentHour = finderinputPeriodTimes[2][PeriodArrayPosition];
+            while (true) {
+                if (tempCurrentHour < finderinputPeriodTimes[0][PeriodArrayPosition]) {
+                    totalTimeHour++;
+                    tempCurrentHour++;
+                } else {
+                    totalTimeMinute = ((finderinputPeriodTimes[3][PeriodArrayPosition - 1]) - (finderinputPeriodTimes[1][PeriodArrayPosition]));
+                    break;
+                }
+            }
+
+        float tempTotalMinutes = Math.abs((totalTimeHour * 60) + totalTimeMinute);
+        float tempLeftMinutes = Math.abs((timeUntilEndHour * 60) + timeUntilEndMinute);
+
         progressForBar = Math.round(((tempLeftMinutes / tempTotalMinutes) * 100));
-        progressBarTextPercent = (Integer.toString(100 - progressForBar) + "%");
+        progressBarTextPercent = (Integer.toString(progressForBar) + "%");
         int tempoftempLeftMinutes = (timeUntilEndHour * 60) + timeUntilEndMinute;
         int tempDisplayHour = 0;
         while (true) {
@@ -506,17 +478,11 @@ public class MainPage extends AppCompatActivity {
         int tempTotalTimeMinute = 0;
         //int tempCurrentMinute = currentMinute;
         while (true) {
-            if (tempCurrentHour < finderinputPeriodTimes[2][(finderinputPeriodTimes[0].length)-1]) {
+            if (tempCurrentHour < finderinputPeriodTimes[2][(finderinputPeriodTimes[0].length) - 1]) {
                 tempTimeUntilHour++;
                 tempCurrentHour++;
-            } else if (currentMinute < finderinputPeriodTimes[3][(finderinputPeriodTimes[0].length)-1]) {
-                tempTimeUntilMinute = ((finderinputPeriodTimes[3][(finderinputPeriodTimes[0].length)-1]) - currentMinute);
-                break;
-            } else if (currentMinute >= finderinputPeriodTimes[3][(finderinputPeriodTimes[0].length)-1]) {
-                tempTimeUntilMinute = (currentMinute - (finderinputPeriodTimes[3][(finderinputPeriodTimes[0].length)-1]) );
-                break;
-            }else{
-                //Log.e("Time Until Error", "Incorrect Subtraction of Times, Time Left may be incorrect.");
+            } else {
+                tempTimeUntilMinute = ((finderinputPeriodTimes[3][(finderinputPeriodTimes[0].length) - 1])-currentMinute);
                 break;
             }
         }
@@ -525,24 +491,17 @@ public class MainPage extends AppCompatActivity {
             if (tempCurrentHour < finderinputPeriodTimes[2][(finderinputPeriodTimes[0].length)-1]) {
                 tempTotalTimeHour++;
                 tempCurrentHour++;
-            } else if ((finderinputPeriodTimes[1][0]) < (finderinputPeriodTimes[3][(finderinputPeriodTimes[0].length)-1])) {
-                tempTotalTimeMinute = ((finderinputPeriodTimes[3][(finderinputPeriodTimes[0].length)-1]) - (finderinputPeriodTimes[1][0]));
-                break;
-            } else  if((finderinputPeriodTimes[1][0]) >= (finderinputPeriodTimes[3][(finderinputPeriodTimes[0].length)-1])) {
-                tempTotalTimeMinute = ((finderinputPeriodTimes[1][0]) - (finderinputPeriodTimes[3][(finderinputPeriodTimes[0].length)-1]));
-                break;
-            }else{
-                //Log.e("Time Total Error", "Incorrect Subtraction of Times, Time Total may be incorrect.");
+            }else {
+                tempTotalTimeMinute = ((finderinputPeriodTimes[3][(finderinputPeriodTimes[0].length) - 1]) - (finderinputPeriodTimes[1][0]));
                 break;
             }
         }
 
-        float tempTotalMinutes = (tempTotalTimeHour*60)+tempTotalTimeMinute;
-        Log.i("temptotalminutestotal", Float.toString(tempTotalMinutes));
-        float tempLeftMinutes = (tempTimeUntilHour*60)+tempTimeUntilMinute;
-        Log.i("templeftminutestotal", Float.toString(tempLeftMinutes));
-        progressForOverallBar = Math.round(100-((tempLeftMinutes/tempTotalMinutes)*100));
-        //if(progressForOverallBar > 100) //Log.e("Progress Bar Error", "Progress Bar Value is too high. Current value is: " + Integer.toString(progressForBar));
+        float tempTotalMinutes = Math.abs((tempTotalTimeHour*60)+tempTotalTimeMinute);
+        //Log.i("temptotalminutestotal", Float.toString(tempTotalMinutes));
+        float tempLeftMinutes = Math.abs((tempTimeUntilHour*60)+tempTimeUntilMinute);
+        //Log.i("templeftminutestotal", Float.toString(tempLeftMinutes));
+        progressForOverallBar = 100 - Math.round((tempLeftMinutes/tempTotalMinutes)*100);
 
     }
 
@@ -564,13 +523,13 @@ public class MainPage extends AppCompatActivity {
         if(!noSchool) {
             displayPeriodString();
             DisplayNoticeText();
-        }else{
-            //Set Period String to Read No School
         }
 
         if(passingTime){
-            //Drawable circular = getDrawable(R.drawable.circular);
-            //circular.setColorFilter(ContextCompat.getColor(this, R.color.colorLastPeriodScheduleHighlighted), PorterDuff.Mode.DST);
+            ProgressBarTextDescription.setText("Passing Time");
+            //Drawable circular = ContextCompat.getDrawable(this, R.drawable.circular);
+            //circular.setColorFilter(ContextCompat.getColor(this, R.color.colorLastPeriodScheduleHighlighted), PorterDuff.Mode.DST_IN);
+            //circular.setColorFilter(0xffff0000, PorterDuff.Mode.DST_IN);
         }
         final Button refreshButton = findViewById(R.id.RefreshButton);
         refreshButton.setOnClickListener(new View.OnClickListener() {
@@ -581,11 +540,55 @@ public class MainPage extends AppCompatActivity {
     }
 
     void OfflineProcedures(){
-        FindTimeUntilEndOfDay(normalPeriodTimes);
-        findTimeUntilEndNormal(normalPeriodTimes);
+        TextView noticetext = findViewById(R.id.noticeOfTheDay);
+        noticetext.setText("No Connection");
         currentPeriodNumber = PeriodNumber(normalPeriodTimes);
-        FinalizingSetupProcedures();
+        //Log.i("period time", Integer.toString(currentPeriodNumber));
+        if(!noSchool) {
+            FindTimeUntilEndOfDay(normalPeriodTimes);
+            findTimeUntilEndNormal(normalPeriodTimes);
+            FinalizingSetupProcedures();
+        }else{
+            NoSchoolProcedures();
+        }
     }
+
+    void NoSchoolProcedures(){
+        String tempScheduleString = "";
+        for (int i = 0; i < todayScheduleFormat.length; i++) {
+            tempScheduleString += todayScheduleFormat[i];
+            if (i < todayScheduleFormat.length - 1) tempScheduleString += " ";
+        }
+        TextView scheduleTextView = findViewById(R.id.ScheduleLayout);
+        scheduleTextView.setText(tempScheduleString);
+        progressBar = findViewById(R.id.progressBar);
+        overallProgressBar = findViewById(R.id.OverallDayProgressBar);
+        ////Log.i("progressforbar", Integer.toString(progressForBar));
+        progressBar.setProgress(100);
+        overallProgressBar.setProgress(100);
+        //Log.i("progressforoverall",Integer.toString(progressForOverallBar));
+        TextView ProgressBarTextPercent = findViewById(R.id.ProgressBarTextPercent);
+        ProgressBarTextPercent.setText("NO");
+        TextView ProgressBarTextTime = findViewById(R.id.ProgressBarTextTime);
+        ProgressBarTextTime.setTextSize(30);
+        ProgressBarTextTime.setText("SCHOOL");
+        TextView ProgressBarTextDescription = findViewById(R.id.ProgressBarTextDescription);
+        ProgressBarTextDescription.setText("Check App Later");
+        if(!offline) {
+            DisplayNoticeText();
+        }
+        ///
+        AlertDialog.Builder noSchoolDialog = new AlertDialog.Builder(this);
+        noSchoolDialog.setMessage("There is currently no school. The current information displayed may be incorrect.")
+                .setCancelable(false)
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                    }
+                });
+        AlertDialog alert = noSchoolDialog.create();
+        alert.show();
+    }
+
 
     void OfflineDayAlertPopup(String title) {
         // The Below Code was adapted from a StackOverflow Answer by WhereDatApp

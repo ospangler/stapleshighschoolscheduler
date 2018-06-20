@@ -1,13 +1,13 @@
 package owenspangler.stapleshighschoolscheduler;
 
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.Context;
+//import android.app.Activity;
+//import android.app.AlertDialog;
+//import android.content.Context;
 import android.os.AsyncTask;
 //import android.util.Log;
-import android.widget.Toast;
+//import android.widget.Toast;
 
-import com.google.android.gms.common.api.Response;
+//import com.google.android.gms.common.api.Response;
 
 import java.io.IOException;
 import java.io.BufferedReader;
