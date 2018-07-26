@@ -1,13 +1,13 @@
 package owenspangler.stapleshighschoolscheduler;
-
+//TESTING GITHUB INTEGRATION
 //import android.animation.ObjectAnimator;
 import android.content.DialogInterface;
 import android.content.Intent;
 //import android.graphics.Color;
 //import android.graphics.PorterDuff;
 //import android.graphics.drawable.Drawable;
-import android.graphics.PorterDuff;
-import android.graphics.drawable.Drawable;
+//import android.graphics.PorterDuff;
+//import android.graphics.drawable.Drawable;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -62,7 +62,7 @@ public class MainPage extends AppCompatActivity {
     boolean passingTime = false;
     boolean noSchool = false;
     boolean useHardCoded = false;
-    boolean dialogAnswered = false;
+    //boolean dialogAnswered = false;
     Calendar cal = Calendar.getInstance();
     int currentDayNum = cal.get(Calendar.DAY_OF_MONTH);
     //int currentDayNum = 19;
