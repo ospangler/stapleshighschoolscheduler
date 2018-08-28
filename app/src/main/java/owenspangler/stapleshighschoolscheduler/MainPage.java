@@ -20,6 +20,7 @@ import android.text.style.ForegroundColorSpan;
 
 //import android.util.Log;
 //import android.util.Log;
+//import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
@@ -65,13 +66,13 @@ public class MainPage extends AppCompatActivity {
     //boolean dialogAnswered = false;
     Calendar cal = Calendar.getInstance();
     int currentDayNum = cal.get(Calendar.DAY_OF_MONTH);
-    //int currentDayNum = 19;
-    int currentDayDay = cal.get(Calendar.DAY_OF_WEEK);
+    //int currentDayNum = 28;
+    //int currentDayDay = cal.get(Calendar.DAY_OF_WEEK);
     int currentMonth = (cal.get(Calendar.MONTH) + 1);
     int currentHour = cal.get(Calendar.HOUR_OF_DAY);
-    //int currentHour = 10;
+    //int currentHour = 7;
     int currentMinute = cal.get(Calendar.MINUTE);
-    //int currentMinute = 20;
+    //int currentMinute = 52;
     //int currentSecond = cal.get(Calendar.SECOND);
     ProgressBar progressBar;
     ProgressBar overallProgressBar;
@@ -103,7 +104,6 @@ public class MainPage extends AppCompatActivity {
         GetJson();
         ////
         if ((!offline) && (!noSchool) && (!passingTime)) {
-            //Log.i("finalizing setup" , "ok");
             FinalizingSetupProcedures();
         } else if ((!offline) && (passingTime)) {
             FinalizingSetupProcedures();
@@ -293,7 +293,17 @@ public class MainPage extends AppCompatActivity {
                 (currentHour == inputPeriodTimes[2][((inputPeriodTimes[0].length)-1)] &&
                         currentMinute > inputPeriodTimes[3][((inputPeriodTimes[0].length)-1)]))
         {
-            //Log.i("No School", "The time of day is out of bounds offered by the schedule. We don't need no education");
+            /*
+            Log.i("starttimeshour", Integer.toString(inputPeriodTimes[0][0]));
+            Log.i("starttimesminue", Integer.toString(inputPeriodTimes[1][0]));
+            Log.i("endtimeshour", Integer.toString(inputPeriodTimes[2][((inputPeriodTimes[0].length)-1)]));
+            Log.i("endtimesminute", Integer.toString(inputPeriodTimes[3][((inputPeriodTimes[0].length)-1)]));
+            Log.i("currenthour", Integer.toString(currentHour));
+            Log.i("currentminute", Integer.toString(currentMinute));
+            Log.i("currentday", Integer.toString(currentDayNum));
+            Log.i("currentmonth", Integer.toString(currentMonth));
+            Log.i("No School", "The time of day is out of bounds offered by the schedule. We don't need no education");
+            */
             noSchool = true;
             return -1;
         }
@@ -324,7 +334,12 @@ public class MainPage extends AppCompatActivity {
         //The full answer can be found here: https://stackoverflow.com/a/8518613
         String tempScheduleString = "";
         for (int i = 0; i < todayScheduleFormat.length; i++) {
-            tempScheduleString += todayScheduleFormat[i];
+            if(todayScheduleFormat[i] >= 100){
+                String tempalphabet = "ABCDEFGHIJKLMNOPQRRSTUVWXYZ";
+                tempScheduleString += tempalphabet.charAt(todayScheduleFormat[i]-100);
+            }else {
+                tempScheduleString += todayScheduleFormat[i];
+            }
             if (i < todayScheduleFormat.length - 1) tempScheduleString += " ";
         }
 
@@ -593,7 +608,7 @@ public class MainPage extends AppCompatActivity {
     void OfflineDayAlertPopup(String title) {
         // The Below Code was adapted from a StackOverflow Answer by WhereDatApp
         //The full answer can be found here: https://stackoverflow.com/a/19658646
-        AlertDialog.Builder alertbuilder = new AlertDialog.Builder(MainPage.this);
+        final AlertDialog.Builder alertbuilder = new AlertDialog.Builder(MainPage.this);
         alertbuilder.setTitle(title);
         alertbuilder.setItems(new CharSequence[]
                         {"A Day", "B Day", "C Day", "D Day", "Help"},
@@ -627,9 +642,10 @@ public class MainPage extends AppCompatActivity {
                                 FinalizingSetupProcedures();
                                 break;
                             case 4:
-                                Toast.makeText(MainPage.this, "Help", Toast.LENGTH_LONG).show();
-                                TextView scheduleTextView = findViewById(R.id.ScheduleLayout);
-                                scheduleTextView.setText("WILL ADD PICTURE OF YEAR LONG SCHEDULE HERE");
+                                Toast.makeText(MainPage.this, "Help is currently not supported", Toast.LENGTH_LONG).show();
+
+                                //TextView scheduleTextView = findViewById(R.id.ScheduleLayout);
+                                //scheduleTextView.setText("WILL ADD PICTURE OF YEAR LONG SCHEDULE HERE");
                                 //FinalizingSetupProcedures();
                                 break;
 
