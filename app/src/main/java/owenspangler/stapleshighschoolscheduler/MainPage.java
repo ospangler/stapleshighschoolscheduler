@@ -21,6 +21,7 @@ import android.text.style.ForegroundColorSpan;
 //import android.util.Log;
 //import android.util.Log;
 //import android.util.Log;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
@@ -62,35 +63,36 @@ public class MainPage extends AppCompatActivity {
     boolean offline = false;
     boolean passingTime = false;
     boolean noSchool = false;
-    boolean useHardCoded = false;
+    //boolean useHardCoded = false;
+    boolean specialSchedule = false;
     //boolean dialogAnswered = false;
     Calendar cal = Calendar.getInstance();
     int currentDayNum = cal.get(Calendar.DAY_OF_MONTH);
     //int currentDayNum = 28;
     //int currentDayDay = cal.get(Calendar.DAY_OF_WEEK);
     int currentMonth = (cal.get(Calendar.MONTH) + 1);
-    int currentHour = cal.get(Calendar.HOUR_OF_DAY);
-    //int currentHour = 7;
-    int currentMinute = cal.get(Calendar.MINUTE);
-    //int currentMinute = 52;
+    //int currentHour = cal.get(Calendar.HOUR_OF_DAY);
+    int currentHour = 8;
+    //int currentMinute = cal.get(Calendar.MINUTE);
+    int currentMinute = 24;
     //int currentSecond = cal.get(Calendar.SECOND);
     ProgressBar progressBar;
     ProgressBar overallProgressBar;
     ///
     int[][] normalPeriodTimes = //CHANGE BELOW TIMES WHEN SCHEDULE CHANGES
             {
-                {7, 8, 9, 10, 12, 13},//START HOUR
+                    { 7,  8,  9, 10, 12, 13},//START HOUR
                     {30, 25, 50, 45, 30, 25},//START MINUTE
 
-                    {8, 9, 10, 12, 13, 14},//END HOUR
-                    {25, 45, 40, 25, 20, 15}};//END MINUTE
+                    { 8,  9, 10, 12, 13, 14},//END HOUR
+                    {20, 45, 40, 25, 20, 15}};//END MINUTE
     ///END VARS///
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_page);
-        Beginning();
+        Main();
     }
 
     @Override
@@ -100,38 +102,58 @@ public class MainPage extends AppCompatActivity {
         return true;
     }
 
-    void Beginning() {
+///
+    //When moving stuff over to async task, leave GetJson for necessary popups (i think)
+    ///
+
+
+    void Main() {
         GetJson();
+        CheckForServerCorruption();
         ////
-        if ((!offline) && (!noSchool) && (!passingTime)) {
-            FinalizingSetupProcedures();
-        } else if ((!offline) && (passingTime)) {
-            FinalizingSetupProcedures();
-        } else if ((!offline) && (noSchool)) {
+        int[][] inputPeriodTimes;
+
+        if(specialSchedule){ // If the date on the json file matches, program uses special schedule
+            inputPeriodTimes = jsonPeriodTimes;
+            todayScheduleFormat = jsonNewScheduleFormat;
+            currentPeriodNumber = PeriodNumber(inputPeriodTimes);
+
+        }else{ // If date from json file does not match or is not available, the normal schedule is used
+            inputPeriodTimes = normalPeriodTimes;
+            String inputDayLetter = FindDayLetter();
+            todayScheduleFormat = ScheduleFormat(inputDayLetter);
+            currentPeriodNumber = PeriodNumber(inputPeriodTimes);
+        }
+
+        if ((offline)&&(noSchool)){ // Offline, No School Detected for Normal Schedule
+            OfflineProcedures();
             NoSchoolProcedures();
+            //NoSchoolDisplay();
+        }else if ((offline)&&(passingTime)){ // Offline, Passing Time Detected for Normal Schedule
+            OfflineProcedures();
+            FindTimeUntilEndOfDay(inputPeriodTimes);
+            FindTimeUntilEndPassingTime(inputPeriodTimes);
+            FinalizingSetupProcedures();
+        }else if(offline) { // Offline, Normal School Conditions Detected
+            OfflineProcedures();
+            FindTimeUntilEndOfDay(inputPeriodTimes);
+            FindTimeUntilEndNormal(inputPeriodTimes);
+            FinalizingSetupProcedures();
+        }else if (noSchool){ // Online, No School using Current Schedule
+           NoSchoolProcedures();
+        }else if (passingTime){ // Online, School in session, but not inside a period detected
+            FindTimeUntilEndOfDay(inputPeriodTimes);
+            FindTimeUntilEndPassingTime(inputPeriodTimes);
+            FinalizingSetupProcedures();
+        }else{ // Online, School in session and during period
+            FindTimeUntilEndOfDay(inputPeriodTimes);
+            FindTimeUntilEndNormal(inputPeriodTimes);
+            FinalizingSetupProcedures();
         }
-    }
 
-    void GetJson() {
-        try {
-            jsonData = new JSONfetcher().execute().get();//Will wait for task to finish
-        } catch (InterruptedException e) {
-            //I'm not catching anything, I just wanted the error messages to go away
-        } catch (ExecutionException e) {
-            //I don't care if I'm defeating the purpose of an Async task, I don't care.
-        }
 
-        if ((jsonData.equals("NO CONNECTION")) || (jsonData.equals(""))) { //NO CONNECTION CONDITION
-            //Log.e("JSONDATA Error", "JSONDATA can't be reached, reverting to hardcoded backup");
-            useHardCoded = true;
-            offline = true;
-            OfflineDayAlertPopup("No Connection. Pick a Day.");
-            //currentPeriodNumber = PeriodNumber(normalPeriodTimes);
-        } else {//WITH CONNECTION WITH SUB CONDITIONS
 
-            GetInfoFromJSON(jsonData);
-
-            if ((jsonMonth == currentMonth) && (jsonDay == currentDayNum)) {//SPECIAL SCHEDULE WITH CONNECTION CONDITION
+            /*
                 todayScheduleFormat = jsonNewScheduleFormat;
                 currentPeriodNumber = PeriodNumber(jsonPeriodTimes);
                 if(!noSchool) {
@@ -141,8 +163,13 @@ public class MainPage extends AppCompatActivity {
                     }else{
                         FindTimeUntilEndPassingTime(jsonPeriodTimes);
                     }
+
                 }
-            } else {//NORMAL SCHEDULE WITH CONNECTION CONDITION
+                */
+
+    //NORMAL SCHEDULE WITH CONNECTION CONDITION
+
+                /*
                 String tempdayletter = FindDayLetter();
                 if(!offline) {
                     todayScheduleFormat = ScheduleFormat(tempdayletter);
@@ -158,9 +185,46 @@ public class MainPage extends AppCompatActivity {
                         //add no School Condition
                     }
                 }
-                //useHardCoded = true;
+                */
+    //useHardCoded = true;
+
+
+        /*
+        if ((!offline) && (!noSchool) && (!passingTime)) {
+            FinalizingSetupProcedures();
+        } else if ((!offline) && (passingTime)) {
+            FinalizingSetupProcedures();
+        } else if ((!offline) && (noSchool)) {
+            NoSchoolProcedures();
+        }
+        */
+    }
+
+    void GetJson() {
+        try {
+            jsonData = new JSONfetcher().execute().get();//Will wait for task to finish
+        } catch (InterruptedException e) {
+            //I'm not catching anything, I just wanted the error messages to go away
+        } catch (ExecutionException e) {
+            //I don't care if I'm defeating the purpose of an Async task, I don't care.
+        }
+
+        if ((jsonData.equals("NO CONNECTION")) || (jsonData.equals(""))) { //NO CONNECTION CONDITION
+            //Log.e("JSONDATA Error", "JSONDATA can't be reached, reverting to hardcoded backup");
+            //useHardCoded = true;
+            offline = true;
+            OfflineDayAlertPopup("No Connection. Pick a Day.");
+            //currentPeriodNumber = PeriodNumber(normalPeriodTimes);
+        } else {//WITH CONNECTION WITH SUB CONDITIONS
+
+            GetInfoFromJSON(jsonData);
+
+            if ((jsonMonth == currentMonth) && (jsonDay == currentDayNum)) {//SPECIAL SCHEDULE WITH CONNECTION CONDITION
+                specialSchedule = true;
+
             }
         }
+
     }
 
     void GetInfoFromJSON(String inputdata) {
@@ -206,7 +270,7 @@ public class MainPage extends AppCompatActivity {
         try {
             JSONObject tempJO = new JSONObject(jsonData);
             JSONArray tempJsonArray = tempJO.optJSONArray(jsonID);
-            if (tempJsonArray == null) { /*ENTER SOME ERROR CODE HERE*/ }
+            if (tempJsonArray == null) { /*ENTER SOME ERROR CODE HERE LATER*/ }
             int[] output = new int[tempJsonArray.length()];
             for (int i = 0; i < tempJsonArray.length(); ++i) {
                 output[i] = tempJsonArray.optInt(i);
@@ -234,12 +298,36 @@ public class MainPage extends AppCompatActivity {
         } else if (inputDayType.equals("d")) {
             int[] tempD = {4, 1, 2, 8, 5, 6}; //'D' day
             return tempD;
-        } else {
-            //CALL FUNCTION TO PULL DATA FROM SERVER HERE
-            return /*SERVER DATA IN HERE*/ null;
+        } else { //Error Condition
+            //ENTER ERROR CODE HERE
+            return null;
         }
     }
+    void CheckForServerCorruption(){
+        int temppos = -1;
+        for (int i = 0; i < jsondayLetterDayNumber.length; i++) {
+            if (jsondayLetterDayNumber[i] == currentDayNum) {
+                //Log.i("currentdaynum", Integer.toString(currentDayNum));
+                temppos = i;
+                //Log.i("temppos", Integer.toString(temppos));
+                //Log.i("jsondayletterliststart", Integer.toString(jsondayLetterListStart));
+                break;
+            }
+        }
 
+        if (temppos == -1) {
+            //String tempresult = "";
+            if ((jsonMonth == currentMonth) && (jsonDay == currentDayNum)) {
+                //Log.i("Day Letter", "Today's date has a special schedule according to the json file");
+                offline = false;
+            }else{
+                //Log.e("Day Letter", "Today's date is not found on the json file");
+                //
+                OfflineDayAlertPopup("Server Corruption Detected. Please Pick a Day.");
+                offline = true;
+            }
+        }
+    }
     String FindDayLetter() {
         //int tempday;
         int temppos = -1;
@@ -381,7 +469,7 @@ public class MainPage extends AppCompatActivity {
         noticetext.setText(jsonNotice);
     }
 
-    void findTimeUntilEndNormal(int finderinputPeriodTimes[][]) {
+    void FindTimeUntilEndNormal(int finderinputPeriodTimes[][]) {
         //Log.i("currentPeriodNumber", Integer.toString(currentPeriodNumber));
         int timeUntilEndHour = 0;
         int timeUntilEndMinute = 0;
@@ -399,13 +487,15 @@ public class MainPage extends AppCompatActivity {
                 break;
             }
         }
+
         tempCurrentHour = finderinputPeriodTimes[0][PeriodArrayPosition];
+
         while (true) {
             if (tempCurrentHour < finderinputPeriodTimes[2][PeriodArrayPosition]) {
                 totalTimeHour++;
                 tempCurrentHour++;
             } else {
-                totalTimeMinute = ((finderinputPeriodTimes[1][PeriodArrayPosition]) - (finderinputPeriodTimes[3][PeriodArrayPosition]));
+                totalTimeMinute = ((finderinputPeriodTimes[3][PeriodArrayPosition]) - (finderinputPeriodTimes[1][PeriodArrayPosition]));
                 break;
             }
         }
@@ -457,7 +547,7 @@ public class MainPage extends AppCompatActivity {
                     totalTimeHour++;
                     tempCurrentHour++;
                 } else {
-                    totalTimeMinute = ((finderinputPeriodTimes[3][PeriodArrayPosition - 1]) - (finderinputPeriodTimes[1][PeriodArrayPosition]));
+                    totalTimeMinute = ((finderinputPeriodTimes[3][PeriodArrayPosition-1]) - (finderinputPeriodTimes[1][PeriodArrayPosition])); //////////////////
                     break;
                 }
             }
@@ -482,6 +572,7 @@ public class MainPage extends AppCompatActivity {
                 break;
             }
         }
+        Log.i("progressforbar1",Integer.toString(progressForBar));
     }
 
     void FindTimeUntilEndOfDay(int[][] finderinputPeriodTimes){
@@ -501,7 +592,9 @@ public class MainPage extends AppCompatActivity {
                 break;
             }
         }
+
         tempCurrentHour = finderinputPeriodTimes[0][0];
+
         while (true) {
             if (tempCurrentHour < finderinputPeriodTimes[2][(finderinputPeriodTimes[0].length)-1]) {
                 tempTotalTimeHour++;
@@ -526,6 +619,7 @@ public class MainPage extends AppCompatActivity {
         progressBar = findViewById(R.id.progressBar);
         overallProgressBar = findViewById(R.id.OverallDayProgressBar);
         ////Log.i("progressforbar", Integer.toString(progressForBar));
+        Log.i("progressforbar2",Integer.toString(progressForBar));
         progressBar.setProgress(progressForBar);
         overallProgressBar.setProgress(progressForOverallBar);
         //Log.i("progressforoverall",Integer.toString(progressForOverallBar));
@@ -535,6 +629,7 @@ public class MainPage extends AppCompatActivity {
         ProgressBarTextTime.setText(progressBarTextTime);
         TextView ProgressBarTextDescription = findViewById(R.id.ProgressBarTextDescription);
         ProgressBarTextDescription.setText(progressBarTextDescription);
+
         if(!noSchool) {
             displayPeriodString();
             DisplayNoticeText();
@@ -556,16 +651,16 @@ public class MainPage extends AppCompatActivity {
 
     void OfflineProcedures(){
         TextView noticetext = findViewById(R.id.noticeOfTheDay);
-        noticetext.setText("No Connection");
+        noticetext.setText("No Connection. Information may be inaccurate");
         currentPeriodNumber = PeriodNumber(normalPeriodTimes);
         //Log.i("period time", Integer.toString(currentPeriodNumber));
-        if(!noSchool) {
-            FindTimeUntilEndOfDay(normalPeriodTimes);
-            findTimeUntilEndNormal(normalPeriodTimes);
-            FinalizingSetupProcedures();
-        }else{
-            NoSchoolProcedures();
-        }
+        //if(!noSchool) {
+          //  FindTimeUntilEndOfDay(normalPeriodTimes);
+            //FindTimeUntilEndNormal(normalPeriodTimes);
+            //FinalizingSetupProcedures(); //////change later
+        //}else{
+          //  NoSchoolProcedures();
+        //}
     }
 
     void NoSchoolProcedures(){
@@ -593,6 +688,7 @@ public class MainPage extends AppCompatActivity {
             DisplayNoticeText();
         }
         ///
+        /*
         AlertDialog.Builder noSchoolDialog = new AlertDialog.Builder(this);
         noSchoolDialog.setMessage("There is currently no school. The current information displayed may be incorrect.")
                 .setCancelable(false)
@@ -602,6 +698,7 @@ public class MainPage extends AppCompatActivity {
                 });
         AlertDialog alert = noSchoolDialog.create();
         alert.show();
+        */
     }
 
 
@@ -618,25 +715,25 @@ public class MainPage extends AppCompatActivity {
                         // of the selected item
                         switch (which) {
                             case 0:
-                                Toast.makeText(MainPage.this , "Set as A Day", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(MainPage.this , "Set as 'A' Day", Toast.LENGTH_SHORT).show();
                                 //Log.i("This is today's day letter", "A");
                                 todayScheduleFormat = ScheduleFormat("a");
                                 OfflineProcedures();
                                 break;
                             case 1:
-                                Toast.makeText(MainPage.this, "Set as B Day", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(MainPage.this, "Set as 'B' Day", Toast.LENGTH_SHORT).show();
                                 //Log.i("This is today's day letter", "B");
                                 todayScheduleFormat = ScheduleFormat("b");
                                 OfflineProcedures();
                                 break;
                             case 2:
-                                Toast.makeText(MainPage.this, "Set as C Day", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(MainPage.this, "Set as 'C' Day", Toast.LENGTH_SHORT).show();
                                 //Log.i("This is today's day letter", "C");
                                 todayScheduleFormat = ScheduleFormat("c");
                                 OfflineProcedures();
                                 break;
                             case 3:
-                                Toast.makeText(MainPage.this, "Set as D Day", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(MainPage.this, "Set as 'D' Day", Toast.LENGTH_SHORT).show();
                                 //Log.i("This is today's day letter", "D");
                                 todayScheduleFormat = ScheduleFormat("d");
                                 FinalizingSetupProcedures();
