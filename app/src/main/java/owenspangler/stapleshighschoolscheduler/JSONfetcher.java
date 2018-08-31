@@ -1,14 +1,5 @@
 package owenspangler.stapleshighschoolscheduler;
-
-//import android.app.Activity;
-//import android.app.AlertDialog;
-//import android.content.Context;
 import android.os.AsyncTask;
-//import android.util.Log;
-//import android.widget.Toast;
-
-//import com.google.android.gms.common.api.Response;
-
 import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -18,12 +9,12 @@ import java.net.MalformedURLException;
 import java.net.HttpURLConnection;
 
 class JSONfetcher extends AsyncTask<String,Integer,String> {
-    ///Vars Below///
-    String data = "";
-    ///End Vars Section///
+
+    String data = ""; //full raw data retrieved
 
     @Override
     protected void onPreExecute() {
+
         //ADD SOME SORT OF LOADING SCREEN HERE IF POSSIBLE WHILE NEW DATA IS RETRIEVED
 
         //progress.setMessage("Analysing");
@@ -33,17 +24,19 @@ class JSONfetcher extends AsyncTask<String,Integer,String> {
 
     @Override
     protected String doInBackground(String...String){
-        if(InternetConnected()) {
-            //Log.i("INTERNET CONNECTION", "There is an internet connection, will download data from server");
+
+        if(InternetConnected()) { //There is an internet connection, will download data from server
+
             RetrieveJson();
             return data;
-        }else{
-            //Log.e("INTERNET CONNECTION","There is no internet connection, user will have to input day letter");
+        }else{ //There is no internet connection, user will have to input day letter
+
             return "NO CONNECTION";
         }
     }
 
 void RetrieveJson(){
+
         //START CODE ATTRIBUTION HERE
         //Portions of Below Code are from code made by Abhishek Panwar
         //The original code can be found at: https://github.com/panwarabhishek345/Receive-JSON-Data
@@ -63,15 +56,16 @@ void RetrieveJson(){
         }
     //END CODE ATTRIBUTION FROM Abhishek Panwar
     } catch (MalformedURLException e) {
-        //Log.e("MalformedURL", "Something is wrong with the URL you put in here. Fix it.");
+        //Something is wrong with the URL you put in here. Fix it.
         e.printStackTrace();
     } catch (IOException e) {
-        //Log.e("IOException", "I don't know what you did, but you better fix it");
+       //I don't know what you did, but you better fix it.
         e.printStackTrace();
     }
 }
 
-    public boolean InternetConnected() {
+    public boolean InternetConnected() { //Checks for an internet connection to test for offline status to github site
+
         //The below code was adapted from a StackOverflow answer by YLS
         //The full answer can be found here: https://stackoverflow.com/a/40111665
         boolean success = false;
