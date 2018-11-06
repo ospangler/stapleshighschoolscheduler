@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">StaplesHighSchoolScheduler</string>
     <string name="ERROR">Error</string>
-    <string name="Refresh">Refresh</string>
+    <string name="Refresh">Server Refresh</string>
 
 </resources>

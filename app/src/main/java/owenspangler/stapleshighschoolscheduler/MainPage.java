@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.style.ForegroundColorSpan;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
@@ -53,10 +54,9 @@ public class MainPage extends AppCompatActivity {
     //int currentHour = 14;
     int currentMinute = cal.get(Calendar.MINUTE);
     //int currentMinute = 16;
-    //int currentSecond = cal.get(Calendar.SECOND);
     ProgressBar progressBar;
     ProgressBar overallProgressBar;
-    ///
+    int[][] inputPeriodTimes;
     int[][] normalPeriodTimes = //CHANGE BELOW TIMES WHEN SCHEDULE CHANGES
             {
                     { 7,  8,  9, 10, 12, 13},//START HOUR
@@ -71,7 +71,7 @@ public class MainPage extends AppCompatActivity {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_page);
-        Main();
+        FirstMain();
     }
 
     @Override
@@ -81,11 +81,9 @@ public class MainPage extends AppCompatActivity {
         inflater.inflate(R.menu.mainmenu, menu);
         return true;
     }
-/////////
-    BackgroundCalculator backgroundCalculator = new BackgroundCalculator();
 
     Handler h = new Handler();
-    int delay = 15*1000; //1 second=1000 milisecond, 15*1000=15seconds
+    int delay = 15*1000; //sets refresh delay for app
     Runnable runnable;
 
     @Override
@@ -94,9 +92,7 @@ public class MainPage extends AppCompatActivity {
 
         h.postDelayed( runnable = new Runnable() {
             public void run() {
-
-                backgroundCalculator.test();
-
+                RepeatedMain();
                 h.postDelayed(runnable, delay);
             }
         }, delay);
@@ -109,13 +105,10 @@ public class MainPage extends AppCompatActivity {
         h.removeCallbacks(runnable); //stop handler when activity not visible
         super.onPause();
     }
-///////
 
-    void Main() {
+    void FirstMain() {//Initial Code that executes on startup
 
-        GetJson();//keep this out of async so server isn't checked every second. add settings menu with manual refresh in future
-
-        int[][] inputPeriodTimes;
+        GetJson();
 
         if(!offline) {
 
@@ -154,12 +147,42 @@ public class MainPage extends AppCompatActivity {
 
     }
 
+    void RepeatedMain() {//This is the main code that repeats after the initial push
+        passingTime = false;//If set to true in function, school is in passing time, this line resets.
+        noSchool = false;//If set to true in function, is before or after school, this line resets.
+        Calendar calRefresh = Calendar.getInstance();
+        currentHour = calRefresh.get(Calendar.HOUR_OF_DAY);
+        currentMinute = calRefresh.get(Calendar.MINUTE);
+
+        PeriodNumber(inputPeriodTimes);//checks to see if there is noSchool
+
+        if(!offline) {
+            if (!noSchool) currentPeriodNumber = PeriodNumber(inputPeriodTimes);
+
+            if (noSchool) { // Online, No School using Current Schedule
+                NoSchoolProcedures();
+
+            } else if (passingTime) { // Online, School in session, but not inside a period detected
+                FindTimeUntilEndOfDay(inputPeriodTimes);
+                FindTimeUntilEndPassingTime(inputPeriodTimes);
+                FinalizingSetupProcedures();
+
+            } else { // Online, School in session and during period
+                FindTimeUntilEndOfDay(inputPeriodTimes);
+                FindTimeUntilEndNormal(inputPeriodTimes);
+                FinalizingSetupProcedures();
+            }
+        }else{
+         OfflineConditions();
+        }
+    }
+
     void OfflineConditions(){
 
-        int[][] inputPeriodTimes;
+        int[][] offlineInputPeriodTimes;
 
-        inputPeriodTimes = normalPeriodTimes;
-        currentPeriodNumber = PeriodNumber(inputPeriodTimes);
+        offlineInputPeriodTimes = normalPeriodTimes;
+        currentPeriodNumber = PeriodNumber(offlineInputPeriodTimes);
 
 
         if(noSchool){ // Offline, No School Detected for Normal Schedule
@@ -168,14 +191,14 @@ public class MainPage extends AppCompatActivity {
 
         }else if(passingTime){ // Offline, Passing Time Detected for Normal Schedule
             OfflineProcedures();
-            FindTimeUntilEndOfDay(inputPeriodTimes);
-            FindTimeUntilEndPassingTime(inputPeriodTimes);
+            FindTimeUntilEndOfDay(offlineInputPeriodTimes);
+            FindTimeUntilEndPassingTime(offlineInputPeriodTimes);
             FinalizingSetupProcedures();
 
         }else { // Offline, Normal School Conditions Detected
             OfflineProcedures();
-            FindTimeUntilEndOfDay(inputPeriodTimes);
-            FindTimeUntilEndNormal(inputPeriodTimes);
+            FindTimeUntilEndOfDay(offlineInputPeriodTimes);
+            FindTimeUntilEndNormal(offlineInputPeriodTimes);
             FinalizingSetupProcedures();
         }
     }
@@ -302,14 +325,17 @@ public class MainPage extends AppCompatActivity {
         }
     }
     String FindDayLetter() { //Finds the current day letter given the list pulled from the json server
-
+        boolean found = false;
         int temppos = -1;
         for (int i = 0; i < jsondayLetterDayNumber.length; i++) {
             if (jsondayLetterDayNumber[i] == currentDayNum) {
+                found = true;
                 temppos = i;
                 break;
             }
         }
+
+        if(!found) noSchool = true;
 
         if (((temppos % 4) + jsondayLetterListStart) == 0) {
             return "a";
@@ -325,10 +351,7 @@ public class MainPage extends AppCompatActivity {
     int PeriodNumber(int[][] inputPeriodTimes) { //Finds the current period number of the day, and determines if it is passing time or if there is no School
 
         int i = 0; //array position
-        passingTime = false;//If set to true in function, school is in passing time, this line resets.
-        noSchool = false;//If set to true in function, is before or after school, this line resets.
-
-        //KEY: 0 start times hour, 1 start times min, 2 end times hour, 3 end times minute
+                //KEY: 0 start times hour, 1 start times min, 2 end times hour, 3 end times minute
 
         if((currentHour < inputPeriodTimes[0][0])||
                 (currentHour > inputPeriodTimes[2][((inputPeriodTimes[0].length)-1)])||
