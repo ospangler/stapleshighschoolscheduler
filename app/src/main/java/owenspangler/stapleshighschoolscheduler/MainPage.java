@@ -1,6 +1,7 @@
 package owenspangler.stapleshighschoolscheduler;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.Handler;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -80,6 +81,35 @@ public class MainPage extends AppCompatActivity {
         inflater.inflate(R.menu.mainmenu, menu);
         return true;
     }
+/////////
+    BackgroundCalculator backgroundCalculator = new BackgroundCalculator();
+
+    Handler h = new Handler();
+    int delay = 15*1000; //1 second=1000 milisecond, 15*1000=15seconds
+    Runnable runnable;
+
+    @Override
+    protected void onResume() {
+        //start handler as activity become visible
+
+        h.postDelayed( runnable = new Runnable() {
+            public void run() {
+
+                backgroundCalculator.test();
+
+                h.postDelayed(runnable, delay);
+            }
+        }, delay);
+
+        super.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        h.removeCallbacks(runnable); //stop handler when activity not visible
+        super.onPause();
+    }
+///////
 
     void Main() {
 
