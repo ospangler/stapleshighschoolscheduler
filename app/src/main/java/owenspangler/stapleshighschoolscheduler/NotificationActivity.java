@@ -1,6 +1,5 @@
 package owenspangler.stapleshighschoolscheduler;
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.content.Context;
 import android.content.Intent;
@@ -18,8 +17,8 @@ import android.preference.RingtonePreference;
 import android.text.TextUtils;
 import android.view.MenuItem;
 
-public class SettingsActivity extends AppCompatPreferenceActivity {
-    private static final String TAG = SettingsActivity.class.getSimpleName();
+public class NotificationActivity extends AppCompatPreferenceActivity {
+    private static final String TAG = NotificationActivity.class.getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,7 +33,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         @Override
         public void onCreate(final Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
-            addPreferencesFromResource(R.xml.pref_main);
+            addPreferencesFromResource(R.xml.pref_notifications);
 
             // gallery EditText change listener
             bindPreferenceSummaryToValue(findPreference(getString(R.string.key_gallery_name)));

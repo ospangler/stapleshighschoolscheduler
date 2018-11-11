@@ -8,6 +8,21 @@
             android:icon="@drawable/ic_notification_on"
             android:title="@string/Notifications" />
 
+        <item
+            android:id="@+id/nav_schedule_input"
+            android:icon="@drawable/ic_input"
+            android:title="@string/ScheduleInput" />
+
+        <item
+            android:id="@+id/nav_quote"
+            android:icon="@drawable/ic_quote"
+            android:title="@string/Quote" />
+
+        <item
+            android:id="@+id/nav_settings"
+            android:icon="@drawable/ic_settings"
+            android:title="@string/Settings" />
+
         <!-- <item
             android:id="@+id/nav_camera"
             android:icon="@drawable/ic_menu_camera"

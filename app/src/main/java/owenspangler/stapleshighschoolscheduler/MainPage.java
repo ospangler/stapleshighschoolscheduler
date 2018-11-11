@@ -105,9 +105,20 @@ public class MainPage extends AppCompatActivity {
 
                         if (id == R.id.nav_notification) {
                             // launch settings activity
-                            startActivity(new Intent(MainPage.this, SettingsActivity.class));
+                            startActivity(new Intent(MainPage.this, NotificationActivity.class));
+                            return true;
+                        }else if(id == R.id.nav_schedule_input){
+                            startActivity(new Intent(MainPage.this, InputRealClassActivity.class));
+                            return true;
+                        }else if(id == R.id.nav_quote){
+                            startActivity(new Intent(MainPage.this, NotificationActivity.class));
+                            return true;
+                        }else if(id == R.id.nav_settings){
+                            startActivity(new Intent(MainPage.this, GeneralSettingsActivity.class));
                             return true;
                         }
+
+
                         return MainPage.super.onOptionsItemSelected(menuItem);
                     }
                 });
