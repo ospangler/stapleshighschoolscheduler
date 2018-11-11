@@ -101,10 +101,14 @@ public class MainPage extends AppCompatActivity {
                         // close drawer when item is tapped
                         mDrawerLayout.closeDrawers();
 
-                        // Add code here to update the UI based on the item selected
-                        // For example, swap UI fragments here
+                        int id = menuItem.getItemId();
 
-                        return true;
+                        if (id == R.id.nav_notification) {
+                            // launch settings activity
+                            startActivity(new Intent(MainPage.this, SettingsActivity.class));
+                            return true;
+                        }
+                        return MainPage.super.onOptionsItemSelected(menuItem);
                     }
                 });
         ////
