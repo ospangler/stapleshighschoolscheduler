@@ -2,5 +2,9 @@
     <string name="app_name">StaplesHighSchoolScheduler</string>
     <string name="ERROR">Error</string>
     <string name="Refresh">Server Refresh</string>
+    <string name="periodPlaceholder">0</string>
+    <string name="Remaining">Remaining</string>
+    <string name="Notifications">Notifications</string>
+
 
 </resources>
