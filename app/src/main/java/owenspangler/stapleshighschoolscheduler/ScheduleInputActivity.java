@@ -18,7 +18,7 @@ import android.preference.RingtonePreference;
 import android.text.TextUtils;
 import android.view.MenuItem;
 
-public class InputRealClassActivity extends AppCompatPreferenceActivity {
+public class ScheduleInputActivity extends AppCompatPreferenceActivity {
     private static final String TAG = NotificationActivity.class.getSimpleName();
 
     @Override
@@ -35,11 +35,27 @@ public class InputRealClassActivity extends AppCompatPreferenceActivity {
         @Override
         public void onCreate(final Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
-            addPreferencesFromResource(R.xml.pref_notifications);
+            addPreferencesFromResource(R.xml.pref_schedule_input);
 
-            // gallery EditText change listener
-            bindPreferenceSummaryToValue(findPreference(getString(R.string.key_gallery_name)));
+            // Class Name Text change listener. If more periods added, add a listener here.
+            bindPreferenceSummaryToValue(findPreference("key_schedule_period_1_name"));
+            bindPreferenceSummaryToValue(findPreference("key_schedule_period_2_name"));
+            bindPreferenceSummaryToValue(findPreference("key_schedule_period_3_name"));
+            bindPreferenceSummaryToValue(findPreference("key_schedule_period_4_name"));
+            bindPreferenceSummaryToValue(findPreference("key_schedule_period_5_name"));
+            bindPreferenceSummaryToValue(findPreference("key_schedule_period_6_name"));
+            bindPreferenceSummaryToValue(findPreference("key_schedule_period_7_name"));
+            bindPreferenceSummaryToValue(findPreference("key_schedule_period_8_name"));
 
+            //Class Info Text Listener
+            bindPreferenceSummaryToValue(findPreference("key_schedule_period_1_info"));
+            bindPreferenceSummaryToValue(findPreference("key_schedule_period_2_info"));
+            bindPreferenceSummaryToValue(findPreference("key_schedule_period_3_info"));
+            bindPreferenceSummaryToValue(findPreference("key_schedule_period_4_info"));
+            bindPreferenceSummaryToValue(findPreference("key_schedule_period_5_info"));
+            bindPreferenceSummaryToValue(findPreference("key_schedule_period_6_info"));
+            bindPreferenceSummaryToValue(findPreference("key_schedule_period_7_info"));
+            bindPreferenceSummaryToValue(findPreference("key_schedule_period_8_info"));
             // notification preference change listener
             bindPreferenceSummaryToValue(findPreference(getString(R.string.key_notifications_new_message_ringtone)));
 
@@ -114,9 +130,54 @@ public class InputRealClassActivity extends AppCompatPreferenceActivity {
                     }
                 }
 
-            } else if (preference instanceof EditTextPreference) {
-                if (preference.getKey().equals("key_gallery_name")) {
+            } else if (preference instanceof EditTextPreference) { //Add Class Name Text Inputs Here so they update string
+                if (preference.getKey().equals("key_schedule_period_1_name")) {
                     // update the changed gallery name to summary filed
+                    preference.setSummary(stringValue);
+                }else if (preference.getKey().equals("key_schedule_period_2_name")) {
+                    // update the changed gallery name to summary filed
+                    preference.setSummary(stringValue);
+                }else if (preference.getKey().equals("key_schedule_period_3_name")) {
+                    // update the changed gallery name to summary filed
+                    preference.setSummary(stringValue);
+                }else if (preference.getKey().equals("key_schedule_period_4_name")) {
+                    // update the changed gallery name to summary filed
+                    preference.setSummary(stringValue);
+                }else if (preference.getKey().equals("key_schedule_period_5_name")) {
+                    // update the changed gallery name to summary filed
+                    preference.setSummary(stringValue);
+                }else if (preference.getKey().equals("key_schedule_period_6_name")) {
+                    // update the changed gallery name to summary filed
+                    preference.setSummary(stringValue);
+                }else if (preference.getKey().equals("key_schedule_period_7_name")) {
+                    // update the changed gallery name to summary filed
+                    preference.setSummary(stringValue);
+                }else if (preference.getKey().equals("key_schedule_period_8_name")) {
+                    // update the changed gallery name to summary filed
+                    preference.setSummary(stringValue);
+                }else if (preference.getKey().equals("key_schedule_period_1_info")) {
+                    // update the changed gallery info to summary filed
+                    preference.setSummary(stringValue);
+                }else if (preference.getKey().equals("key_schedule_period_2_info")) {
+                    // update the changed gallery info to summary filed
+                    preference.setSummary(stringValue);
+                }else if (preference.getKey().equals("key_schedule_period_3_info")) {
+                    // update the changed gallery info to summary filed
+                    preference.setSummary(stringValue);
+                }else if (preference.getKey().equals("key_schedule_period_4_info")) {
+                    // update the changed gallery info to summary filed
+                    preference.setSummary(stringValue);
+                }else if (preference.getKey().equals("key_schedule_period_5_info")) {
+                    // update the changed gallery info to summary filed
+                    preference.setSummary(stringValue);
+                }else if (preference.getKey().equals("key_schedule_period_6_info")) {
+                    // update the changed gallery info to summary filed
+                    preference.setSummary(stringValue);
+                }else if (preference.getKey().equals("key_schedule_period_7_info")) {
+                    // update the changed gallery info to summary filed
+                    preference.setSummary(stringValue);
+                }else if (preference.getKey().equals("key_schedule_period_8_info")) {
+                    // update the changed gallery info to summary filed
                     preference.setSummary(stringValue);
                 }
             } else {
@@ -142,7 +203,7 @@ public class InputRealClassActivity extends AppCompatPreferenceActivity {
         }
         Intent intent = new Intent(Intent.ACTION_SEND);
         intent.setType("message/rfc822");
-        intent.putExtra(Intent.EXTRA_EMAIL, new String[]{"contact@androidhive.info"});
+        intent.putExtra(Intent.EXTRA_EMAIL, new String[]{"owenps16@gmail.com"});
         intent.putExtra(Intent.EXTRA_SUBJECT, "Query from android app");
         intent.putExtra(Intent.EXTRA_TEXT, body);
         context.startActivity(Intent.createChooser(intent, context.getString(R.string.choose_email_client)));

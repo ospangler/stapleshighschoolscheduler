@@ -13,15 +13,12 @@ import android.os.Bundle;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.style.ForegroundColorSpan;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.Toolbar;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -108,7 +105,7 @@ public class MainPage extends AppCompatActivity {
                             startActivity(new Intent(MainPage.this, NotificationActivity.class));
                             return true;
                         }else if(id == R.id.nav_schedule_input){
-                            startActivity(new Intent(MainPage.this, InputRealClassActivity.class));
+                            startActivity(new Intent(MainPage.this, ScheduleInputActivity.class));
                             return true;
                         }else if(id == R.id.nav_quote){
                             startActivity(new Intent(MainPage.this, NotificationActivity.class));

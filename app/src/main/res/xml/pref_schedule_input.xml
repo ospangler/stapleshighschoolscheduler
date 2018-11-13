@@ -1,29 +1,224 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-    <PreferenceCategory android:title="General">
+    <PreferenceCategory android:title="Period 1">
         <EditTextPreference
-            android:defaultValue="@string/default_gallery_storage"
-            android:key="@string/key_gallery_name"
-            android:summary="@string/default_gallery_storage"
-            android:title="@string/title_gallery_storage" />
-
-        <CheckBoxPreference
-            android:defaultValue="true"
-            android:key="@string/key_upload_over_wifi"
-            android:summary="@string/summary_upload_over_wifi"
-            android:title="@string/title_auto_upload" />
+            android:title="Period 1 Class Name"
+            android:defaultValue="@string/Period_1_Class_Name"
+            android:summary="@string/Period_1_Class_Name"
+            android:key="key_schedule_period_1_name"
+            />
 
         <ListPreference
-            android:defaultValue="3"
-            android:dialogTitle="@string/title_upload_quality"
-            android:entries="@array/pref_upload_quality_entries"
-            android:entryValues="@array/pref_upload_quality_values"
-            android:key="@string/key_upload_quality"
-            android:summary="@string/summary_upload_video_quality"
-            android:title="@string/title_upload_quality" />
+            android:defaultValue="0"
+            android:title="Period 1 Class Type"
+            android:summary="@string/Period_1_Class_Type"
+            android:dialogTitle="Period 1 Class Type"
+            android:entries="@array/pref_type_of_class"
+            android:entryValues="@array/pref_type_of_class"
+            android:key="key_schedule_period_1_type"
+             />
+
+        <EditTextPreference
+            android:title="Period 1 Room (Optional)"
+            android:defaultValue="@string/Period_1_Class_Info"
+            android:summary="@string/Period_1_Class_Info"
+            android:key="key_schedule_period_1_info"
+            />
 
     </PreferenceCategory>
 
+    <PreferenceCategory android:title="Period 2">
+    <EditTextPreference
+        android:title="Period 2 Class Name"
+        android:defaultValue="@string/Period_2_Class_Name"
+        android:summary="@string/Period_2_Class_Name"
+        android:key="key_schedule_period_2_name"
+        />
+
+    <ListPreference
+        android:defaultValue="0"
+        android:title="Period 2 Class Type"
+        android:summary="@string/Period_2_Class_Type"
+        android:dialogTitle="Period 2 Class Type"
+        android:entries="@array/pref_type_of_class"
+        android:entryValues="@array/pref_type_of_class"
+        android:key="key_schedule_period_2_type"
+        />
+
+        <EditTextPreference
+            android:title="Period 2 Room (Optional)"
+            android:defaultValue="@string/Period_2_Class_Info"
+            android:summary="@string/Period_2_Class_Info"
+            android:key="key_schedule_period_2_info"
+            />
+
+</PreferenceCategory>
+
+    <PreferenceCategory android:title="Period 3">
+        <EditTextPreference
+            android:title="Period 3 Class Name"
+            android:defaultValue="@string/Period_3_Class_Name"
+            android:summary="@string/Period_3_Class_Name"
+            android:key="key_schedule_period_3_name"
+            />
+
+        <ListPreference
+            android:defaultValue="0"
+            android:title="Period 3 Class Type"
+            android:summary="@string/Period_3_Class_Type"
+            android:dialogTitle="Period 3 Class Type"
+            android:entries="@array/pref_type_of_class"
+            android:entryValues="@array/pref_type_of_class"
+            android:key="key_schedule_period_3_type"
+            />
+
+        <EditTextPreference
+            android:title="Period 3 Room (Optional)"
+            android:defaultValue="@string/Period_3_Class_Info"
+            android:summary="@string/Period_3_Class_Info"
+            android:key="key_schedule_period_3_info"
+            />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="Period 4">
+        <EditTextPreference
+            android:title="Period 4 Class Name"
+            android:defaultValue="@string/Period_4_Class_Name"
+            android:summary="@string/Period_4_Class_Name"
+            android:key="key_schedule_period_4_name"
+            />
+
+        <ListPreference
+            android:defaultValue="0"
+            android:title="Period 4 Class Type"
+            android:summary="@string/Period_4_Class_Type"
+            android:dialogTitle="Period 4 Class Type"
+            android:entries="@array/pref_type_of_class"
+            android:entryValues="@array/pref_type_of_class"
+            android:key="key_schedule_period_4_type"
+            />
+
+        <EditTextPreference
+            android:title="Period 4 Room (Optional)"
+            android:defaultValue="@string/Period_4_Class_Info"
+            android:summary="@string/Period_4_Class_Info"
+            android:key="key_schedule_period_4_info"
+            />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="Period 5">
+        <EditTextPreference
+            android:title="Period 5 Class Name"
+            android:defaultValue="@string/Period_5_Class_Name"
+            android:summary="@string/Period_5_Class_Name"
+            android:key="key_schedule_period_5_name"
+            />
+
+        <ListPreference
+            android:defaultValue="0"
+            android:title="Period 5 Class Type"
+            android:summary="@string/Period_5_Class_Type"
+            android:dialogTitle="Period 5 Class Type"
+            android:entries="@array/pref_type_of_class"
+            android:entryValues="@array/pref_type_of_class"
+            android:key="key_schedule_period_5_type"
+            />
+
+        <EditTextPreference
+            android:title="Period 5 Room (Optional)"
+            android:defaultValue="@string/Period_5_Class_Info"
+            android:summary="@string/Period_5_Class_Info"
+            android:key="key_schedule_period_5_info"
+            />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="Period 6">
+        <EditTextPreference
+            android:title="Period 6 Class Name"
+            android:defaultValue="@string/Period_6_Class_Name"
+            android:summary="@string/Period_6_Class_Name"
+            android:key="key_schedule_period_6_name"
+            />
+
+        <ListPreference
+            android:defaultValue="0"
+            android:title="Period 6 Class Type"
+            android:summary="@string/Period_6_Class_Type"
+            android:dialogTitle="Period 6 Class Type"
+            android:entries="@array/pref_type_of_class"
+            android:entryValues="@array/pref_type_of_class"
+            android:key="key_schedule_period_6_type"
+            />
+
+        <EditTextPreference
+            android:title="Period 6 Room (Optional)"
+            android:defaultValue="@string/Period_6_Class_Info"
+            android:summary="@string/Period_6_Class_Info"
+            android:key="key_schedule_period_6_info"
+            />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="Period 7">
+        <EditTextPreference
+            android:title="Period 7 Class Name"
+            android:defaultValue="@string/Period_7_Class_Name"
+            android:summary="@string/Period_7_Class_Name"
+            android:key="key_schedule_period_7_name"
+            />
+
+        <ListPreference
+            android:defaultValue="0"
+            android:title="Period 7 Class Type"
+            android:summary="@string/Period_7_Class_Type"
+            android:dialogTitle="Period 7 Class Type"
+            android:entries="@array/pref_type_of_class"
+            android:entryValues="@array/pref_type_of_class"
+            android:key="key_schedule_period_7_type"
+            />
+
+        <EditTextPreference
+            android:title="Period 7 Room (Optional)"
+            android:defaultValue="@string/Period_7_Class_Info"
+            android:summary="@string/Period_7_Class_Info"
+            android:key="key_schedule_period_7_info"
+            />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="Period 8">
+        <EditTextPreference
+            android:title="Period 8 Class Name"
+            android:defaultValue="@string/Period_8_Class_Name"
+            android:summary="@string/Period_8_Class_Name"
+            android:key="key_schedule_period_8_name"
+            />
+
+        <ListPreference
+            android:defaultValue="0"
+            android:title="Period 8 Class Type"
+            android:summary="@string/Period_8_Class_Type"
+            android:dialogTitle="Period 8 Class Type"
+            android:entries="@array/pref_type_of_class"
+            android:entryValues="@array/pref_type_of_class"
+            android:key="key_schedule_period_8_type"
+            />
+
+        <EditTextPreference
+            android:title="Period 8 Room (Optional)"
+            android:defaultValue="@string/Period_8_Class_Info"
+            android:summary="@string/Period_8_Class_Info"
+            android:key="key_schedule_period_8_info"
+            />
+
+    </PreferenceCategory>
+
+
+
+    <!-- Redundant Code Below -->
     <PreferenceCategory android:title="@string/pref_title_notifications">
 
         <SwitchPreference

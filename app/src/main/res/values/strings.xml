@@ -9,6 +9,34 @@
     <string name="Quote">Quote of the Day</string>
     <string name="Settings">Settings</string>
 
+    <!-- Schedule Input Placeholders -->
+    <string name="Period_1_Class_Name">Period 1</string>
+    <string name="Period_2_Class_Name">Period 2</string>
+    <string name="Period_3_Class_Name">Period 3</string>
+    <string name="Period_4_Class_Name">Period 4</string>
+    <string name="Period_5_Class_Name">Period 5</string>
+    <string name="Period_6_Class_Name">Period 6</string>
+    <string name="Period_7_Class_Name">Period 7</string>
+    <string name="Period_8_Class_Name">Period 8</string>
+
+    <string name="Period_1_Class_Type">Free or Not Applicable</string>
+    <string name="Period_2_Class_Type">Free or Not Applicable</string>
+    <string name="Period_3_Class_Type">Free or Not Applicable</string>
+    <string name="Period_4_Class_Type">Free or Not Applicable</string>
+    <string name="Period_5_Class_Type">Free or Not Applicable</string>
+    <string name="Period_6_Class_Type">Free or Not Applicable</string>
+    <string name="Period_7_Class_Type">Free or Not Applicable</string>
+    <string name="Period_8_Class_Type">Free or Not Applicable</string>
+
+    <string name="Period_1_Class_Info">No Info</string>
+    <string name="Period_2_Class_Info">No Info</string>
+    <string name="Period_3_Class_Info">No Info</string>
+    <string name="Period_4_Class_Info">No Info</string>
+    <string name="Period_5_Class_Info">No Info</string>
+    <string name="Period_6_Class_Info">No Info</string>
+    <string name="Period_7_Class_Info">No Info</string>
+    <string name="Period_8_Class_Info">No Info</string>
+
     <!-- This is for preferences screen below-->
 
     <string name="pref_app_name">Preferences</string>
