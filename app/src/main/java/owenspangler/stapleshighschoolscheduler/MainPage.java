@@ -1,4 +1,5 @@
 package owenspangler.stapleshighschoolscheduler;
+
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Handler;
@@ -40,15 +41,8 @@ public class MainPage extends AppCompatActivity {
     int lunchPeriodPosition;
     int[][] lunchWaveTimes;
     String dayLetter;
+    boolean noLunch = false;
     //
-    String jsonDayLetter = "";
-    int jsonMonth = -1;
-    int jsonDay = -1;
-    int jsondayLetterListStart;
-    int[] todayScheduleFormat;
-    int[] jsonNewScheduleFormat;
-    int[] jsondayLetterDayNumber;
-    int[][] jsonPeriodTimes;
     int currentPeriodNumber = -1;
     int progressForBar = 0;
     int progressForOverallBar = 0;
@@ -71,22 +65,22 @@ public class MainPage extends AppCompatActivity {
     //int currentMinute = 16;
     ProgressBar progressBar;
     ProgressBar overallProgressBar;
-    int[][] inputPeriodTimes;
+    //int[][] inputPeriodTimes;
+    /*
     int[][] normalPeriodTimes = //CHANGE BELOW TIMES WHEN SCHEDULE CHANGES
             {
-                    { 7,  8,  9, 10, 12, 13},//START HOUR
+                    {7, 8, 9, 10, 12, 13},//START HOUR
                     {30, 25, 50, 45, 30, 25},//START MINUTE
 
-                    { 8,  9, 10, 12, 13, 14},//END HOUR
+                    {8, 9, 10, 12, 13, 14},//END HOUR
                     {20, 45, 40, 25, 20, 15}};//END MINUTE
     ///END VARS///
-
+*/
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_page);
-        ////
-///////look at below make sure you didn't screw it up
+
         android.support.v7.widget.Toolbar toolbar = findViewById(R.id.toolbar);
 
         setSupportActionBar(toolbar);
@@ -94,7 +88,7 @@ public class MainPage extends AppCompatActivity {
         ActionBar actionbar = getSupportActionBar();
         try {
             actionbar.setDisplayHomeAsUpEnabled(true);
-        }catch (NullPointerException e){
+        } catch (NullPointerException e) {
             //put stack trace here
         }
         actionbar.setHomeAsUpIndicator(R.drawable.ic_menu);
@@ -118,13 +112,13 @@ public class MainPage extends AppCompatActivity {
                             // launch settings activity
                             startActivity(new Intent(MainPage.this, NotificationActivity.class));
                             return true;
-                        }else if(id == R.id.nav_schedule_input){
+                        } else if (id == R.id.nav_schedule_input) {
                             startActivity(new Intent(MainPage.this, ScheduleInputActivity.class));
                             return true;
-                        }else if(id == R.id.nav_quote){
+                        } else if (id == R.id.nav_quote) {
                             startActivity(new Intent(MainPage.this, NotificationActivity.class));
                             return true;
-                        }else if(id == R.id.nav_settings){
+                        } else if (id == R.id.nav_settings) {
                             startActivity(new Intent(MainPage.this, GeneralSettingsActivity.class));
                             return true;
                         }
@@ -149,14 +143,14 @@ public class MainPage extends AppCompatActivity {
     }
 
     Handler h = new Handler();
-    int delay = 15*1000; //sets refresh delay for app
+    int delay = 15 * 1000; //sets refresh delay for app
     Runnable runnable;
 
     @Override
     protected void onResume() {
         //start handler as activity become visible
 
-        h.postDelayed( runnable = new Runnable() {
+        h.postDelayed(runnable = new Runnable() {
             public void run() {
                 RepeatedMain();
                 h.postDelayed(runnable, delay);
@@ -175,8 +169,8 @@ public class MainPage extends AppCompatActivity {
     void FirstMain() {//Initial Code that executes on startup
 
         GetJson();
-
-        if(!offline) {
+/*
+        if (!offline) {
 
             //CheckForServerCorruption(); //check if there are wrong entries in the server data that would result in a crash
 
@@ -193,27 +187,29 @@ public class MainPage extends AppCompatActivity {
                 currentPeriodNumber = PeriodNumber(inputPeriodTimes);
             }
 
-            if (noSchool){ // Online, No School using Current Schedule
+            if (noSchool) { // Online, No School using Current Schedule
                 NoSchoolProcedures();
 
-            }else if (passingTime){ // Online, School in session, but not inside a period detected
+            } else if (passingTime) { // Online, School in session, but not inside a period detected
                 FindTimeUntilEndOfDay(inputPeriodTimes);
                 FindTimeUntilEndPassingTime(inputPeriodTimes);
                 FinalizingSetupProcedures();
 
-            }else{ // Online, School in session and during period
+            } else { // Online, School in session and during period
                 FindTimeUntilEndOfDay(inputPeriodTimes);
                 FindTimeUntilEndNormal(inputPeriodTimes);
                 FinalizingSetupProcedures();
             }
 
-        }else{
+        } else {
             OfflineDayAlertPopup("No Connection. Pick a Day.");
         }
+        */
 
     }
 
     void RepeatedMain() {//This is the main code that repeats after the initial push
+        /*
         passingTime = false;//If set to true in function, school is in passing time, this line resets.
         noSchool = false;//If set to true in function, is before or after school, this line resets.
         Calendar calRefresh = Calendar.getInstance();
@@ -222,7 +218,7 @@ public class MainPage extends AppCompatActivity {
 
         PeriodNumber(inputPeriodTimes);//checks to see if there is noSchool
 
-        if(!offline) {
+        if (!offline) {
             if (!noSchool) currentPeriodNumber = PeriodNumber(inputPeriodTimes);
 
             if (noSchool) { // Online, No School using Current Schedule
@@ -238,35 +234,37 @@ public class MainPage extends AppCompatActivity {
                 FindTimeUntilEndNormal(inputPeriodTimes);
                 FinalizingSetupProcedures();
             }
-        }else{
-         OfflineConditions();
+        } else {
+            OfflineConditions();
         }
+        */
     }
 
-    void OfflineConditions(){
-
+    void OfflineConditions() {
+/*
         int[][] offlineInputPeriodTimes;
 
         offlineInputPeriodTimes = normalPeriodTimes;
         currentPeriodNumber = PeriodNumber(offlineInputPeriodTimes);
 
 
-        if(noSchool){ // Offline, No School Detected for Normal Schedule
+        if (noSchool) { // Offline, No School Detected for Normal Schedule
             OfflineProcedures();
             NoSchoolProcedures();
 
-        }else if(passingTime){ // Offline, Passing Time Detected for Normal Schedule
+        } else if (passingTime) { // Offline, Passing Time Detected for Normal Schedule
             OfflineProcedures();
             FindTimeUntilEndOfDay(offlineInputPeriodTimes);
             FindTimeUntilEndPassingTime(offlineInputPeriodTimes);
             FinalizingSetupProcedures();
 
-        }else { // Offline, Normal School Conditions Detected
+        } else { // Offline, Normal School Conditions Detected
             OfflineProcedures();
             FindTimeUntilEndOfDay(offlineInputPeriodTimes);
             FindTimeUntilEndNormal(offlineInputPeriodTimes);
             FinalizingSetupProcedures();
         }
+        */
     }
 
     void GetJson() {
@@ -282,14 +280,9 @@ public class MainPage extends AppCompatActivity {
         if ((jsonData.equals("NO CONNECTION")) || (jsonData.equals(""))) { //NO CONNECTION CONDITION
             offline = true;
 
-        } else {//WITH CONNECTION WITH SUB CONDITIONS
+        } else {//WITH CONNECTION
 
             GetInfoFromJSON(jsonData);
-
-            if ((jsonMonth == currentMonth) && (jsonDay == currentDayNum)) {//SPECIAL SCHEDULE WITH CONNECTION CONDITION
-                specialSchedule = true;
-
-            }
         }
 
     }
@@ -302,9 +295,6 @@ public class MainPage extends AppCompatActivity {
 
             JSONArray scheduleChangeArray = JO.getJSONArray("schedulechange");
 
-            //int tempPostion = 0;
-            int tempScheduleChangeFlag = -1;
-
             for (int i = 0; i < scheduleChangeArray.length(); i++) { //checks to see if any days are listed as changed
 
                 int tempMonth = 0;
@@ -315,13 +305,19 @@ public class MainPage extends AppCompatActivity {
                 Log.i("currentmonth", Integer.toString(tempMonth));
                 Log.i("currentday", Integer.toString(tempDay));
                 Log.i("arraylength", Integer.toString(scheduleChangeArray.length()));
+
                 if ((tempMonth == currentMonth) && (tempDay == currentDayNum)) { //found day listed matches today's date
+
                     specialSchedule = true;
+
+                    dayLetter =  scheduleChangeArray.getJSONObject(i).getString("dayletter");
+
                     JSONArray tempStartTimesHourArray = scheduleChangeArray.getJSONObject(i).getJSONArray("starttimeshour");
                     JSONArray tempStartTimesMinuteArray = scheduleChangeArray.getJSONObject(i).getJSONArray("starttimesminute");
                     JSONArray tempEndTimesHourArray = scheduleChangeArray.getJSONObject(i).getJSONArray("endtimeshour");
                     JSONArray tempEndTimesMinuteArray = scheduleChangeArray.getJSONObject(i).getJSONArray("endtimesminute");
                     periodTimes = new int[4][tempStartTimesHourArray.length()];
+
                     for (int j = 0; j < 4; j++) {
                         for (int k = 0; k < tempStartTimesHourArray.length(); k++) {
                             if (j == 0) {
@@ -337,8 +333,40 @@ public class MainPage extends AppCompatActivity {
 
                     }
                     Log.i("dududu", Arrays.deepToString(periodTimes));
+
+                    JSONArray tempStartLunchHourArray = scheduleChangeArray.getJSONObject(i).getJSONArray("lunchwavesstarthour");
+                    JSONArray tempStartLunchMinuteArray = scheduleChangeArray.getJSONObject(i).getJSONArray("lunchwavesstartminute");
+                    JSONArray tempEndLunchHourArray = scheduleChangeArray.getJSONObject(i).getJSONArray("lunchwavesendhour");
+                    JSONArray tempEndLunchMinuteArray = scheduleChangeArray.getJSONObject(i).getJSONArray("lunchwavesendminute");
+
+                    if(tempStartLunchHourArray.length() == 0){ // if nothing in array, no lunch
+
+                        noLunch = true;
+
+                    }else{//if values in array, has lunch
+
+                        lunchPeriodPosition = scheduleChangeArray.getJSONObject(i).getInt("lunchperiodposition");
+                        lunchWaveTimes = new int[4][tempStartLunchHourArray.length()];
+
+                        for (int j = 0; j < 4; j++) {
+                            for (int k = 0; k < tempStartLunchHourArray.length(); k++) {
+                                if (j == 0) {
+                                    lunchWaveTimes[j][k] = tempStartLunchHourArray.getInt(k);
+                                } else if (j == 1) {
+                                    lunchWaveTimes[j][k] = tempStartLunchMinuteArray.getInt(k);
+                                } else if (j == 2) {
+                                    lunchWaveTimes[j][k] = tempEndLunchHourArray.getInt(k);
+                                } else {
+                                    lunchWaveTimes[j][k] = tempEndLunchMinuteArray.getInt(k);
+                                }
+                            }
+
+                        }
+                        Log.i("dududu", Arrays.deepToString(periodTimes));
+                    }
                     break;
                 }
+
             }
 
             if (!specialSchedule) { //if no special schedule was found, normal day formats will be written
@@ -360,28 +388,29 @@ public class MainPage extends AppCompatActivity {
                 } else {
                     if (((tempPosition % 4) + tempDayListStart) == 0) {
                         dayLetter = "a";
-                        scheduleFormat = ScheduleFormat("a");//new int[]{1, 2, 3, 5, 8, 7}; //'A' day
+                        scheduleFormat = NormalScheduleFormat("a");//new int[]{1, 2, 3, 5, 8, 7}; //'A' day
                     } else if (((tempPosition % 4) + tempDayListStart) == 1) {
                         dayLetter = "b";
-                        scheduleFormat = ScheduleFormat("b");//new int[]{2, 3, 4, 6, 7, 8}; //'B' day
+                        scheduleFormat = NormalScheduleFormat("b");//new int[]{2, 3, 4, 6, 7, 8}; //'B' day
                     } else if (((tempPosition % 4) + tempDayListStart) == 2) {
                         dayLetter = "c";
-                        scheduleFormat = ScheduleFormat("c");//new int[]{3, 4, 1, 7, 6, 5}; //'C' day
+                        scheduleFormat = NormalScheduleFormat("c");//new int[]{3, 4, 1, 7, 6, 5}; //'C' day
                     } else {
                         dayLetter = "d";
-                        scheduleFormat = ScheduleFormat("d");//new int[]{4, 1, 2, 8, 5, 6}; //'D' day
+                        scheduleFormat = NormalScheduleFormat("d");//new int[]{4, 1, 2, 8, 5, 6}; //'D' day
                     }
                 }
             }
 
-            Log.i("dayletter",dayLetter);
-            Log.i("scheduleFormat",Arrays.toString(scheduleFormat));
+            //Log.i("dayletter", dayLetter);
+            Log.i("scheduleFormat", Arrays.toString(scheduleFormat));
             Log.i("noSchool", Boolean.toString(noSchool));
-
-            } catch(JSONException e){
-                e.printStackTrace();
-            }
+            Log.i("lunchscheduleFormat", Arrays.deepToString(lunchWaveTimes));
+            //Log.i("day", Arrays.toString(scheduleFormat));
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
+    }
 
         /*
     int[] getArrayFromJSON(String jsonID) { //REDUNDANT CODE!!!!
@@ -405,8 +434,27 @@ public class MainPage extends AppCompatActivity {
     }
     */
 
-    int[] ScheduleFormat(String inputDayType) { //EDIT THIS FUNCTION IF BASELINE SCHEDULE CHANGES AND PUSH UPDATE
+    int[] NormalScheduleFormat(String inputDayType) { //EDIT THIS FUNCTION IF BASELINE SCHEDULE CHANGES AND PUSH UPDATE
 
+        lunchPeriodPosition = 3; //Period Position that is extended for lunch waves
+
+        lunchWaveTimes = new int[][]{ //Lunch Wave Times Within Extended Lunch Period
+                {3,3,3},//START HOUR
+                {4,4,4},//START MINUTE
+                {5,5,5},//END HOUR
+                {6,6,6}//END MINUTE
+        };
+
+        periodTimes = new int[][]{ //CHANGE BELOW TIMES WHEN SCHEDULE CHANGES
+
+                {7, 8, 9, 10, 12, 13},//START HOUR
+                {30, 25, 50, 45, 30, 25},//START MINUTE
+
+                {8, 9, 10, 12, 13, 14},//END HOUR
+                {20, 45, 40, 25, 20, 15}//END MINUTE
+        };
+
+        //Period Label Format Below
         if (inputDayType.equals("a")) {
             int[] tempA = {1, 2, 3, 5, 8, 7}; //'A' day
             return tempA;
@@ -424,6 +472,7 @@ public class MainPage extends AppCompatActivity {
         }
     }
 
+    /*
     void CheckForServerCorruption(){ //Checks for server corruption, or most likely, incorrect entry from crashing the app.
 
         int temppos = -1;
@@ -442,6 +491,7 @@ public class MainPage extends AppCompatActivity {
             }
         }
     }
+    */
     /*
     String FindDayLetter() { //Finds the current day letter given the list pulled from the json server //REDUNDANT CODE!!!!
         boolean found = false;
@@ -470,14 +520,13 @@ public class MainPage extends AppCompatActivity {
     int PeriodNumber(int[][] inputPeriodTimes) { //Finds the current period number of the day, and determines if it is passing time or if there is no School
 
         int i = 0; //array position
-                //KEY: 0 start times hour, 1 start times min, 2 end times hour, 3 end times minute
+        //KEY: 0 start times hour, 1 start times min, 2 end times hour, 3 end times minute
 
-        if((currentHour < inputPeriodTimes[0][0])||
-                (currentHour > inputPeriodTimes[2][((inputPeriodTimes[0].length)-1)])||
-                (currentHour == inputPeriodTimes[0][0] && currentMinute < inputPeriodTimes[1][0])||
-                (currentHour == inputPeriodTimes[2][((inputPeriodTimes[0].length)-1)] &&
-                        currentMinute >= inputPeriodTimes[3][((inputPeriodTimes[0].length)-1)]))
-        { //Checks if the current time is before or after all values entered into the time array for the day
+        if ((currentHour < inputPeriodTimes[0][0]) ||
+                (currentHour > inputPeriodTimes[2][((inputPeriodTimes[0].length) - 1)]) ||
+                (currentHour == inputPeriodTimes[0][0] && currentMinute < inputPeriodTimes[1][0]) ||
+                (currentHour == inputPeriodTimes[2][((inputPeriodTimes[0].length) - 1)] &&
+                        currentMinute >= inputPeriodTimes[3][((inputPeriodTimes[0].length) - 1)])) { //Checks if the current time is before or after all values entered into the time array for the day
 
             noSchool = true;
             return -1;
@@ -494,7 +543,7 @@ public class MainPage extends AppCompatActivity {
                 break;
             } else { //If not found, but not No School, it must be passing time
                 passingTime = true;
-                return (i+1);
+                return (i + 1);
                 //return -1;
             }
         }
@@ -506,24 +555,24 @@ public class MainPage extends AppCompatActivity {
 
         String tempScheduleString = ""; //Allows for display of numbers by adding a 1 before their numerical equivalent
 
-            for (int i = 0; i < todayScheduleFormat.length; i++) {
-                if (todayScheduleFormat[i] >= 100) {
-                    String tempalphabet = "ABCDEFGHIJKLMNOPQRRSTUVWXYZ";
-                    tempScheduleString += tempalphabet.charAt(todayScheduleFormat[i] - 100);
-                } else {
-                    tempScheduleString += todayScheduleFormat[i];
-                }
-                if (i < todayScheduleFormat.length - 1) tempScheduleString += " ";
+        for (int i = 0; i < scheduleFormat.length; i++) {
+            if (scheduleFormat[i] >= 100) {
+                String tempalphabet = "ABCDEFGHIJKLMNOPQRRSTUVWXYZ";
+                tempScheduleString += tempalphabet.charAt(scheduleFormat[i] - 100);
+            } else {
+                tempScheduleString += scheduleFormat[i];
             }
+            if (i < scheduleFormat.length - 1) tempScheduleString += " ";
+        }
 
         int tempStartPos;
         int tempEndPos;
-        if(currentPeriodNumber == 1){
+        if (currentPeriodNumber == 1) {
             tempStartPos = 0;
             tempEndPos = 1;
-        }else {
-            tempStartPos = ((currentPeriodNumber-1)*2);
-            tempEndPos = ((currentPeriodNumber-1)*2)+1;
+        } else {
+            tempStartPos = ((currentPeriodNumber - 1) * 2);
+            tempEndPos = ((currentPeriodNumber - 1) * 2) + 1;
         }
         //The below code was inspired from a StackOverflow answer by Jave
         //The full answer can be found here: https://stackoverflow.com/a/8518613
@@ -532,15 +581,15 @@ public class MainPage extends AppCompatActivity {
         int tempColor = ContextCompat.getColor(this, R.color.colorScheduleHighlighted);
         ForegroundColorSpan fcs = new ForegroundColorSpan(tempColor);
         sb.setSpan(fcs, tempStartPos, tempEndPos, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-        if(passingTime){
+        if (passingTime) {
             int tempPeriodPlacement = (currentPeriodNumber - 1);
 
-            if(tempPeriodPlacement == 0){
+            if (tempPeriodPlacement == 0) {
                 tempStartPos = 0;
                 tempEndPos = 1;
-            }else {
-                tempStartPos = ((tempPeriodPlacement-1)*2);
-                tempEndPos = ((tempPeriodPlacement-1)*2)+1;
+            } else {
+                tempStartPos = ((tempPeriodPlacement - 1) * 2);
+                tempEndPos = ((tempPeriodPlacement - 1) * 2) + 1;
             }
 
             int tempLastColor = ContextCompat.getColor(this, R.color.colorLastPeriodScheduleHighlighted);
@@ -553,7 +602,7 @@ public class MainPage extends AppCompatActivity {
         //END CODE ATTRIBUTION by Jave
     }
 
-    void DisplayNoticeText(){ //Displays some sick motivational quotes when called
+    void DisplayNoticeText() { //Displays some sick motivational quotes when called
         TextView noticetext = findViewById(R.id.noticeOfTheDay);
         noticetext.setText(jsonNotice);
     }
@@ -589,20 +638,20 @@ public class MainPage extends AppCompatActivity {
             }
         }
 
-        float tempTotalMinutes = Math.abs((totalTimeHour*60)+totalTimeMinute);
-        float tempLeftMinutes = Math.abs((timeUntilEndHour*60)+timeUntilEndMinute);
-        progressForBar = Math.round((tempLeftMinutes/tempTotalMinutes)*100);
+        float tempTotalMinutes = Math.abs((totalTimeHour * 60) + totalTimeMinute);
+        float tempLeftMinutes = Math.abs((timeUntilEndHour * 60) + timeUntilEndMinute);
+        progressForBar = Math.round((tempLeftMinutes / tempTotalMinutes) * 100);
         progressBarTextPercent = (Integer.toString(progressForBar) + "%");
-        int tempoftempLeftMinutes = (timeUntilEndHour*60)+timeUntilEndMinute;
+        int tempoftempLeftMinutes = (timeUntilEndHour * 60) + timeUntilEndMinute;
         int tempDisplayHour = 0;
-        while(true){
-            if(tempoftempLeftMinutes-60 >= 0) {
+        while (true) {
+            if (tempoftempLeftMinutes - 60 >= 0) {
                 tempoftempLeftMinutes = tempoftempLeftMinutes - 60;
                 tempDisplayHour++;
-            }else{
-                if(tempoftempLeftMinutes>=10) {
+            } else {
+                if (tempoftempLeftMinutes >= 10) {
                     progressBarTextTime = (Integer.toString(tempDisplayHour) + ":" + Integer.toString(tempoftempLeftMinutes));
-                }else{
+                } else {
                     progressBarTextTime = (Integer.toString(tempDisplayHour) + ":0" + Integer.toString(tempoftempLeftMinutes));
                 }
                 break;
@@ -630,16 +679,16 @@ public class MainPage extends AppCompatActivity {
             }
         }
 
-            tempCurrentHour = finderinputPeriodTimes[2][PeriodArrayPosition];
-            while (true) {
-                if (tempCurrentHour < finderinputPeriodTimes[0][PeriodArrayPosition]) {
-                    totalTimeHour++;
-                    tempCurrentHour++;
-                } else {
-                    totalTimeMinute = ((finderinputPeriodTimes[3][PeriodArrayPosition-1]) - (finderinputPeriodTimes[1][PeriodArrayPosition]));
-                    break;
-                }
+        tempCurrentHour = finderinputPeriodTimes[2][PeriodArrayPosition];
+        while (true) {
+            if (tempCurrentHour < finderinputPeriodTimes[0][PeriodArrayPosition]) {
+                totalTimeHour++;
+                tempCurrentHour++;
+            } else {
+                totalTimeMinute = ((finderinputPeriodTimes[3][PeriodArrayPosition - 1]) - (finderinputPeriodTimes[1][PeriodArrayPosition]));
+                break;
             }
+        }
 
         float tempTotalMinutes = Math.abs((totalTimeHour * 60) + totalTimeMinute);
         float tempLeftMinutes = Math.abs((timeUntilEndHour * 60) + timeUntilEndMinute);
@@ -663,7 +712,7 @@ public class MainPage extends AppCompatActivity {
         }
     }
 
-    void FindTimeUntilEndOfDay(int[][] finderinputPeriodTimes){ //Finds time until end of day
+    void FindTimeUntilEndOfDay(int[][] finderinputPeriodTimes) { //Finds time until end of day
 
         int tempCurrentHour = currentHour;
         int tempTimeUntilHour = 0;
@@ -676,7 +725,7 @@ public class MainPage extends AppCompatActivity {
                 tempTimeUntilHour++;
                 tempCurrentHour++;
             } else {
-                tempTimeUntilMinute = ((finderinputPeriodTimes[3][(finderinputPeriodTimes[0].length) - 1])-currentMinute);
+                tempTimeUntilMinute = ((finderinputPeriodTimes[3][(finderinputPeriodTimes[0].length) - 1]) - currentMinute);
                 break;
             }
         }
@@ -684,23 +733,23 @@ public class MainPage extends AppCompatActivity {
         tempCurrentHour = finderinputPeriodTimes[0][0];
 
         while (true) {
-            if (tempCurrentHour < finderinputPeriodTimes[2][(finderinputPeriodTimes[0].length)-1]) {
+            if (tempCurrentHour < finderinputPeriodTimes[2][(finderinputPeriodTimes[0].length) - 1]) {
                 tempTotalTimeHour++;
                 tempCurrentHour++;
-            }else {
+            } else {
                 tempTotalTimeMinute = ((finderinputPeriodTimes[3][(finderinputPeriodTimes[0].length) - 1]) - (finderinputPeriodTimes[1][0]));
                 break;
             }
         }
 
-        float tempTotalMinutes = Math.abs((tempTotalTimeHour*60)+tempTotalTimeMinute);
-        float tempLeftMinutes = Math.abs((tempTimeUntilHour*60)+tempTimeUntilMinute);
-        progressForOverallBar = 100 - Math.round((tempLeftMinutes/tempTotalMinutes)*100);
+        float tempTotalMinutes = Math.abs((tempTotalTimeHour * 60) + tempTotalTimeMinute);
+        float tempLeftMinutes = Math.abs((tempTimeUntilHour * 60) + tempTimeUntilMinute);
+        progressForOverallBar = 100 - Math.round((tempLeftMinutes / tempTotalMinutes) * 100);
 
     }
 
 
-    void FinalizingSetupProcedures(){ //Final setting of values on the UI
+    void FinalizingSetupProcedures() { //Final setting of values on the UI
 
         progressBar = findViewById(R.id.progressBar);
         overallProgressBar = findViewById(R.id.OverallDayProgressBar);
@@ -715,9 +764,9 @@ public class MainPage extends AppCompatActivity {
 
         displayPeriodString();
 
-        if(!offline) DisplayNoticeText();
+        if (!offline) DisplayNoticeText();
 
-        if(passingTime){
+        if (passingTime) {
             ProgressBarTextDescription.setText("Passing Time");
             //Drawable circular = ContextCompat.getDrawable(this, R.drawable.circular);
             //circular.setColorFilter(ContextCompat.getColor(this, R.color.colorLastPeriodScheduleHighlighted), PorterDuff.Mode.DST_IN);
@@ -732,18 +781,18 @@ public class MainPage extends AppCompatActivity {
         });
     }
 
-    void OfflineProcedures(){ //Changes values on UI thread to reflect offline state
+    void OfflineProcedures() { //Changes values on UI thread to reflect offline state
 
         TextView noticetext = findViewById(R.id.noticeOfTheDay);
         noticetext.setText("No Connection. Information may be inaccurate");
     }
 
-    void NoSchoolProcedures(){ //Changes values on UI thread to reflect no school state
+    void NoSchoolProcedures() { //Changes values on UI thread to reflect no school state
 
         String tempScheduleString = "";
-        for (int i = 0; i < todayScheduleFormat.length; i++) {
-            tempScheduleString += todayScheduleFormat[i];
-            if (i < todayScheduleFormat.length - 1) tempScheduleString += " ";
+        for (int i = 0; i < scheduleFormat.length; i++) {
+            tempScheduleString += scheduleFormat[i];
+            if (i < scheduleFormat.length - 1) tempScheduleString += " ";
         }
         TextView scheduleTextView = findViewById(R.id.ScheduleLayout);
         scheduleTextView.setText(tempScheduleString);
@@ -758,7 +807,7 @@ public class MainPage extends AppCompatActivity {
         ProgressBarTextTime.setText("SCHOOL");
         TextView ProgressBarTextDescription = findViewById(R.id.ProgressBarTextDescription);
         ProgressBarTextDescription.setText("Check App Later");
-        if(!offline) {
+        if (!offline) {
             DisplayNoticeText();
         }
     }
@@ -776,22 +825,22 @@ public class MainPage extends AppCompatActivity {
                     public void onClick(DialogInterface dialog, int which) {
                         switch (which) {
                             case 0:
-                                todayScheduleFormat = ScheduleFormat("a");
-                                Toast.makeText(MainPage.this , "Set as 'A' Day", Toast.LENGTH_LONG).show();
+                                scheduleFormat = NormalScheduleFormat("a");
+                                Toast.makeText(MainPage.this, "Set as 'A' Day", Toast.LENGTH_LONG).show();
                                 OfflineConditions();
                                 break;
                             case 1:
-                                todayScheduleFormat = ScheduleFormat("b");
+                                scheduleFormat = NormalScheduleFormat("b");
                                 Toast.makeText(MainPage.this, "Set as 'B' Day", Toast.LENGTH_LONG).show();
                                 OfflineConditions();
                                 break;
                             case 2:
-                                todayScheduleFormat = ScheduleFormat("c");
+                                scheduleFormat = NormalScheduleFormat("c");
                                 Toast.makeText(MainPage.this, "Set as 'C' Day", Toast.LENGTH_LONG).show();
                                 OfflineConditions();
                                 break;
                             case 3:
-                                todayScheduleFormat = ScheduleFormat("d");
+                                scheduleFormat = NormalScheduleFormat("d");
                                 Toast.makeText(MainPage.this, "Set as 'D' Day", Toast.LENGTH_LONG).show();
                                 OfflineConditions();
                                 break;
@@ -808,9 +857,9 @@ public class MainPage extends AppCompatActivity {
     }
     //END CODE ATTRIBUTION FROM WhatDatApp
 
-    void reset(){ //WILL REMOVE WHEN RESET BUTTON REMOVED FOR NEXT UPDATE
+    void reset() { //WILL REMOVE WHEN RESET BUTTON REMOVED FOR NEXT UPDATE
         Intent i = getBaseContext().getPackageManager()
-                .getLaunchIntentForPackage( getBaseContext().getPackageName() );
+                .getLaunchIntentForPackage(getBaseContext().getPackageName());
         i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(i);
 
