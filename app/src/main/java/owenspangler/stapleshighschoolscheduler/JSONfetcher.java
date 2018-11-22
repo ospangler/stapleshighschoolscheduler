@@ -42,7 +42,7 @@ class JSONfetcher extends AsyncTask<String, Integer, String> {
         //Portions of Below Code are from code made by Abhishek Panwar
         //The original code can be found at: https://github.com/panwarabhishek345/Receive-JSON-Data
         try {
-            URL url = new URL("https://ospangler.github.io/schedulechangedatabase.json");
+            URL url = new URL("https://ospangler.github.io/testschedulechangedatabase.json");
             HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
             InputStream inputStream = httpURLConnection.getInputStream();
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));

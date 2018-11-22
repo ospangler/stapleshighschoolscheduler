@@ -13,6 +13,7 @@ import android.os.Bundle;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.style.ForegroundColorSpan;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -23,6 +24,8 @@ import android.widget.Toast;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.concurrent.ExecutionException;
 
@@ -31,6 +34,13 @@ public class MainPage extends AppCompatActivity {
     private DrawerLayout mDrawerLayout;
 
     String jsonData; //Raw Json String Pulled From Async Task
+    //
+    int[] scheduleFormat;
+    int[][] periodTimes;
+    int lunchPeriodPosition;
+    int[][] lunchWaveTimes;
+    String dayLetter;
+    //
     String jsonDayLetter = "";
     int jsonMonth = -1;
     int jsonDay = -1;
@@ -82,7 +92,11 @@ public class MainPage extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         ActionBar actionbar = getSupportActionBar();
-        actionbar.setDisplayHomeAsUpEnabled(true);
+        try {
+            actionbar.setDisplayHomeAsUpEnabled(true);
+        }catch (NullPointerException e){
+            //put stack trace here
+        }
         actionbar.setHomeAsUpIndicator(R.drawable.ic_menu);
 
 
@@ -164,7 +178,7 @@ public class MainPage extends AppCompatActivity {
 
         if(!offline) {
 
-            CheckForServerCorruption(); //check if there are wrong entries in the server data that would result in a crash
+            //CheckForServerCorruption(); //check if there are wrong entries in the server data that would result in a crash
 
 
             if (specialSchedule) { // If the date on the json file matches, program uses special schedule
@@ -174,8 +188,8 @@ public class MainPage extends AppCompatActivity {
 
             } else { // If date from json file does not match or is not available, the normal schedule is used
                 inputPeriodTimes = normalPeriodTimes;
-                String inputDayLetter = FindDayLetter();
-                todayScheduleFormat = ScheduleFormat(inputDayLetter);
+                //String inputDayLetter = FindDayLetter();
+                //todayScheduleFormat = ScheduleFormat(inputDayLetter);
                 currentPeriodNumber = PeriodNumber(inputPeriodTimes);
             }
 
@@ -284,47 +298,98 @@ public class MainPage extends AppCompatActivity {
 
         try {
             JSONObject JO = new JSONObject(inputdata);
-            jsonDayLetter = JO.getString("dayletter");
-            jsonMonth = JO.getInt("month");
-            jsonDay = JO.getInt("day");
-            jsondayLetterListStart = JO.getInt("dayletterliststart");
-
-            jsonNewScheduleFormat = getArrayFromJSON("newscheduleformat");
-            jsondayLetterDayNumber = getArrayFromJSON("dayletterdaynumber");
-
             jsonNotice = JO.getString("notice");
 
-            int[] tempJsonStartTimesHour = getArrayFromJSON("starttimeshour");
-            int[] tempJsonStartTimesMinute = getArrayFromJSON("starttimesminute");
-            int[] tempJsonEndTimesHour = getArrayFromJSON("endtimeshour");
-            int[] tempJsonEndTimesMinute = getArrayFromJSON("endtimesminute");
+            JSONArray scheduleChangeArray = JO.getJSONArray("schedulechange");
 
-            jsonPeriodTimes = new int[4][tempJsonStartTimesHour.length];
-            for (int i = 0; i < 4; i++) {
-                for (int j = 0; j < tempJsonStartTimesHour.length; j++) {
-                    if (i == 0) {
-                        jsonPeriodTimes[i][j] = tempJsonStartTimesHour[j];
-                    } else if (i == 1) {
-                        jsonPeriodTimes[i][j] = tempJsonStartTimesMinute[j];
-                    } else if (i == 2) {
-                        jsonPeriodTimes[i][j] = tempJsonEndTimesHour[j];
-                    } else {
-                        jsonPeriodTimes[i][j] = tempJsonEndTimesMinute[j];
+            //int tempPostion = 0;
+            int tempScheduleChangeFlag = -1;
+
+            for (int i = 0; i < scheduleChangeArray.length(); i++) { //checks to see if any days are listed as changed
+
+                int tempMonth = 0;
+                int tempDay = 0;
+                //JO.getJSONObject("schedulechange").getJSONObject(Integer.toString(i)).getInt("month");
+                tempMonth = scheduleChangeArray.getJSONObject(i).getInt("month");
+                tempDay = scheduleChangeArray.getJSONObject(i).getInt("day");
+                Log.i("currentmonth", Integer.toString(tempMonth));
+                Log.i("currentday", Integer.toString(tempDay));
+                Log.i("arraylength", Integer.toString(scheduleChangeArray.length()));
+                if ((tempMonth == currentMonth) && (tempDay == currentDayNum)) { //found day listed matches today's date
+                    specialSchedule = true;
+                    JSONArray tempStartTimesHourArray = scheduleChangeArray.getJSONObject(i).getJSONArray("starttimeshour");
+                    JSONArray tempStartTimesMinuteArray = scheduleChangeArray.getJSONObject(i).getJSONArray("starttimesminute");
+                    JSONArray tempEndTimesHourArray = scheduleChangeArray.getJSONObject(i).getJSONArray("endtimeshour");
+                    JSONArray tempEndTimesMinuteArray = scheduleChangeArray.getJSONObject(i).getJSONArray("endtimesminute");
+                    periodTimes = new int[4][tempStartTimesHourArray.length()];
+                    for (int j = 0; j < 4; j++) {
+                        for (int k = 0; k < tempStartTimesHourArray.length(); k++) {
+                            if (j == 0) {
+                                periodTimes[j][k] = tempStartTimesHourArray.getInt(k);
+                            } else if (j == 1) {
+                                periodTimes[j][k] = tempStartTimesMinuteArray.getInt(k);
+                            } else if (j == 2) {
+                                periodTimes[j][k] = tempEndTimesHourArray.getInt(k);
+                            } else {
+                                periodTimes[j][k] = tempEndTimesMinuteArray.getInt(k);
+                            }
+                        }
+
+                    }
+                    Log.i("dududu", Arrays.deepToString(periodTimes));
+                    break;
+                }
+            }
+
+            if (!specialSchedule) { //if no special schedule was found, normal day formats will be written
+                int tempDayListStart = JO.getJSONObject("dayletters").getJSONObject(Integer.toString(currentMonth)).getInt("dayletterliststart");
+                JSONArray DayLetterListArray = JO.getJSONObject("dayletters").getJSONObject(Integer.toString(currentMonth)).getJSONArray("dayletterlist");
+                boolean tempFound = false;
+                int tempPosition = -1;
+
+                for (int i = 0; i < DayLetterListArray.length(); i++) {
+                    if (DayLetterListArray.getInt(i) == currentDayNum) {
+                        tempFound = true;
+                        tempPosition = i;
+                        break;
                     }
                 }
 
+                if (!tempFound) {
+                    noSchool = true;
+                } else {
+                    if (((tempPosition % 4) + tempDayListStart) == 0) {
+                        dayLetter = "a";
+                        scheduleFormat = ScheduleFormat("a");//new int[]{1, 2, 3, 5, 8, 7}; //'A' day
+                    } else if (((tempPosition % 4) + tempDayListStart) == 1) {
+                        dayLetter = "b";
+                        scheduleFormat = ScheduleFormat("b");//new int[]{2, 3, 4, 6, 7, 8}; //'B' day
+                    } else if (((tempPosition % 4) + tempDayListStart) == 2) {
+                        dayLetter = "c";
+                        scheduleFormat = ScheduleFormat("c");//new int[]{3, 4, 1, 7, 6, 5}; //'C' day
+                    } else {
+                        dayLetter = "d";
+                        scheduleFormat = ScheduleFormat("d");//new int[]{4, 1, 2, 8, 5, 6}; //'D' day
+                    }
+                }
             }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
 
-    int[] getArrayFromJSON(String jsonID) {
+            Log.i("dayletter",dayLetter);
+            Log.i("scheduleFormat",Arrays.toString(scheduleFormat));
+            Log.i("noSchool", Boolean.toString(noSchool));
+
+            } catch(JSONException e){
+                e.printStackTrace();
+            }
+        }
+
+        /*
+    int[] getArrayFromJSON(String jsonID) { //REDUNDANT CODE!!!!
 
         try {
             JSONObject tempJO = new JSONObject(jsonData);
             JSONArray tempJsonArray = tempJO.optJSONArray(jsonID);
-            if (tempJsonArray == null) { /*ENTER SOME ERROR CODE HERE LATER*/ }
+            if (tempJsonArray == null) {}
             int[] output = new int[tempJsonArray.length()];
             for (int i = 0; i < tempJsonArray.length(); ++i) {
                 output[i] = tempJsonArray.optInt(i);
@@ -338,6 +403,7 @@ public class MainPage extends AppCompatActivity {
             return null;
         }
     }
+    */
 
     int[] ScheduleFormat(String inputDayType) { //EDIT THIS FUNCTION IF BASELINE SCHEDULE CHANGES AND PUSH UPDATE
 
@@ -376,7 +442,8 @@ public class MainPage extends AppCompatActivity {
             }
         }
     }
-    String FindDayLetter() { //Finds the current day letter given the list pulled from the json server
+    /*
+    String FindDayLetter() { //Finds the current day letter given the list pulled from the json server //REDUNDANT CODE!!!!
         boolean found = false;
         int temppos = -1;
         for (int i = 0; i < jsondayLetterDayNumber.length; i++) {
@@ -399,7 +466,7 @@ public class MainPage extends AppCompatActivity {
             return "d";
         }
     }
-
+    */
     int PeriodNumber(int[][] inputPeriodTimes) { //Finds the current period number of the day, and determines if it is passing time or if there is no School
 
         int i = 0; //array position
