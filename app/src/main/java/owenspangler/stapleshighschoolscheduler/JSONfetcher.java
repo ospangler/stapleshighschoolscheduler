@@ -1,5 +1,7 @@
 package owenspangler.stapleshighschoolscheduler;
+
 import android.os.AsyncTask;
+
 import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -8,7 +10,7 @@ import java.net.URL;
 import java.net.MalformedURLException;
 import java.net.HttpURLConnection;
 
-class JSONfetcher extends AsyncTask<String,Integer,String> {
+class JSONfetcher extends AsyncTask<String, Integer, String> {
 
     String data = ""; //full raw data retrieved
 
@@ -23,46 +25,49 @@ class JSONfetcher extends AsyncTask<String,Integer,String> {
     }
 
     @Override
-    protected String doInBackground(String...String){
+    protected String doInBackground(String... String) {
 
-        if(InternetConnected()) { //There is an internet connection, will download data from server
-
+        if (InternetConnected()) { //There is an internet connection, will download data from server
             RetrieveJson();
             return data;
-        }else{ //There is no internet connection, user will have to input day letter
+        } else { //There is no internet connection, user will have to input day letter
 
             return "NO CONNECTION";
         }
     }
 
-void RetrieveJson(){
+    void RetrieveJson() {
 
         //START CODE ATTRIBUTION HERE
         //Portions of Below Code are from code made by Abhishek Panwar
         //The original code can be found at: https://github.com/panwarabhishek345/Receive-JSON-Data
-    try {
-        URL url = new URL("https://ospangler.github.io/schedulechangedatabase.json");
-        HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
-        InputStream inputStream = httpURLConnection.getInputStream();
-        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-        String line = "";
+        try {
+            URL url = new URL("https://ospangler.github.io/schedulechangedatabase.json");
+            HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
+            InputStream inputStream = httpURLConnection.getInputStream();
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+            String line = "";
 
-        while (true) {
-            line = bufferedReader.readLine();
-            if (line == null) {
-                break;
+            while (true) {
+                line = bufferedReader.readLine();
+                if (line == null) {
+                    break;
+                }
+                data = data + line;
             }
-            data = data + line;
+            ////
+            httpURLConnection.disconnect();//see if this fixes leaking of response body
+            ////
+
+            //END CODE ATTRIBUTION FROM Abhishek Panwar
+        } catch (MalformedURLException e) {
+            //Something is wrong with the URL you put in here. Fix it.
+            e.printStackTrace();
+        } catch (IOException e) {
+            //I don't know what you did, but you better fix it.
+            e.printStackTrace();
         }
-    //END CODE ATTRIBUTION FROM Abhishek Panwar
-    } catch (MalformedURLException e) {
-        //Something is wrong with the URL you put in here. Fix it.
-        e.printStackTrace();
-    } catch (IOException e) {
-       //I don't know what you did, but you better fix it.
-        e.printStackTrace();
     }
-}
 
     public boolean InternetConnected() { //Checks for an internet connection to test for offline status to github site
 
@@ -76,13 +81,16 @@ void RetrieveJson(){
             connection.setConnectTimeout(10000);
             connection.connect();
             success = connection.getResponseCode() == 200;
+            ////
+            connection.disconnect(); //check to see if this prevents leaking of response body
+            ////
         } catch (IOException e) {
             e.printStackTrace();
         }
         return success;
+
         //END CODE ATTRIBUTION by YLS
     }
-
 
 
     @Override

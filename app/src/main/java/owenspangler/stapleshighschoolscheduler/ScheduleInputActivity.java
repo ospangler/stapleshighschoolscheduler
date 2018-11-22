@@ -56,10 +56,23 @@ public class ScheduleInputActivity extends AppCompatPreferenceActivity {
             bindPreferenceSummaryToValue(findPreference("key_schedule_period_6_info"));
             bindPreferenceSummaryToValue(findPreference("key_schedule_period_7_info"));
             bindPreferenceSummaryToValue(findPreference("key_schedule_period_8_info"));
+
+            //Class Type Text Listener
+            bindPreferenceSummaryToValue(findPreference("key_schedule_period_1_type"));
+            bindPreferenceSummaryToValue(findPreference("key_schedule_period_2_type"));
+            bindPreferenceSummaryToValue(findPreference("key_schedule_period_3_type"));
+            bindPreferenceSummaryToValue(findPreference("key_schedule_period_4_type"));
+            bindPreferenceSummaryToValue(findPreference("key_schedule_period_5_type"));
+            bindPreferenceSummaryToValue(findPreference("key_schedule_period_6_type"));
+            bindPreferenceSummaryToValue(findPreference("key_schedule_period_7_type"));
+            bindPreferenceSummaryToValue(findPreference("key_schedule_period_8_type"));
+
+
             // notification preference change listener
-            bindPreferenceSummaryToValue(findPreference(getString(R.string.key_notifications_new_message_ringtone)));
+            //bindPreferenceSummaryToValue(findPreference(getString(R.string.key_notifications_new_message_ringtone)));
 
             // feedback preference click listener
+            /*
             Preference myPref = findPreference(getString(R.string.key_send_feedback));
             myPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 public boolean onPreferenceClick(Preference preference) {
@@ -67,6 +80,7 @@ public class ScheduleInputActivity extends AppCompatPreferenceActivity {
                     return true;
                 }
             });
+            */
         }
     }
 

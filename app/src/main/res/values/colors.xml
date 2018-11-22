@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="colorPrimary">#0872db</color>
+    <color name="white">#ffff</color>
     <color name="progressBarColor">#0872db</color>
     <color name="ProgressBarShadow">#c6c6c6</color>
     <color name="colorPrimaryDark">#303F9F</color>

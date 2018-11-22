@@ -14,8 +14,7 @@
             android:entryValues="@array/pref_type_of_notification"
             android:key="list_type_of_notification"
             android:summary="Tap to change notification priority"
-            android:title="Notification Type" />'t want "Tap to change notification priority"
-            android:summary="Persistent is recom />
+            android:title="Notification Type" />
 
     </PreferenceCategory>
 

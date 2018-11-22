@@ -216,65 +216,11 @@
 
     </PreferenceCategory>
 
-
-
-    <!-- Redundant Code Below -->
-    <PreferenceCategory android:title="@string/pref_title_notifications">
-
-        <SwitchPreference
-            android:defaultValue="true"
-            android:key="@string/notifications_new_message"
-            android:title="@string/title_new_notification_sound" />
-
-        <RingtonePreference
-            android:defaultValue="content://settings/system/notification_sound"
-            android:dependency="notifications_new_message"
-            android:key="@string/key_notifications_new_message_ringtone"
-            android:ringtoneType="notification"
-            android:summary="@string/summary_choose_ringtone"
-            android:title="@string/pref_title_ringtone" />
-
-        <SwitchPreference
-            android:defaultValue="true"
-            android:key="@string/key_vibrate"
-            android:summary="@string/summary_vibrate"
-            android:title="@string/title_vibrate" />
-    </PreferenceCategory>
-
-    <PreferenceCategory android:title="@string/pref_header_about">
+    <PreferenceCategory android:title="Frequently Asked Questions">
 
         <Preference
             android:selectable="false"
-            android:summary="@string/summary_about" />
+            android:summary="Pretty simple, just fill out the information above" />
 
-        <Preference
-            android:summary="@string/app_version"
-            android:title="@string/title_version" />
-
-        <Preference
-            android:key="@string/key_send_feedback"
-            android:summary="@string/summary_support"
-            android:title="@string/title_send_feedback" />
-
-        <!-- preference opens url in browser -->
-        <Preference
-            android:summary="@string/summary_faq"
-            android:title="@string/title_faq">
-            <intent
-                android:action="android.intent.action.VIEW"
-                android:data="@string/url_faq" />
-        </Preference>
-
-        <Preference android:title="@string/privacy_policy">
-            <intent
-                android:action="android.intent.action.VIEW"
-                android:data="@string/url_privacy" />
-        </Preference>
-
-        <Preference android:title="@string/title_terms">
-            <intent
-                android:action="android.intent.action.VIEW"
-                android:data="@string/url_terms" />
-        </Preference>
     </PreferenceCategory>
 </PreferenceScreen>

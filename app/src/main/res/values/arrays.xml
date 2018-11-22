@@ -21,6 +21,15 @@
         <item>Technology</item>
         <item>Theater</item>
         <item>World Languages</item>
+        <item>Unknown: First Lunch</item>
+        <item>Unknown: Second Lunch</item>
+        <item>Unknown: Third Lunch</item>
+    </string-array>
+
+    <string-array name="accent_color">
+        <item>Blue</item>
+        <item>Red</item>
+        <item>Black</item>
     </string-array>
 
     <string-array name="pref_upload_quality_entries">
