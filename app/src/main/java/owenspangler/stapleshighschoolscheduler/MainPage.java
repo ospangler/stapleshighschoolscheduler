@@ -42,6 +42,9 @@ public class MainPage extends AppCompatActivity {
     int[][] lunchWaveTimes;
     String dayLetter;
     boolean noLunch = false;
+    boolean noSchool = false;
+    boolean beforeSchool = false;
+    boolean afterSchool = false;
     //
     int currentPeriodNumber = -1;
     int progressForBar = 0;
@@ -52,7 +55,6 @@ public class MainPage extends AppCompatActivity {
     String progressBarTextDescription = "Remaining";
     boolean offline = false;
     boolean passingTime = false;
-    boolean noSchool = false;
     boolean specialSchedule = false;
     Calendar cal = Calendar.getInstance();
     int currentDayNum = cal.get(Calendar.DAY_OF_MONTH);
@@ -65,17 +67,7 @@ public class MainPage extends AppCompatActivity {
     //int currentMinute = 16;
     ProgressBar progressBar;
     ProgressBar overallProgressBar;
-    //int[][] inputPeriodTimes;
-    /*
-    int[][] normalPeriodTimes = //CHANGE BELOW TIMES WHEN SCHEDULE CHANGES
-            {
-                    {7, 8, 9, 10, 12, 13},//START HOUR
-                    {30, 25, 50, 45, 30, 25},//START MINUTE
 
-                    {8, 9, 10, 12, 13, 14},//END HOUR
-                    {20, 45, 40, 25, 20, 15}};//END MINUTE
-    ///END VARS///
-*/
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -127,7 +119,6 @@ public class MainPage extends AppCompatActivity {
                         return MainPage.super.onOptionsItemSelected(menuItem);
                     }
                 });
-        ////
 
         FirstMain();
     }
@@ -169,43 +160,51 @@ public class MainPage extends AppCompatActivity {
     void FirstMain() {//Initial Code that executes on startup
 
         GetJson();
-/*
-        if (!offline) {
 
-            //CheckForServerCorruption(); //check if there are wrong entries in the server data that would result in a crash
-
-
-            if (specialSchedule) { // If the date on the json file matches, program uses special schedule
-                inputPeriodTimes = jsonPeriodTimes;
-                todayScheduleFormat = jsonNewScheduleFormat;
-                currentPeriodNumber = PeriodNumber(inputPeriodTimes);
-
-            } else { // If date from json file does not match or is not available, the normal schedule is used
-                inputPeriodTimes = normalPeriodTimes;
-                //String inputDayLetter = FindDayLetter();
-                //todayScheduleFormat = ScheduleFormat(inputDayLetter);
-                currentPeriodNumber = PeriodNumber(inputPeriodTimes);
-            }
-
-            if (noSchool) { // Online, No School using Current Schedule
-                NoSchoolProcedures();
-
-            } else if (passingTime) { // Online, School in session, but not inside a period detected
-                FindTimeUntilEndOfDay(inputPeriodTimes);
-                FindTimeUntilEndPassingTime(inputPeriodTimes);
-                FinalizingSetupProcedures();
-
-            } else { // Online, School in session and during period
-                FindTimeUntilEndOfDay(inputPeriodTimes);
-                FindTimeUntilEndNormal(inputPeriodTimes);
-                FinalizingSetupProcedures();
-            }
-
-        } else {
+        if (offline) {//if offline
             OfflineDayAlertPopup("No Connection. Pick a Day.");
-        }
-        */
+        }else{//if not offline
 
+            if(!noSchool) BeforeOrAfterSchoolCheck(periodTimes);//checks to see if before or after school. noSchool checked in getJson
+
+            if (noSchool) {// if no school
+                NoSchoolProcedures();
+            } else if (beforeSchool) {//if before school
+                BeforeSchoolProcedures();
+            } else if (afterSchool) {//if after school
+                AfterSchoolProcedures();
+            } else {//normal condition
+                currentPeriodNumber = PeriodNumber(periodTimes);
+
+                if (noLunch) {//if school day does not have lunch
+                    if (passingTime) {//school day w/o lunch during passing time
+                        FindTimeUntilEndOfDay(periodTimes);
+                        FindTimeUntilEndPassingTime(periodTimes);
+                        FinalizingSetupProcedures();
+                    } else {//school day w/o lunch during class time
+                        FindTimeUntilEndOfDay(periodTimes);
+                        FindTimeUntilEndNormal(periodTimes);
+                        FinalizingSetupProcedures();
+                    }
+                } else {//normal school day with lunch
+                    if (lunchPeriodPosition == currentPeriodNumber) {//It is lunch period
+                        //NEED TO PULL PREFERENCES FILE HERE
+                        //IF DEFAULT VALUES, TREAT IT LIKE NORMAL PERIODS, NO NEED TO MERGE
+                    } else {//It is not lunch period
+                        if (passingTime) {//school day with lunch during non-lunch passing time
+                            FindTimeUntilEndOfDay(periodTimes);
+                            FindTimeUntilEndPassingTime(periodTimes);
+                            FinalizingSetupProcedures();
+                        } else {//school day with lunch during non-lunch class time
+                            FindTimeUntilEndOfDay(periodTimes);
+                            FindTimeUntilEndNormal(periodTimes);
+                            FinalizingSetupProcedures();
+                        }
+                    }
+                }
+
+            }
+        }
     }
 
     void RepeatedMain() {//This is the main code that repeats after the initial push
@@ -310,7 +309,7 @@ public class MainPage extends AppCompatActivity {
 
                     specialSchedule = true;
 
-                    dayLetter =  scheduleChangeArray.getJSONObject(i).getString("dayletter");
+                    dayLetter = scheduleChangeArray.getJSONObject(i).getString("dayletter");
 
                     JSONArray tempStartTimesHourArray = scheduleChangeArray.getJSONObject(i).getJSONArray("starttimeshour");
                     JSONArray tempStartTimesMinuteArray = scheduleChangeArray.getJSONObject(i).getJSONArray("starttimesminute");
@@ -339,11 +338,11 @@ public class MainPage extends AppCompatActivity {
                     JSONArray tempEndLunchHourArray = scheduleChangeArray.getJSONObject(i).getJSONArray("lunchwavesendhour");
                     JSONArray tempEndLunchMinuteArray = scheduleChangeArray.getJSONObject(i).getJSONArray("lunchwavesendminute");
 
-                    if(tempStartLunchHourArray.length() == 0){ // if nothing in array, no lunch
+                    if (tempStartLunchHourArray.length() == 0) { // if nothing in array, no lunch
 
                         noLunch = true;
 
-                    }else{//if values in array, has lunch
+                    } else {//if values in array, has lunch
 
                         lunchPeriodPosition = scheduleChangeArray.getJSONObject(i).getInt("lunchperiodposition");
                         lunchWaveTimes = new int[4][tempStartLunchHourArray.length()];
@@ -388,16 +387,16 @@ public class MainPage extends AppCompatActivity {
                 } else {
                     if (((tempPosition % 4) + tempDayListStart) == 0) {
                         dayLetter = "a";
-                        scheduleFormat = NormalScheduleFormat("a");//new int[]{1, 2, 3, 5, 8, 7}; //'A' day
+                        NormalScheduleFormat("a");//new int[]{1, 2, 3, 5, 8, 7}; //'A' day
                     } else if (((tempPosition % 4) + tempDayListStart) == 1) {
                         dayLetter = "b";
-                        scheduleFormat = NormalScheduleFormat("b");//new int[]{2, 3, 4, 6, 7, 8}; //'B' day
+                        NormalScheduleFormat("b");//new int[]{2, 3, 4, 6, 7, 8}; //'B' day
                     } else if (((tempPosition % 4) + tempDayListStart) == 2) {
                         dayLetter = "c";
-                        scheduleFormat = NormalScheduleFormat("c");//new int[]{3, 4, 1, 7, 6, 5}; //'C' day
+                        NormalScheduleFormat("c");//new int[]{3, 4, 1, 7, 6, 5}; //'C' day
                     } else {
                         dayLetter = "d";
-                        scheduleFormat = NormalScheduleFormat("d");//new int[]{4, 1, 2, 8, 5, 6}; //'D' day
+                        NormalScheduleFormat("d");//new int[]{4, 1, 2, 8, 5, 6}; //'D' day
                     }
                 }
             }
@@ -412,38 +411,7 @@ public class MainPage extends AppCompatActivity {
         }
     }
 
-        /*
-    int[] getArrayFromJSON(String jsonID) { //REDUNDANT CODE!!!!
-
-        try {
-            JSONObject tempJO = new JSONObject(jsonData);
-            JSONArray tempJsonArray = tempJO.optJSONArray(jsonID);
-            if (tempJsonArray == null) {}
-            int[] output = new int[tempJsonArray.length()];
-            for (int i = 0; i < tempJsonArray.length(); ++i) {
-                output[i] = tempJsonArray.optInt(i);
-            }
-            return output;
-        } catch (JSONException e) {
-            e.printStackTrace();
-            return null;
-        } catch (NullPointerException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-    */
-
-    int[] NormalScheduleFormat(String inputDayType) { //EDIT THIS FUNCTION IF BASELINE SCHEDULE CHANGES AND PUSH UPDATE
-
-        lunchPeriodPosition = 3; //Period Position that is extended for lunch waves
-
-        lunchWaveTimes = new int[][]{ //Lunch Wave Times Within Extended Lunch Period
-                {3,3,3},//START HOUR
-                {4,4,4},//START MINUTE
-                {5,5,5},//END HOUR
-                {6,6,6}//END MINUTE
-        };
+    void NormalScheduleFormat(String inputDayType) { //EDIT THIS FUNCTION IF BASELINE SCHEDULE CHANGES AND PUSH UPDATE
 
         periodTimes = new int[][]{ //CHANGE BELOW TIMES WHEN SCHEDULE CHANGES
 
@@ -454,83 +422,34 @@ public class MainPage extends AppCompatActivity {
                 {20, 45, 40, 25, 20, 15}//END MINUTE
         };
 
+        lunchPeriodPosition = 3; //Period Position that is extended for lunch waves
+
+        lunchWaveTimes = new int[][]{ //Lunch Wave Times Within Extended Lunch Period
+                {10, 11, 11},//START HOUR
+                {45, 20, 55},//START MINUTE
+                {11, 11, 12},//END HOUR
+                {15, 50, 25}//END MINUTE
+        };
+
         //Period Label Format Below
         if (inputDayType.equals("a")) {
-            int[] tempA = {1, 2, 3, 5, 8, 7}; //'A' day
-            return tempA;
+            scheduleFormat = new int[]{1, 2, 3, 5, 8, 7}; //'A' day
         } else if (inputDayType.equals("b")) {
-            int[] tempB = {2, 3, 4, 6, 7, 8}; //'B' day
-            return tempB;
+            scheduleFormat = new int[]{2, 3, 4, 6, 7, 8}; //'B' day
         } else if (inputDayType.equals("c")) {
-            int[] tempC = {3, 4, 1, 7, 6, 5}; //'C' day
-            return tempC;
+            scheduleFormat = new int[]{3, 4, 1, 7, 6, 5}; //'C' day
         } else if (inputDayType.equals("d")) {
-            int[] tempD = {4, 1, 2, 8, 5, 6}; //'D' day
-            return tempD;
-        } else { //Error Condition
-            return null;
+            scheduleFormat = new int[]{4, 1, 2, 8, 5, 6}; //'D' day
         }
     }
 
-    /*
-    void CheckForServerCorruption(){ //Checks for server corruption, or most likely, incorrect entry from crashing the app.
 
-        int temppos = -1;
-        for (int i = 0; i < jsondayLetterDayNumber.length; i++) {
-            if (jsondayLetterDayNumber[i] == currentDayNum) {
-                temppos = i;
-                break;
-            }
-        }
-
-        if (temppos == -1) { //Triggers if today's date is not found in the json file list
-            if ((jsonMonth == currentMonth) && (jsonDay == currentDayNum)) { //checks to see if the server contains the missing date
-                //offline = false;
-            }else{// if date is not found in main list or on the special conditions list, an error to manually select is created below
-                offline = true;
-            }
-        }
-    }
-    */
-    /*
-    String FindDayLetter() { //Finds the current day letter given the list pulled from the json server //REDUNDANT CODE!!!!
-        boolean found = false;
-        int temppos = -1;
-        for (int i = 0; i < jsondayLetterDayNumber.length; i++) {
-            if (jsondayLetterDayNumber[i] == currentDayNum) {
-                found = true;
-                temppos = i;
-                break;
-            }
-        }
-
-        if(!found) noSchool = true;
-
-        if (((temppos % 4) + jsondayLetterListStart) == 0) {
-            return "a";
-        } else if (((temppos % 4) + jsondayLetterListStart) == 1) {
-            return "b";
-        } else if (((temppos % 4) + jsondayLetterListStart) == 2) {
-            return "c";
-        } else {
-            return "d";
-        }
-    }
-    */
     int PeriodNumber(int[][] inputPeriodTimes) { //Finds the current period number of the day, and determines if it is passing time or if there is no School
+
+        if (noSchool) return -1;
 
         int i = 0; //array position
         //KEY: 0 start times hour, 1 start times min, 2 end times hour, 3 end times minute
-
-        if ((currentHour < inputPeriodTimes[0][0]) ||
-                (currentHour > inputPeriodTimes[2][((inputPeriodTimes[0].length) - 1)]) ||
-                (currentHour == inputPeriodTimes[0][0] && currentMinute < inputPeriodTimes[1][0]) ||
-                (currentHour == inputPeriodTimes[2][((inputPeriodTimes[0].length) - 1)] &&
-                        currentMinute >= inputPeriodTimes[3][((inputPeriodTimes[0].length) - 1)])) { //Checks if the current time is before or after all values entered into the time array for the day
-
-            noSchool = true;
-            return -1;
-        }
 
         while (true) { //runs through all times and counts the period number of the day
             if ((currentHour > inputPeriodTimes[2][i])) {
@@ -548,6 +467,17 @@ public class MainPage extends AppCompatActivity {
             }
         }
         return (i + 1);//returns period number, must subtract one to get proper array position
+    }
+
+    void BeforeOrAfterSchoolCheck(int[][] inputPeriodTimes) {
+        if ((currentHour < inputPeriodTimes[0][0]) ||
+                (currentHour > inputPeriodTimes[2][((inputPeriodTimes[0].length) - 1)])) {
+            beforeSchool = true;
+        } else if ((currentHour == inputPeriodTimes[0][0] && currentMinute < inputPeriodTimes[1][0]) ||
+                (currentHour == inputPeriodTimes[2][((inputPeriodTimes[0].length) - 1)] &&
+                        currentMinute >= inputPeriodTimes[3][((inputPeriodTimes[0].length) - 1)])) { //Checks if the current time is before or after all values entered into the time array for the day
+            afterSchool = true;
+        }
     }
 
 
@@ -772,13 +702,6 @@ public class MainPage extends AppCompatActivity {
             //circular.setColorFilter(ContextCompat.getColor(this, R.color.colorLastPeriodScheduleHighlighted), PorterDuff.Mode.DST_IN);
             //circular.setColorFilter(0xffff0000, PorterDuff.Mode.DST_IN);
         }
-        //GET RID OF BUTTON IN NEXT UPDATE ONCE SENT TO ASYNC TASK
-        final Button refreshButton = findViewById(R.id.RefreshButton);
-        refreshButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                reset();
-            }
-        });
     }
 
     void OfflineProcedures() { //Changes values on UI thread to reflect offline state
@@ -812,6 +735,14 @@ public class MainPage extends AppCompatActivity {
         }
     }
 
+    void BeforeSchoolProcedures() {
+
+    }
+
+    void AfterSchoolProcedures() {
+
+    }
+
 
     void OfflineDayAlertPopup(String title) { //Alert makes users select today's day due to offline state. Will add support for offline schedule loading in next update.
 
@@ -825,22 +756,22 @@ public class MainPage extends AppCompatActivity {
                     public void onClick(DialogInterface dialog, int which) {
                         switch (which) {
                             case 0:
-                                scheduleFormat = NormalScheduleFormat("a");
+                                NormalScheduleFormat("a");
                                 Toast.makeText(MainPage.this, "Set as 'A' Day", Toast.LENGTH_LONG).show();
                                 OfflineConditions();
                                 break;
                             case 1:
-                                scheduleFormat = NormalScheduleFormat("b");
+                                NormalScheduleFormat("b");
                                 Toast.makeText(MainPage.this, "Set as 'B' Day", Toast.LENGTH_LONG).show();
                                 OfflineConditions();
                                 break;
                             case 2:
-                                scheduleFormat = NormalScheduleFormat("c");
+                                NormalScheduleFormat("c");
                                 Toast.makeText(MainPage.this, "Set as 'C' Day", Toast.LENGTH_LONG).show();
                                 OfflineConditions();
                                 break;
                             case 3:
-                                scheduleFormat = NormalScheduleFormat("d");
+                                NormalScheduleFormat("d");
                                 Toast.makeText(MainPage.this, "Set as 'D' Day", Toast.LENGTH_LONG).show();
                                 OfflineConditions();
                                 break;
@@ -856,12 +787,4 @@ public class MainPage extends AppCompatActivity {
 
     }
     //END CODE ATTRIBUTION FROM WhatDatApp
-
-    void reset() { //WILL REMOVE WHEN RESET BUTTON REMOVED FOR NEXT UPDATE
-        Intent i = getBaseContext().getPackageManager()
-                .getLaunchIntentForPackage(getBaseContext().getPackageName());
-        i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        startActivity(i);
-
-    }
 }

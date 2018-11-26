@@ -7,6 +7,7 @@
     <string name="Notifications">Notification Preferences</string>
     <string name="ScheduleInput">Schedule Input</string>
     <string name="Quote">Quote of the Day</string>
+    <string name="ForceRefresh">Force Server Data Refresh</string>
     <string name="Settings">Settings</string>
 
     <!-- Schedule Input Placeholders -->

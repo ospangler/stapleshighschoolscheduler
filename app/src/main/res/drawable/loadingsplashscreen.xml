@@ -6,8 +6,7 @@
     <item>
 
         <bitmap
-            android:antialias="true"
-            android:gravity="center"
+            android:gravity="center|bottom|clip_vertical"
             android:src="@drawable/small_logo" />
 
     </item>
