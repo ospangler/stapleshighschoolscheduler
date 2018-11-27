@@ -45,6 +45,7 @@ public class MainPage extends AppCompatActivity {
     boolean noSchool = false;
     boolean beforeSchool = false;
     boolean afterSchool = false;
+    boolean futureView = false;
     //
     int currentPeriodNumber = -1;
     int progressForBar = 0;
@@ -57,6 +58,7 @@ public class MainPage extends AppCompatActivity {
     boolean passingTime = false;
     boolean specialSchedule = false;
     Calendar cal = Calendar.getInstance();
+    int currentYear = cal.get(Calendar.YEAR);
     int currentDayNum = cal.get(Calendar.DAY_OF_MONTH);
     //int currentDayNum = 28;
     //int currentDayDay = cal.get(Calendar.DAY_OF_WEEK);
@@ -163,9 +165,10 @@ public class MainPage extends AppCompatActivity {
 
         if (offline) {//if offline
             OfflineDayAlertPopup("No Connection. Pick a Day.");
-        }else{//if not offline
+        } else {//if not offline
 
-            if(!noSchool) BeforeOrAfterSchoolCheck(periodTimes);//checks to see if before or after school. noSchool checked in getJson
+            if (!noSchool)
+                BeforeOrAfterSchoolCheck(periodTimes);//checks to see if before or after school. noSchool checked in getJson
 
             if (noSchool) {// if no school
                 NoSchoolProcedures();
@@ -281,23 +284,47 @@ public class MainPage extends AppCompatActivity {
 
         } else {//WITH CONNECTION
 
-            GetInfoFromJSON(jsonData);
+            GetInfoFromJSON(jsonData, false, 0, 0);
         }
 
     }
 
-    void GetInfoFromJSON(String inputdata) {
+    void GetInfoFromJSON(String inputData, boolean futureViewGet, int inputMonthOffsetJson, int inputDayOffsetJson){//Responsible for Parsing JSON file
+        int monthForJson;
+        int dayForJson;
+
+        //Code before try statement allows for reuse if user wants schedule at future date.
+        if (futureViewGet) {//FutureViewGet will set date to one from calendar selected by user
+            monthForJson = inputMonthOffsetJson;
+            dayForJson = inputDayOffsetJson;
+
+        } else {//If not Future View, will simply be offset. Use for after school for next day
+            monthForJson = currentMonth + inputMonthOffsetJson;
+            dayForJson = currentDayNum + inputDayOffsetJson;
+        }
+
+        if(!(DateValidator(monthForJson,dayForJson))){
+            if(monthForJson >= 12){
+                monthForJson = 1;
+                dayForJson = 1;
+            }else{
+                monthForJson++;
+                dayForJson = 1;
+            }
+        }
+
+
 
         try {
-            JSONObject JO = new JSONObject(inputdata);
+            JSONObject JO = new JSONObject(inputData);
             jsonNotice = JO.getString("notice");
 
             JSONArray scheduleChangeArray = JO.getJSONArray("schedulechange");
 
             for (int i = 0; i < scheduleChangeArray.length(); i++) { //checks to see if any days are listed as changed
 
-                int tempMonth = 0;
-                int tempDay = 0;
+                int tempMonth;
+                int tempDay;
                 //JO.getJSONObject("schedulechange").getJSONObject(Integer.toString(i)).getInt("month");
                 tempMonth = scheduleChangeArray.getJSONObject(i).getInt("month");
                 tempDay = scheduleChangeArray.getJSONObject(i).getInt("day");
@@ -305,7 +332,7 @@ public class MainPage extends AppCompatActivity {
                 Log.i("currentday", Integer.toString(tempDay));
                 Log.i("arraylength", Integer.toString(scheduleChangeArray.length()));
 
-                if ((tempMonth == currentMonth) && (tempDay == currentDayNum)) { //found day listed matches today's date
+                if ((tempMonth == (monthForJson)) && (tempDay == (dayForJson))) { //found day listed matches today's date
 
                     specialSchedule = true;
 
@@ -369,22 +396,20 @@ public class MainPage extends AppCompatActivity {
             }
 
             if (!specialSchedule) { //if no special schedule was found, normal day formats will be written
-                int tempDayListStart = JO.getJSONObject("dayletters").getJSONObject(Integer.toString(currentMonth)).getInt("dayletterliststart");
-                JSONArray DayLetterListArray = JO.getJSONObject("dayletters").getJSONObject(Integer.toString(currentMonth)).getJSONArray("dayletterlist");
+                int tempDayListStart = JO.getJSONObject("dayletters").getJSONObject(Integer.toString(monthForJson)).getInt("dayletterliststart");
+                JSONArray DayLetterListArray = JO.getJSONObject("dayletters").getJSONObject(Integer.toString(monthForJson)).getJSONArray("dayletterlist");
                 boolean tempFound = false;
                 int tempPosition = -1;
 
                 for (int i = 0; i < DayLetterListArray.length(); i++) {
-                    if (DayLetterListArray.getInt(i) == currentDayNum) {
+                    if (DayLetterListArray.getInt(i) == dayForJson) {
                         tempFound = true;
                         tempPosition = i;
                         break;
                     }
                 }
 
-                if (!tempFound) {
-                    noSchool = true;
-                } else {
+                if (tempFound) {
                     if (((tempPosition % 4) + tempDayListStart) == 0) {
                         dayLetter = "a";
                         NormalScheduleFormat("a");//new int[]{1, 2, 3, 5, 8, 7}; //'A' day
@@ -398,7 +423,15 @@ public class MainPage extends AppCompatActivity {
                         dayLetter = "d";
                         NormalScheduleFormat("d");//new int[]{4, 1, 2, 8, 5, 6}; //'D' day
                     }
+
+                    BeforeOrAfterSchoolCheck(periodTimes);
+                } else {
+                    noSchool = true;
                 }
+            }
+
+            if ((noSchool) || (afterSchool)) {//finds next day and displays schedule for that day
+
             }
 
             //Log.i("dayletter", dayLetter);
@@ -409,6 +442,42 @@ public class MainPage extends AppCompatActivity {
         } catch (JSONException e) {
             e.printStackTrace();
         }
+    }
+
+    boolean DateValidator(int inputMonth, int inputDay) { //checks if generated date is actually a real date
+
+        if (inputMonth == 2) { //February Case
+
+            if((currentYear % 100) == 0){
+
+                if((currentYear % 400) == 0) {
+
+                    return (inputDay <= 29);//Leap Year if div by 100 and 400
+
+                }else{
+
+                    return (inputDay <= 28);//Not leap year if div by 100 but not 400
+
+                }
+
+            }else if ((currentYear % 4) == 0){
+
+                return (inputDay <= 29);//Leap Year if div by 4 but not 100
+
+            }else{
+                return (inputDay <=28);//Not leap year if not div by 4
+            }
+
+        } else if ((inputMonth == 1) || (inputMonth == 3) || (inputMonth == 5) || (inputMonth == 7) || (inputMonth == 8) || (inputMonth == 10) || (inputMonth == 12)) { //31 days
+
+            return (inputDay <= 31);
+
+        } else {//30 days
+
+            return (inputDay <= 30);
+
+        }
+
     }
 
     void NormalScheduleFormat(String inputDayType) { //EDIT THIS FUNCTION IF BASELINE SCHEDULE CHANGES AND PUSH UPDATE
