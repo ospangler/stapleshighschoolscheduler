@@ -36,7 +36,6 @@
             android:name=".ClassInputActivity"
             android:label="@string/title_activity_class_input" />
         <activity android:name=".GeneralSettingsActivity" />
-        <activity android:name=".ScheduleInputActivity" />
 
     </application>
 

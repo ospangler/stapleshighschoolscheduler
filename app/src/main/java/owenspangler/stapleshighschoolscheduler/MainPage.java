@@ -11,6 +11,9 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.DividerItemDecoration;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.style.ForegroundColorSpan;
@@ -26,6 +29,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.concurrent.ExecutionException;
@@ -69,11 +73,14 @@ public class MainPage extends AppCompatActivity {
     //int currentMinute = 16;
     ProgressBar progressBar;
     ProgressBar overallProgressBar;
+    MyRecyclerViewAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_page);
+
+        //SETUP TOOLBAR
 
         android.support.v7.widget.Toolbar toolbar = findViewById(R.id.toolbar);
 
@@ -87,6 +94,31 @@ public class MainPage extends AppCompatActivity {
         }
         actionbar.setHomeAsUpIndicator(R.drawable.ic_menu);
 
+        //SETUP RECYCLER VIEW
+        //Uses Code from StackOverflow Answer by Suragch
+        //https://stackoverflow.com/a/40584425
+
+        // data to populate the RecyclerView with
+        ArrayList<String> periodNames = new ArrayList<>();
+        periodNames.add("1");
+        periodNames.add("2");
+        periodNames.add("3");
+        periodNames.add("4");
+        periodNames.add("5");
+        periodNames.add("6");
+        periodNames.add("7");
+        periodNames.add("8");
+
+        // set up the RecyclerView
+        RecyclerView recyclerView = findViewById(R.id.main_schedule_list);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        adapter = new MyRecyclerViewAdapter(this, periodNames);
+        //adapter.setClickListener(this);
+        recyclerView.setAdapter(adapter);
+
+
+
+    //SETUP HAMBURGER MENU
 
         mDrawerLayout = findViewById(R.id.drawer_layout);
 
@@ -122,7 +154,7 @@ public class MainPage extends AppCompatActivity {
                     }
                 });
 
-        FirstMain();
+        //FirstMain();
     }
 
     @Override

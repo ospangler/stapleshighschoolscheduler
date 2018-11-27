@@ -129,6 +129,7 @@
             android:layout_marginEnd="8dp"
             android:text="@string/ERROR"
             android:textSize="50sp"
+            android:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/PeriodDisplay" />
@@ -139,6 +140,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:text="@string/ERROR"
+            android:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
@@ -164,6 +166,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:text="@string/ERROR"
+            android:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
@@ -185,6 +188,17 @@
             app:layout_constraintStart_toEndOf="@+id/progressBar"
             app:layout_constraintTop_toBottomOf="@+id/ProgressBarTextPercent"
             tools:text="@string/Remaining" />
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/main_schedule_list"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="8dp"
+            android:scrollbars="vertical"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/ProgressBarTextDescription" />
 
     </android.support.constraint.ConstraintLayout>
 
