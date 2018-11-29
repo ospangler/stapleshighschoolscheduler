@@ -99,22 +99,54 @@ public class MainPage extends AppCompatActivity {
         //https://stackoverflow.com/a/40584425
 
         // data to populate the RecyclerView with
+
+        ArrayList<String> periodNumbers = new ArrayList<>();
+        periodNumbers.add("1");
+        periodNumbers.add("2");
+        periodNumbers.add("3");
+        periodNumbers.add("4");
+        periodNumbers.add("5");
+        periodNumbers.add("6");
+        periodNumbers.add("7");
+        periodNumbers.add("8");
+
         ArrayList<String> periodNames = new ArrayList<>();
-        periodNames.add("1");
-        periodNames.add("2");
-        periodNames.add("3");
-        periodNames.add("4");
-        periodNames.add("5");
-        periodNames.add("6");
-        periodNames.add("7");
-        periodNames.add("8");
+        periodNames.add("lol");
+        periodNames.add("dudud");
+        periodNames.add("fff");
+        periodNames.add("gg");
+        periodNames.add("gggg");
+        periodNames.add("hhhh");
+        periodNames.add("iii");
+        periodNames.add("kkkk");
+
+        ArrayList<String> periodStart = new ArrayList<>();
+       periodStart.add("lol");
+       periodStart.add("dudud");
+       periodStart.add("fff");
+       periodStart.add("gg");
+       periodStart.add("gggg");
+       periodStart.add("hhhh");
+       periodStart.add("iii");
+       periodStart.add("kkkk");
+
+        ArrayList<String> periodEnd = new ArrayList<>();
+        periodEnd.add("lol");
+        periodEnd.add("dudud");
+        periodEnd.add("fff");
+        periodEnd.add("gg");
+        periodEnd.add("gggg");
+        periodEnd.add("hhhh");
+        periodEnd.add("iii");
+        periodEnd.add("kkkk");
 
         // set up the RecyclerView
         RecyclerView recyclerView = findViewById(R.id.main_schedule_list);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new MyRecyclerViewAdapter(this, periodNames);
+        adapter = new MyRecyclerViewAdapter(this, periodNumbers, periodNames, periodStart, periodEnd);
         //adapter.setClickListener(this);
         recyclerView.setAdapter(adapter);
+
 
 
 
@@ -580,8 +612,29 @@ public class MainPage extends AppCompatActivity {
             afterSchool = true;
         }
     }
+/*
+    void displayScheduleListInfo(){
+
+        ArrayList<String> periodNames = new ArrayList<>();
+        periodNames.add("1");
+        periodNames.add("2");
+        periodNames.add("3");
+        periodNames.add("4");
+        periodNames.add("5");
+        periodNames.add("6");
+        periodNames.add("7");
+        periodNames.add("8");
 
 
+        // set up the RecyclerView
+        RecyclerView recyclerView = findViewById(R.id.main_schedule_list);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        adapter = new MyRecyclerViewAdapter(this, periodNames);
+        //adapter.setClickListener(this);
+        recyclerView.setAdapter(adapter);
+
+    }
+    */
     void displayPeriodString() { //Displays and Highlights the Numbers of the Period String
 
         String tempScheduleString = ""; //Allows for display of numbers by adding a 1 before their numerical equivalent

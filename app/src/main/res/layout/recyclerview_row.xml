@@ -13,7 +13,7 @@
         android:layout_height="match_parent">
 
         <TextView
-            android:id="@+id/tvAnimalName"
+            android:id="@+id/list_period_number"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="1"
@@ -23,7 +23,7 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
-            android:id="@+id/tvAnimalName2"
+            android:id="@+id/list_period_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="32dp"
@@ -31,11 +31,11 @@
             android:text="Period 1"
             android:textSize="30sp"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/tvAnimalName"
+            app:layout_constraintStart_toEndOf="@+id/list_period_number"
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
-            android:id="@+id/tvAnimalName3"
+            android:id="@+id/list_period_start"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="16dp"
@@ -45,7 +45,7 @@
             app:layout_constraintEnd_toEndOf="parent" />
 
         <TextView
-            android:id="@+id/tvAnimalName4"
+            android:id="@+id/list_period_end"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
@@ -55,7 +55,7 @@
             android:textSize="20sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tvAnimalName3" />
+            app:layout_constraintTop_toBottomOf="@+id/list_period_start" />
     </android.support.constraint.ConstraintLayout>
 
 </LinearLayout>

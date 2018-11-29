@@ -14,15 +14,21 @@ import java.util.List;
 
 public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAdapter.ViewHolder> {
 
-    private List<String> mData;
+    private List<String> mPeriodNumberData;
+    private List<String> mPeriodNameData;
+    private List<String> mPeriodStartData;
+    private List<String> mPeriodEndData;
     private LayoutInflater mInflater;
     private ItemClickListener mClickListener;
 
     // data is passed into the constructor
-    MyRecyclerViewAdapter(Context context, List<String> data) {
+    MyRecyclerViewAdapter(Context context, List<String> periodNumberData, List<String> periodNameData, List<String> periodStartData, List<String> periodEndData) {
         this.mInflater = LayoutInflater.from(context);
-        this.mData = data;
-    }
+        this.mPeriodNumberData = periodNumberData;
+        this.mPeriodNameData = periodNameData;
+        this.mPeriodStartData = periodStartData;
+        this.mPeriodEndData = periodEndData;
+}
 
     // inflates the row layout from xml when needed
     @Override
@@ -34,24 +40,38 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
     // binds the data to the TextView in each row
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        String animal = mData.get(position);
-        holder.myTextView.setText(animal);
+        String periodNumberTextData = mPeriodNumberData.get(position);
+        String periodNameTextData = mPeriodNameData.get(position);
+        String periodStartTextData = mPeriodStartData.get(position);
+        String periodEndTextData = mPeriodEndData.get(position);
+
+        holder.PeriodNumberText.setText(periodNumberTextData);
+        holder.PeriodNameText.setText(periodNameTextData);
+        holder.PeriodStartText.setText(periodStartTextData);
+        holder.PeriodEndText.setText(periodEndTextData);
+
     }
 
     // total number of rows
     @Override
     public int getItemCount() {
-        return mData.size();
+        return mPeriodNumberData.size();
     }
 
 
     // stores and recycles views as they are scrolled off screen
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-        TextView myTextView;
+        TextView PeriodNumberText;
+        TextView PeriodNameText;
+        TextView PeriodStartText;
+        TextView PeriodEndText;
 
         ViewHolder(View itemView) {
             super(itemView);
-            myTextView = itemView.findViewById(R.id.tvAnimalName);
+            PeriodNumberText = itemView.findViewById(R.id.list_period_number);
+            PeriodNameText = itemView.findViewById(R.id.list_period_name);
+            PeriodStartText = itemView.findViewById(R.id.list_period_start);
+            PeriodEndText = itemView.findViewById(R.id.list_period_end);
             itemView.setOnClickListener(this);
         }
 
@@ -63,7 +83,7 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
 
     // convenience method for getting data at click position
     String getItem(int id) {
-        return mData.get(id);
+        return mPeriodNumberData.get(id);
     }
 
     // allows clicks events to be caught
@@ -76,3 +96,4 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
         void onItemClick(View view, int position);
     }
 }
+
