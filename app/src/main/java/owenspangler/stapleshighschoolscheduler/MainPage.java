@@ -2,6 +2,7 @@ package owenspangler.stapleshighschoolscheduler;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Handler;
 import android.support.design.widget.NavigationView;
 import android.support.v4.content.ContextCompat;
@@ -24,6 +25,26 @@ import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.preference.PreferenceManager;
+
+////
+import android.os.Bundle;
+import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
+import android.os.Build;
+import android.preference.EditTextPreference;
+import android.preference.ListPreference;
+import android.preference.Preference;
+import android.preference.PreferenceFragment;
+import android.preference.PreferenceManager;
+import android.preference.RingtonePreference;
+import android.text.TextUtils;
+import android.view.MenuItem;
+//
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -32,6 +53,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Random;
 import java.util.concurrent.ExecutionException;
 
 public class MainPage extends AppCompatActivity {
@@ -40,16 +62,16 @@ public class MainPage extends AppCompatActivity {
 
     String jsonData; //Raw Json String Pulled From Async Task
     //
-    int[] scheduleFormat;
-    int[][] periodTimes;
-    int lunchPeriodPosition;
-    int[][] lunchWaveTimes;
-    String dayLetter;
-    boolean noLunch = false;
-    boolean noSchool = false;
-    boolean beforeSchool = false;
-    boolean afterSchool = false;
-    boolean futureView = false;
+    int[] scheduleFormat; //Consecutive List of Today's Periods
+    int[][] periodTimes; //2D Array of Start Hours, Start Minutes, End Hours and End Minutes for all periods
+    int lunchPeriodPosition; //What position in the schedule the lunch period falls on
+    int[][] lunchWaveTimes; //2D array like periodTimes, but for lunch waves
+    String dayLetter; //What the day letter is
+    boolean noLunch = false; //If true, the day has no lunch period
+    boolean noSchool = false; //If true, the entire day has no school
+    boolean beforeSchool = false; //If true, is not during school, but before school
+    boolean afterSchool = false; //If true, is not during school, but after school
+    boolean futureView = false; //If true, user is viewing a date in calendar mode
     //
     int currentPeriodNumber = -1;
     int progressForBar = 0;
@@ -74,12 +96,15 @@ public class MainPage extends AppCompatActivity {
     ProgressBar progressBar;
     ProgressBar overallProgressBar;
     MyRecyclerViewAdapter adapter;
+    RecyclerView recyclerView;
+    SharedPreferences sharedPref;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_page);
-
+        sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
         //SETUP TOOLBAR
 
         android.support.v7.widget.Toolbar toolbar = findViewById(R.id.toolbar);
@@ -95,62 +120,15 @@ public class MainPage extends AppCompatActivity {
         actionbar.setHomeAsUpIndicator(R.drawable.ic_menu);
 
         //SETUP RECYCLER VIEW
+
         //Uses Code from StackOverflow Answer by Suragch
         //https://stackoverflow.com/a/40584425
-
-        // data to populate the RecyclerView with
-
-        ArrayList<String> periodNumbers = new ArrayList<>();
-        periodNumbers.add("1");
-        periodNumbers.add("2");
-        periodNumbers.add("3");
-        periodNumbers.add("4");
-        periodNumbers.add("5");
-        periodNumbers.add("6");
-        periodNumbers.add("7");
-        periodNumbers.add("8");
-
-        ArrayList<String> periodNames = new ArrayList<>();
-        periodNames.add("lol");
-        periodNames.add("dudud");
-        periodNames.add("fff");
-        periodNames.add("gg");
-        periodNames.add("gggg");
-        periodNames.add("hhhh");
-        periodNames.add("iii");
-        periodNames.add("kkkk");
-
-        ArrayList<String> periodStart = new ArrayList<>();
-       periodStart.add("lol");
-       periodStart.add("dudud");
-       periodStart.add("fff");
-       periodStart.add("gg");
-       periodStart.add("gggg");
-       periodStart.add("hhhh");
-       periodStart.add("iii");
-       periodStart.add("kkkk");
-
-        ArrayList<String> periodEnd = new ArrayList<>();
-        periodEnd.add("lol");
-        periodEnd.add("dudud");
-        periodEnd.add("fff");
-        periodEnd.add("gg");
-        periodEnd.add("gggg");
-        periodEnd.add("hhhh");
-        periodEnd.add("iii");
-        periodEnd.add("kkkk");
-
-        // set up the RecyclerView
-        RecyclerView recyclerView = findViewById(R.id.main_schedule_list);
+        recyclerView = findViewById(R.id.main_schedule_list);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new MyRecyclerViewAdapter(this, periodNumbers, periodNames, periodStart, periodEnd);
-        //adapter.setClickListener(this);
-        recyclerView.setAdapter(adapter);
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(recyclerView.getContext(), DividerItemDecoration.VERTICAL);
+        recyclerView.addItemDecoration(dividerItemDecoration);
 
-
-
-
-    //SETUP HAMBURGER MENU
+        //SETUP HAMBURGER MENU
 
         mDrawerLayout = findViewById(R.id.drawer_layout);
 
@@ -186,7 +164,7 @@ public class MainPage extends AppCompatActivity {
                     }
                 });
 
-        //FirstMain();
+        FirstMain();
     }
 
     @Override
@@ -232,45 +210,45 @@ public class MainPage extends AppCompatActivity {
         } else {//if not offline
 
             if (!noSchool)
-                BeforeOrAfterSchoolCheck(periodTimes);//checks to see if before or after school. noSchool checked in getJson
+                // BeforeOrAfterSchoolCheck(periodTimes);//checks to see if before or after school. noSchool checked in getJson
 
-            if (noSchool) {// if no school
-                NoSchoolProcedures();
-            } else if (beforeSchool) {//if before school
-                BeforeSchoolProcedures();
-            } else if (afterSchool) {//if after school
-                AfterSchoolProcedures();
-            } else {//normal condition
-                currentPeriodNumber = PeriodNumber(periodTimes);
-
-                if (noLunch) {//if school day does not have lunch
-                    if (passingTime) {//school day w/o lunch during passing time
-                        FindTimeUntilEndOfDay(periodTimes);
-                        FindTimeUntilEndPassingTime(periodTimes);
-                        FinalizingSetupProcedures();
-                    } else {//school day w/o lunch during class time
-                        FindTimeUntilEndOfDay(periodTimes);
-                        FindTimeUntilEndNormal(periodTimes);
-                        FinalizingSetupProcedures();
-                    }
-                } else {//normal school day with lunch
-                    if (lunchPeriodPosition == currentPeriodNumber) {//It is lunch period
-                        //NEED TO PULL PREFERENCES FILE HERE
-                        //IF DEFAULT VALUES, TREAT IT LIKE NORMAL PERIODS, NO NEED TO MERGE
-                    } else {//It is not lunch period
-                        if (passingTime) {//school day with lunch during non-lunch passing time
+                if (noSchool) {// if no school
+                    NoSchoolProcedures();
+                } else if (beforeSchool) {//if before school
+                    BeforeSchoolProcedures();
+                } else if (afterSchool) {//if after school
+                    AfterSchoolProcedures();
+                } else {//normal condition
+                    currentPeriodNumber = PeriodNumber(periodTimes);
+                    displayScheduleListInfo(periodTimes);
+                    if (noLunch) {//if school day does not have lunch
+                        if (passingTime) {//school day w/o lunch during passing time
                             FindTimeUntilEndOfDay(periodTimes);
                             FindTimeUntilEndPassingTime(periodTimes);
                             FinalizingSetupProcedures();
-                        } else {//school day with lunch during non-lunch class time
+                        } else {//school day w/o lunch during class time
                             FindTimeUntilEndOfDay(periodTimes);
                             FindTimeUntilEndNormal(periodTimes);
                             FinalizingSetupProcedures();
                         }
+                    } else {//normal school day with lunch
+                        if (lunchPeriodPosition == currentPeriodNumber) {//It is lunch period
+                            //NEED TO PULL PREFERENCES FILE HERE
+                            //IF DEFAULT VALUES, TREAT IT LIKE NORMAL PERIODS, NO NEED TO MERGE
+                        } else {//It is not lunch period
+                            if (passingTime) {//school day with lunch during non-lunch passing time
+                                FindTimeUntilEndOfDay(periodTimes);
+                                FindTimeUntilEndPassingTime(periodTimes);
+                                FinalizingSetupProcedures();
+                            } else {//school day with lunch during non-lunch class time
+                                FindTimeUntilEndOfDay(periodTimes);
+                                FindTimeUntilEndNormal(periodTimes);
+                                FinalizingSetupProcedures();
+                            }
+                        }
                     }
-                }
 
-            }
+                }
         }
     }
 
@@ -353,7 +331,7 @@ public class MainPage extends AppCompatActivity {
 
     }
 
-    void GetInfoFromJSON(String inputData, boolean futureViewGet, int inputMonthOffsetJson, int inputDayOffsetJson){//Responsible for Parsing JSON file
+    void GetInfoFromJSON(String inputData, boolean futureViewGet, int inputMonthOffsetJson, int inputDayOffsetJson) {//Responsible for Parsing JSON file
         int monthForJson;
         int dayForJson;
 
@@ -367,16 +345,15 @@ public class MainPage extends AppCompatActivity {
             dayForJson = currentDayNum + inputDayOffsetJson;
         }
 
-        if(!(DateValidator(monthForJson,dayForJson))){
-            if(monthForJson >= 12){
+        if (!(DateValidator(monthForJson, dayForJson))) {
+            if (monthForJson >= 12) {
                 monthForJson = 1;
                 dayForJson = 1;
-            }else{
+            } else {
                 monthForJson++;
                 dayForJson = 1;
             }
         }
-
 
 
         try {
@@ -512,24 +489,24 @@ public class MainPage extends AppCompatActivity {
 
         if (inputMonth == 2) { //February Case
 
-            if((currentYear % 100) == 0){
+            if ((currentYear % 100) == 0) {
 
-                if((currentYear % 400) == 0) {
+                if ((currentYear % 400) == 0) {
 
                     return (inputDay <= 29);//Leap Year if div by 100 and 400
 
-                }else{
+                } else {
 
                     return (inputDay <= 28);//Not leap year if div by 100 but not 400
 
                 }
 
-            }else if ((currentYear % 4) == 0){
+            } else if ((currentYear % 4) == 0) {
 
                 return (inputDay <= 29);//Leap Year if div by 4 but not 100
 
-            }else{
-                return (inputDay <=28);//Not leap year if not div by 4
+            } else {
+                return (inputDay <= 28);//Not leap year if not div by 4
             }
 
         } else if ((inputMonth == 1) || (inputMonth == 3) || (inputMonth == 5) || (inputMonth == 7) || (inputMonth == 8) || (inputMonth == 10) || (inputMonth == 12)) { //31 days
@@ -612,29 +589,103 @@ public class MainPage extends AppCompatActivity {
             afterSchool = true;
         }
     }
-/*
-    void displayScheduleListInfo(){
 
+    void displayScheduleListInfo(int[][] inputPeriodTimes) {
+        ArrayList<String> periodNumbers = new ArrayList<>();
         ArrayList<String> periodNames = new ArrayList<>();
-        periodNames.add("1");
-        periodNames.add("2");
-        periodNames.add("3");
-        periodNames.add("4");
-        periodNames.add("5");
-        periodNames.add("6");
-        periodNames.add("7");
-        periodNames.add("8");
+        ArrayList<String> periodStart = new ArrayList<>();
+        ArrayList<String> periodEnd = new ArrayList<>();
+        ArrayList<String> lunchWave = new ArrayList<>();
+
+        for(int i = 0; i<scheduleFormat.length;i++){
+            lunchWave.add("3");
+        }
+
+        for (int i = 0; i < scheduleFormat.length; i++) {
+            periodNumbers.add(Integer.toString(scheduleFormat[i]));
+
+            switch (scheduleFormat[i]) {
+                case 1:
+                    periodNames.add(sharedPref.getString("key_schedule_period_1_name", "Period 1"));
+                    //periodNames.add(ScheduleInputPrefs.getString("key_schedule_period_1_name", "Period 1"));
+                    break;
+                case 2:
+                    periodNames.add(sharedPref.getString("key_schedule_period_2_name", "Period 2"));
+                    break;
+                case 3:
+                    periodNames.add(sharedPref.getString("key_schedule_period_3_name", "Period 3"));
+                    break;
+                case 4:
+                    periodNames.add(sharedPref.getString("key_schedule_period_4_name", "Period 4"));
+                    break;
+                case 5:
+                    periodNames.add(sharedPref.getString("key_schedule_period_5_name", "Period 5"));
+                    break;
+                case 6:
+                    periodNames.add(sharedPref.getString("key_schedule_period_6_name", "Period 6"));
+                    break;
+                case 7:
+                    periodNames.add(sharedPref.getString("key_schedule_period_7_name", "Period 7"));
+                    break;
+                case 8:
+                    periodNames.add(sharedPref.getString("key_schedule_period_8_name", "Period 8"));
+                    break;
+                default:
+                    periodNames.add("Special Period");
+            }
+        }
+
+        for (int i = 0; i < (inputPeriodTimes[0].length); i++) {
+            //boolean tempStartPM = false;
+            //boolean tempEndPM = false;
+            int tempStartHour = inputPeriodTimes[0][i];
+            //int tempStartMinute = inputPeriodTimes[1][i];
+            int tempEndHour = inputPeriodTimes[2][i];
+            //int tempEndMinute = inputPeriodTimes[3][i];
+
+
+            if (tempStartHour > 12) {
+                tempStartHour = tempStartHour - 12;
+                //tempStartPM = true;
+            }
+
+            if (tempEndHour > 12) {
+                tempEndHour = tempEndHour - 12;
+                //tempEndPM = true;
+            }
+            String tempStartTimeString = tempStartHour + ":" + inputPeriodTimes[1][i];
+            String tempEndTimeString = tempEndHour + ":" + inputPeriodTimes[3][i];
+
+            periodStart.add(tempStartTimeString);
+            periodEnd.add(tempEndTimeString);
+        }
+
+        Log.i("periodnumers", periodNumbers.toString());
+        Log.i("periodnames", periodNames.toString());
+        Log.i("periodstart", periodStart.toString());
+        Log.i("periodend", periodEnd.toString());
 
 
         // set up the RecyclerView
-        RecyclerView recyclerView = findViewById(R.id.main_schedule_list);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new MyRecyclerViewAdapter(this, periodNames);
-        //adapter.setClickListener(this);
+        if(!((periodNames.size() == periodNumbers.size())&&(periodStart.size() == periodNumbers.size()) && (periodEnd.size() == periodNumbers.size()) && (periodEnd.size()  == lunchWave.size()))){
+            //Throw Error Message
+            ErrorPopup("Owen has done Goofed Up", "Code 420");
+            periodNumbers.clear();
+            periodNames.clear();
+            periodStart.clear();
+            periodEnd.clear();
+
+            periodNumbers.add("420");
+            periodNames.add("Bad Error");
+            periodStart.add("WTF");
+            periodEnd.add("Goddamit");
+        }
+
+        adapter = new MyRecyclerViewAdapter(this, periodNumbers, periodNames, periodStart, periodEnd, lunchWave);
         recyclerView.setAdapter(adapter);
 
     }
-    */
+
     void displayPeriodString() { //Displays and Highlights the Numbers of the Period String
 
         String tempScheduleString = ""; //Allows for display of numbers by adding a 1 before their numerical equivalent
@@ -941,4 +992,8 @@ public class MainPage extends AppCompatActivity {
 
     }
     //END CODE ATTRIBUTION FROM WhatDatApp
+
+    void ErrorPopup(String inputErrorText, String code) {
+
+    }
 }

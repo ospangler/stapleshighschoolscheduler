@@ -18,16 +18,18 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
     private List<String> mPeriodNameData;
     private List<String> mPeriodStartData;
     private List<String> mPeriodEndData;
+    private List<String> mLunchWaveData;
     private LayoutInflater mInflater;
     private ItemClickListener mClickListener;
 
     // data is passed into the constructor
-    MyRecyclerViewAdapter(Context context, List<String> periodNumberData, List<String> periodNameData, List<String> periodStartData, List<String> periodEndData) {
+    MyRecyclerViewAdapter(Context context, List<String> periodNumberData, List<String> periodNameData, List<String> periodStartData, List<String> periodEndData, List<String> lunchWaveData) {
         this.mInflater = LayoutInflater.from(context);
         this.mPeriodNumberData = periodNumberData;
         this.mPeriodNameData = periodNameData;
         this.mPeriodStartData = periodStartData;
         this.mPeriodEndData = periodEndData;
+        this.mLunchWaveData = lunchWaveData;
 }
 
     // inflates the row layout from xml when needed
@@ -44,6 +46,7 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
         String periodNameTextData = mPeriodNameData.get(position);
         String periodStartTextData = mPeriodStartData.get(position);
         String periodEndTextData = mPeriodEndData.get(position);
+        String lunchWaveTextData = mLunchWaveData.get(position);
 
         holder.PeriodNumberText.setText(periodNumberTextData);
         holder.PeriodNameText.setText(periodNameTextData);
@@ -65,6 +68,7 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
         TextView PeriodNameText;
         TextView PeriodStartText;
         TextView PeriodEndText;
+        TextView LunchWaveText;
 
         ViewHolder(View itemView) {
             super(itemView);
@@ -72,6 +76,7 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
             PeriodNameText = itemView.findViewById(R.id.list_period_name);
             PeriodStartText = itemView.findViewById(R.id.list_period_start);
             PeriodEndText = itemView.findViewById(R.id.list_period_end);
+            LunchWaveText = itemView.findViewById(R.id.list_lunch_wave);
             itemView.setOnClickListener(this);
         }
 
