@@ -26,34 +26,12 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.preference.PreferenceManager;
-
-////
-import android.os.Bundle;
-import android.content.Context;
-import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.media.Ringtone;
-import android.media.RingtoneManager;
-import android.net.Uri;
-import android.os.Build;
-import android.preference.EditTextPreference;
-import android.preference.ListPreference;
-import android.preference.Preference;
-import android.preference.PreferenceFragment;
-import android.preference.PreferenceManager;
-import android.preference.RingtonePreference;
-import android.text.TextUtils;
-import android.view.MenuItem;
-//
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Random;
 import java.util.concurrent.ExecutionException;
 
 public class MainPage extends AppCompatActivity {
@@ -64,7 +42,7 @@ public class MainPage extends AppCompatActivity {
     //
     int[] scheduleFormat; //Consecutive List of Today's Periods
     int[][] periodTimes; //2D Array of Start Hours, Start Minutes, End Hours and End Minutes for all periods
-    int lunchPeriodPosition; //What position in the schedule the lunch period falls on
+    int lunchPeriodPosition; //What position in the schedule the lunch period falls on (WARN: STARTS AT 1, not 0)
     int[][] lunchWaveTimes; //2D array like periodTimes, but for lunch waves
     String dayLetter; //What the day letter is
     boolean noLunch = false; //If true, the day has no lunch period
@@ -114,10 +92,11 @@ public class MainPage extends AppCompatActivity {
         ActionBar actionbar = getSupportActionBar();
         try {
             actionbar.setDisplayHomeAsUpEnabled(true);
+            actionbar.setHomeAsUpIndicator(R.drawable.ic_menu);
         } catch (NullPointerException e) {
             //put stack trace here
         }
-        actionbar.setHomeAsUpIndicator(R.drawable.ic_menu);
+
 
         //SETUP RECYCLER VIEW
 
@@ -366,9 +345,11 @@ public class MainPage extends AppCompatActivity {
 
                 int tempMonth;
                 int tempDay;
+                JSONObject ARRJO = scheduleChangeArray.getJSONObject(i);
                 //JO.getJSONObject("schedulechange").getJSONObject(Integer.toString(i)).getInt("month");
-                tempMonth = scheduleChangeArray.getJSONObject(i).getInt("month");
-                tempDay = scheduleChangeArray.getJSONObject(i).getInt("day");
+
+                tempMonth = ARRJO.getInt("month");
+                tempDay = ARRJO.getInt("day");
                 Log.i("currentmonth", Integer.toString(tempMonth));
                 Log.i("currentday", Integer.toString(tempDay));
                 Log.i("arraylength", Integer.toString(scheduleChangeArray.length()));
@@ -377,12 +358,12 @@ public class MainPage extends AppCompatActivity {
 
                     specialSchedule = true;
 
-                    dayLetter = scheduleChangeArray.getJSONObject(i).getString("dayletter");
+                    dayLetter = ARRJO.getString("dayletter");
 
-                    JSONArray tempStartTimesHourArray = scheduleChangeArray.getJSONObject(i).getJSONArray("starttimeshour");
-                    JSONArray tempStartTimesMinuteArray = scheduleChangeArray.getJSONObject(i).getJSONArray("starttimesminute");
-                    JSONArray tempEndTimesHourArray = scheduleChangeArray.getJSONObject(i).getJSONArray("endtimeshour");
-                    JSONArray tempEndTimesMinuteArray = scheduleChangeArray.getJSONObject(i).getJSONArray("endtimesminute");
+                    JSONArray tempStartTimesHourArray = ARRJO.getJSONArray("starttimeshour");
+                    JSONArray tempStartTimesMinuteArray = ARRJO.getJSONArray("starttimesminute");
+                    JSONArray tempEndTimesHourArray = ARRJO.getJSONArray("endtimeshour");
+                    JSONArray tempEndTimesMinuteArray = ARRJO.getJSONArray("endtimesminute");
                     periodTimes = new int[4][tempStartTimesHourArray.length()];
 
                     for (int j = 0; j < 4; j++) {
@@ -401,10 +382,10 @@ public class MainPage extends AppCompatActivity {
                     }
                     Log.i("dududu", Arrays.deepToString(periodTimes));
 
-                    JSONArray tempStartLunchHourArray = scheduleChangeArray.getJSONObject(i).getJSONArray("lunchwavesstarthour");
-                    JSONArray tempStartLunchMinuteArray = scheduleChangeArray.getJSONObject(i).getJSONArray("lunchwavesstartminute");
-                    JSONArray tempEndLunchHourArray = scheduleChangeArray.getJSONObject(i).getJSONArray("lunchwavesendhour");
-                    JSONArray tempEndLunchMinuteArray = scheduleChangeArray.getJSONObject(i).getJSONArray("lunchwavesendminute");
+                    JSONArray tempStartLunchHourArray = ARRJO.getJSONArray("lunchwavesstarthour");
+                    JSONArray tempStartLunchMinuteArray = ARRJO.getJSONArray("lunchwavesstartminute");
+                    JSONArray tempEndLunchHourArray = ARRJO.getJSONArray("lunchwavesendhour");
+                    JSONArray tempEndLunchMinuteArray = ARRJO.getJSONArray("lunchwavesendminute");
 
                     if (tempStartLunchHourArray.length() == 0) { // if nothing in array, no lunch
 
@@ -412,7 +393,7 @@ public class MainPage extends AppCompatActivity {
 
                     } else {//if values in array, has lunch
 
-                        lunchPeriodPosition = scheduleChangeArray.getJSONObject(i).getInt("lunchperiodposition");
+                        lunchPeriodPosition = ARRJO.getInt("lunchperiodposition");
                         lunchWaveTimes = new int[4][tempStartLunchHourArray.length()];
 
                         for (int j = 0; j < 4; j++) {
@@ -451,13 +432,13 @@ public class MainPage extends AppCompatActivity {
                 }
 
                 if (tempFound) {
-                    if (((tempPosition % 4) + tempDayListStart) == 0) {
+                    if (((tempPosition + tempDayListStart) % 4) == 0) {
                         dayLetter = "a";
                         NormalScheduleFormat("a");//new int[]{1, 2, 3, 5, 8, 7}; //'A' day
-                    } else if (((tempPosition % 4) + tempDayListStart) == 1) {
+                    } else if (((tempPosition + tempDayListStart) % 4) == 1) {
                         dayLetter = "b";
                         NormalScheduleFormat("b");//new int[]{2, 3, 4, 6, 7, 8}; //'B' day
-                    } else if (((tempPosition % 4) + tempDayListStart) == 2) {
+                    } else if (((tempPosition + tempDayListStart) % 4) == 2) {
                         dayLetter = "c";
                         NormalScheduleFormat("c");//new int[]{3, 4, 1, 7, 6, 5}; //'C' day
                     } else {
@@ -532,7 +513,7 @@ public class MainPage extends AppCompatActivity {
                 {20, 45, 40, 25, 20, 15}//END MINUTE
         };
 
-        lunchPeriodPosition = 3; //Period Position that is extended for lunch waves
+        lunchPeriodPosition = 4; //Period Position that is extended for lunch waves
 
         lunchWaveTimes = new int[][]{ //Lunch Wave Times Within Extended Lunch Period
                 {10, 11, 11},//START HOUR
@@ -597,9 +578,6 @@ public class MainPage extends AppCompatActivity {
         ArrayList<String> periodEnd = new ArrayList<>();
         ArrayList<String> lunchWave = new ArrayList<>();
 
-        for(int i = 0; i<scheduleFormat.length;i++){
-            lunchWave.add("3");
-        }
 
         for (int i = 0; i < scheduleFormat.length; i++) {
             periodNumbers.add(Integer.toString(scheduleFormat[i]));
@@ -658,6 +636,14 @@ public class MainPage extends AppCompatActivity {
 
             periodStart.add(tempStartTimeString);
             periodEnd.add(tempEndTimeString);
+        }
+
+        if(noLunch){
+
+        }else {
+            for (int i = 0; i < scheduleFormat.length; i++) {
+                lunchWave.add(" ");
+            }
         }
 
         Log.i("periodnumers", periodNumbers.toString());
@@ -881,6 +867,149 @@ public class MainPage extends AppCompatActivity {
         float tempLeftMinutes = Math.abs((tempTimeUntilHour * 60) + tempTimeUntilMinute);
         progressForOverallBar = 100 - Math.round((tempLeftMinutes / tempTotalMinutes) * 100);
 
+    }
+
+    void FindTimeUntilEndLunchWave(int finderinputPeriodTimes[][]) { //Finds the time until the end of the period
+
+        int timeUntilEndHour = 0;
+        int timeUntilEndMinute = 0;
+        int totalTimeHour = 0;
+        int totalTimeMinute = 0;
+        int PeriodArrayPosition = (currentPeriodNumber - 1);
+        int currentPeriodIDNumber = scheduleFormat[PeriodArrayPosition];
+        String PeriodType;
+
+        if (currentPeriodIDNumber>0 && currentPeriodIDNumber<=8) {
+            PeriodType = sharedPref.getString(("key_schedule_period_" + Integer.toString(currentPeriodIDNumber) + "_type"), "Free or Not Applicable");
+        }else{
+            PeriodType = "Free or Not Applicable";
+        }
+
+        int[] allowedLunchWaves = findAllowedLunchWave(PeriodType);
+
+
+        int tempCurrentHour = currentHour;
+
+        while (true) {
+            if (tempCurrentHour < finderinputPeriodTimes[2][PeriodArrayPosition]) {
+                timeUntilEndHour++;
+                tempCurrentHour++;
+            } else {
+                timeUntilEndMinute = ((finderinputPeriodTimes[3][PeriodArrayPosition]) - currentMinute);
+                break;
+            }
+        }
+
+        tempCurrentHour = finderinputPeriodTimes[0][PeriodArrayPosition];
+
+        while (true) {
+            if (tempCurrentHour < finderinputPeriodTimes[2][PeriodArrayPosition]) {
+                totalTimeHour++;
+                tempCurrentHour++;
+            } else {
+                totalTimeMinute = ((finderinputPeriodTimes[3][PeriodArrayPosition]) - (finderinputPeriodTimes[1][PeriodArrayPosition]));
+                break;
+            }
+        }
+
+        float tempTotalMinutes = Math.abs((totalTimeHour * 60) + totalTimeMinute);
+        float tempLeftMinutes = Math.abs((timeUntilEndHour * 60) + timeUntilEndMinute);
+        progressForBar = Math.round((tempLeftMinutes / tempTotalMinutes) * 100);
+        progressBarTextPercent = (Integer.toString(progressForBar) + "%");
+        int tempoftempLeftMinutes = (timeUntilEndHour * 60) + timeUntilEndMinute;
+        int tempDisplayHour = 0;
+        while (true) {
+            if (tempoftempLeftMinutes - 60 >= 0) {
+                tempoftempLeftMinutes = tempoftempLeftMinutes - 60;
+                tempDisplayHour++;
+            } else {
+                if (tempoftempLeftMinutes >= 10) {
+                    progressBarTextTime = (Integer.toString(tempDisplayHour) + ":" + Integer.toString(tempoftempLeftMinutes));
+                } else {
+                    progressBarTextTime = (Integer.toString(tempDisplayHour) + ":0" + Integer.toString(tempoftempLeftMinutes));
+                }
+                break;
+            }
+        }
+        progressBarTextDescription = "Remaining";
+    }
+
+    int findAllowedLunchWave(String periodTypeName){
+        int lunchStoreListStart = 8; //Tells program where list of period numbers start (Def 8 = August)
+        int[] lunchStoreList;
+        boolean labLunch = false;
+
+        switch(periodTypeName) {
+            case "Free or Not Applicable":
+                return -1;
+            case "Academic Support Center":
+                //                         Aug Sep Oct Nov Dec Jan Feb Mar Apr May Jun
+                lunchStoreList = new int[]{ 2 , 2 , 2 , 2 , 2 , 2 , 2 , 2 , 1 , 1 , 1 };
+                break;
+            case "Art":
+                //                         Aug Sep Oct Nov Dec Jan Feb Mar Apr May Jun
+                lunchStoreList = new int[]{ 3 , 3 , 3 , 3 , 3 , 3 , 3 , 3 , 3 , 3 , 3 };
+                break;
+            case "English":
+                //                         Aug Sep Oct Nov Dec Jan Feb Mar Apr May Jun
+                lunchStoreList = new int[]{ 2 , 2 , 2 , 2 , 2 , 2 , 3 , 3 , 3 , 3 , 3 };
+                break;
+            case "Family and Consumer Sciences":
+                //                         Aug Sep Oct Nov Dec Jan Feb Mar Apr May Jun
+                lunchStoreList = new int[]{ 3 , 3 , 3 , 3 , 3 , 3 , 3 , 3 , 3 , 3 , 3 };
+                break;
+            case "Mathematics":
+                //                         Aug Sep Oct Nov Dec Jan Feb Mar Apr May Jun
+                lunchStoreList = new int[]{ 1 , 1 , 1 , 1 , 1 , 1 , 2 , 2 , 2 , 2 , 2 };
+                break;
+            case "Media":
+                //                         Aug Sep Oct Nov Dec Jan Feb Mar Apr May Jun
+                lunchStoreList = new int[]{ 1 , 1 , 1 , 3 , 3 , 3 , 1 , 1 , 1 , 1 , 1 };
+                break;
+            case "Music":
+                //                         Aug Sep Oct Nov Dec Jan Feb Mar Apr May Jun
+                lunchStoreList = new int[]{ 3 , 3 , 3 , 3 , 3 , 3 , 3 , 3 , 3 , 3 , 3 };
+                break;
+            case "Physical Education":
+                //                         Aug Sep Oct Nov Dec Jan Feb Mar Apr May Jun
+                lunchStoreList = new int[]{ 3 , 3 , 3 , 3 , 3 , 3 , 3 , 3 , 3 , 3 , 3 };
+                break;
+            case "Science":
+                //                         Aug Sep Oct Nov Dec Jan Feb Mar Apr May Jun
+                lunchStoreList = new int[]{ 3 , 3 , 3 , 1 , 1 , 1 , 1 , 1 , 1 , 1 , 1 };
+                labLunch = true;
+                break;
+            case "Social Studies":
+                //                         Aug Sep Oct Nov Dec Jan Feb Mar Apr May Jun
+                lunchStoreList = new int[]{ 1 , 1 , 1 , 3 , 3 , 3 , 2 , 2 , 2 , 2 , 2 };
+                break;
+            case "Special Education":
+                //                         Aug Sep Oct Nov Dec Jan Feb Mar Apr May Jun
+                lunchStoreList = new int[]{ 2 , 2 , 2 , 2 , 2 , 2 , 1 , 1 , 2 , 2 , 2 };
+                break;
+            case "Technology":
+                //                         Aug Sep Oct Nov Dec Jan Feb Mar Apr May Jun
+                lunchStoreList = new int[]{ 1 , 1 , 1 , 3 , 3 , 3 , 3 , 3 , 3 , 3 , 3 };
+                break;
+            case "Theater":
+                //                         Aug Sep Oct Nov Dec Jan Feb Mar Apr May Jun
+                lunchStoreList = new int[]{ 2 , 2 , 2 , 2 , 2 , 2 , 3 , 3 , 2 , 2 , 2 };
+                break;
+            case "World Languages":
+                //                         Aug Sep Oct Nov Dec Jan Feb Mar Apr May Jun
+                lunchStoreList = new int[]{ 2 , 2 , 2 , 2 , 2 , 2 , 1 , 1 , 1 , 1 , 1 };
+                break;
+            case "Unknown: First Lunch":
+                return 1;
+            case "Unknown: Second Lunch":
+                return 2;
+            case "Unknown: Third Lunch":
+                return 3;
+        }
+
+
+
+        return -1;
     }
 
 

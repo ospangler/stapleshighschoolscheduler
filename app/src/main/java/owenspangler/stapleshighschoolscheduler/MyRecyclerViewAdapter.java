@@ -52,6 +52,7 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
         holder.PeriodNameText.setText(periodNameTextData);
         holder.PeriodStartText.setText(periodStartTextData);
         holder.PeriodEndText.setText(periodEndTextData);
+        holder.LunchWaveText.setText(lunchWaveTextData);
 
     }
 
