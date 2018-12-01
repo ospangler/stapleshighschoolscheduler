@@ -183,7 +183,9 @@ public class MainPage extends AppCompatActivity {
     void FirstMain() {//Initial Code that executes on startup
 
         GetJson();
+////
 
+////
         if (offline) {//if offline
             OfflineDayAlertPopup("No Connection. Pick a Day.");
         } else {//if not offline
@@ -200,6 +202,7 @@ public class MainPage extends AppCompatActivity {
                 } else {//normal condition
                     currentPeriodNumber = PeriodNumber(periodTimes);
                     displayScheduleListInfo(periodTimes);
+
                     if (noLunch) {//if school day does not have lunch
                         if (passingTime) {//school day w/o lunch during passing time
                             FindTimeUntilEndOfDay(periodTimes);
@@ -879,15 +882,20 @@ public class MainPage extends AppCompatActivity {
         int currentPeriodIDNumber = scheduleFormat[PeriodArrayPosition];
         String PeriodType;
 
-        if (currentPeriodIDNumber>0 && currentPeriodIDNumber<=8) {
+        if ((currentPeriodIDNumber>0) && (currentPeriodIDNumber<=8)) {
             PeriodType = sharedPref.getString(("key_schedule_period_" + Integer.toString(currentPeriodIDNumber) + "_type"), "Free or Not Applicable");
         }else{
             PeriodType = "Free or Not Applicable";
+            Log.i("periodTypeDef",PeriodType);
         }
 
-        int[] allowedLunchWaves = findAllowedLunchWave(PeriodType);
+        if(PeriodType.equals("0")){
+            PeriodType = "Free or Not Applicable";
+        }
 
+        int allowedLunchWave = findAllowedLunchWave(PeriodType,currentMonth);
 
+        ///
         int tempCurrentHour = currentHour;
 
         while (true) {
@@ -934,9 +942,9 @@ public class MainPage extends AppCompatActivity {
         progressBarTextDescription = "Remaining";
     }
 
-    int findAllowedLunchWave(String periodTypeName){
+    int findAllowedLunchWave(String periodTypeName, int tempMonth){
         int lunchStoreListStart = 8; //Tells program where list of period numbers start (Def 8 = August)
-        int[] lunchStoreList;
+        int[] lunchStoreList = {};
         boolean labLunch = false;
 
         switch(periodTypeName) {
@@ -1005,11 +1013,20 @@ public class MainPage extends AppCompatActivity {
                 return 2;
             case "Unknown: Third Lunch":
                 return 3;
+            default:
+                return 0;
         }
 
+        int tempSchedulePosition;
 
+        if (tempMonth >= lunchStoreListStart){
+            tempSchedulePosition = tempMonth - lunchStoreListStart;
+        }else{
+            tempSchedulePosition = tempMonth + (12-lunchStoreListStart);
+        }
 
-        return -1;
+        Log.i("lunchwaveallow", Integer.toString(lunchStoreList[tempSchedulePosition]));
+        return lunchStoreList[tempSchedulePosition];
     }
 
 
