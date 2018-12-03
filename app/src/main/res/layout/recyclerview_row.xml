@@ -16,7 +16,7 @@
             android:id="@+id/list_lunch_wave"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="1"
+            android:text="@string/E"
             android:textSize="30sp"
             app:layout_constraintStart_toEndOf="@+id/list_period_number"
             app:layout_constraintTop_toTopOf="parent" />
@@ -25,7 +25,7 @@
             android:id="@+id/list_period_number"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="1"
+            android:text="@string/E"
             android:textSize="50sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -33,13 +33,20 @@
 
         <TextView
             android:id="@+id/list_period_name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="32dp"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_marginStart="70dp"
+            android:layout_marginEnd="80dp"
             android:layout_weight="1"
-            android:text="Period 1"
-            android:textSize="30sp"
+            android:gravity="center_vertical"
+            android:text="@string/ERROR"
+            app:autoSizeMaxTextSize="50sp"
+            app:autoSizeMinTextSize="20sp"
+            android:maxLines="1"
+            app:autoSizeStepGranularity="1sp"
+            app:autoSizeTextType="uniform"
             app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/list_period_number"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -50,7 +57,7 @@
             android:layout_marginTop="8dp"
             android:layout_marginEnd="16dp"
             android:layout_weight="1"
-            android:text="12:00"
+            android:text="@string/ERROR"
             android:textSize="20sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -62,11 +69,20 @@
             android:layout_marginEnd="16dp"
             android:layout_marginBottom="8dp"
             android:layout_weight="1"
-            android:text="11:11"
+            android:text="@string/ERROR"
             android:textSize="20sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/list_period_start" />
+
+        <TextView
+            android:id="@+id/list_period_info"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="70dp"
+            android:text="@string/Blank"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/list_period_name" />
     </android.support.constraint.ConstraintLayout>
 
 </LinearLayout>

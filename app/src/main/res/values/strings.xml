@@ -10,6 +10,8 @@
     <string name="ForceRefresh">Force Server Data Refresh</string>
     <string name="Calendar">Go to Date</string>
     <string name="Settings">Settings</string>
+    <string name="Blank"> </string>
+    <string name="E">E</string>
 
     <!-- Schedule Input Placeholders -->
     <string name="Period_1_Class_Name">Period 1</string>

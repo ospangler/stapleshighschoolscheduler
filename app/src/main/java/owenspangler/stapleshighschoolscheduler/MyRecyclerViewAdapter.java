@@ -19,17 +19,19 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
     private List<String> mPeriodStartData;
     private List<String> mPeriodEndData;
     private List<String> mLunchWaveData;
+    private List<String> mPeriodInfo;
     private LayoutInflater mInflater;
     private ItemClickListener mClickListener;
 
     // data is passed into the constructor
-    MyRecyclerViewAdapter(Context context, List<String> periodNumberData, List<String> periodNameData, List<String> periodStartData, List<String> periodEndData, List<String> lunchWaveData) {
+    MyRecyclerViewAdapter(Context context, List<String> periodNumberData, List<String> periodNameData, List<String> periodStartData, List<String> periodEndData, List<String> lunchWaveData, List<String> periodInfo) {
         this.mInflater = LayoutInflater.from(context);
         this.mPeriodNumberData = periodNumberData;
         this.mPeriodNameData = periodNameData;
         this.mPeriodStartData = periodStartData;
         this.mPeriodEndData = periodEndData;
         this.mLunchWaveData = lunchWaveData;
+        this.mPeriodInfo = periodInfo;
 }
 
     // inflates the row layout from xml when needed
@@ -47,12 +49,15 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
         String periodStartTextData = mPeriodStartData.get(position);
         String periodEndTextData = mPeriodEndData.get(position);
         String lunchWaveTextData = mLunchWaveData.get(position);
+        String periodInfoData = mPeriodInfo.get(position);
+
 
         holder.PeriodNumberText.setText(periodNumberTextData);
         holder.PeriodNameText.setText(periodNameTextData);
         holder.PeriodStartText.setText(periodStartTextData);
         holder.PeriodEndText.setText(periodEndTextData);
         holder.LunchWaveText.setText(lunchWaveTextData);
+        holder.PeriodInfoText.setText(periodInfoData);
 
     }
 
@@ -70,6 +75,7 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
         TextView PeriodStartText;
         TextView PeriodEndText;
         TextView LunchWaveText;
+        TextView PeriodInfoText;
 
         ViewHolder(View itemView) {
             super(itemView);
@@ -78,6 +84,7 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
             PeriodStartText = itemView.findViewById(R.id.list_period_start);
             PeriodEndText = itemView.findViewById(R.id.list_period_end);
             LunchWaveText = itemView.findViewById(R.id.list_lunch_wave);
+            PeriodInfoText = itemView.findViewById(R.id.list_period_info);
             itemView.setOnClickListener(this);
         }
 

@@ -24,9 +24,11 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.preference.PreferenceManager;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -74,7 +76,7 @@ public class MainPage extends AppCompatActivity {
     //int currentHour = cal.get(Calendar.HOUR_OF_DAY);
     int currentHour = 12;
     //int currentMinute = cal.get(Calendar.MINUTE);
-    int currentMinute = 20;
+    int currentMinute = 15;
     ProgressBar progressBar;
     ProgressBar overallProgressBar;
     MyRecyclerViewAdapter adapter;
@@ -203,12 +205,12 @@ public class MainPage extends AppCompatActivity {
                     AfterSchoolProcedures();
                 } else {//normal condition
                     currentPeriodNumber = PeriodNumber(periodTimes);
-                    displayScheduleListInfo(periodTimes,lunchWaveTimes);
+                    displayScheduleListInfo(periodTimes, lunchWaveTimes);
 
                     if (noLunch) {//if school day does not have lunch
                         if (passingTime) {//school day w/o lunch during passing time
                             FindTimeUntilEndOfDay(periodTimes);
-                            FindTimeUntilEndPassingTime(periodTimes,currentPeriodNumber);
+                            FindTimeUntilEndPassingTime(periodTimes, currentPeriodNumber);
                             FinalizingSetupProcedures();
                         } else {//school day w/o lunch during class time
                             FindTimeUntilEndOfDay(periodTimes);
@@ -217,13 +219,13 @@ public class MainPage extends AppCompatActivity {
                         }
                     } else {//normal school day with lunch
                         if (lunchPeriodPosition == currentPeriodNumber) {//It is lunch period
-                            Log.i("lunchwavetime","rah jd");
+                            Log.i("lunchwavetime", "rah jd");
                             int tempLunchPeriod = PeriodNumber(lunchWaveTimes);
-                            if(passingTime){
-                                FindTimeUntilEndPassingTime(lunchWaveTimes,(tempLunchPeriod -1));
-                                Log.i("lunchwavetimepassing","rah jd");
-                            }else{
-                                Log.i("lunchwavetimeduring","rah jd");
+                            if (passingTime) {
+                                FindTimeUntilEndPassingTime(lunchWaveTimes, (tempLunchPeriod - 1));
+                                Log.i("lunchwavetimepassing", "rah jd");
+                            } else {
+                                Log.i("lunchwavetimeduring", "rah jd");
                                 FindTimeUntilEndOfDay(periodTimes);
                                 FindTimeUntilEndLunchWave(lunchWaveTimes, (tempLunchPeriod - 1));
                                 FinalizingSetupProcedures();
@@ -233,7 +235,7 @@ public class MainPage extends AppCompatActivity {
                         } else {//It is not lunch period
                             if (passingTime) {//school day with lunch during non-lunch passing time
                                 FindTimeUntilEndOfDay(periodTimes);
-                                FindTimeUntilEndPassingTime(periodTimes,currentPeriodNumber);
+                                FindTimeUntilEndPassingTime(periodTimes, currentPeriodNumber);
                                 FinalizingSetupProcedures();
                             } else {//school day with lunch during non-lunch class time
                                 FindTimeUntilEndOfDay(periodTimes);
@@ -596,29 +598,39 @@ public class MainPage extends AppCompatActivity {
         ArrayList<String> periodStart = new ArrayList<>();
         ArrayList<String> periodEnd = new ArrayList<>();
         ArrayList<String> lunchWave = new ArrayList<>();
+        ArrayList<String> periodInfo = new ArrayList<>();
 
 
         for (int i = 0; i < scheduleFormat.length; i++) {
 
-            String tempPeriodNameString = sharedPref.getString("key_schedule_period_"+Integer.toString(scheduleFormat[i])+"_name", "Period "+Integer.toString(scheduleFormat[i]));
+            String tempPeriodNameString = sharedPref.getString("key_schedule_period_" + Integer.toString(scheduleFormat[i]) + "_name", "Period " + Integer.toString(scheduleFormat[i]));
 
-            if ((i+1) == lunchPeriodPosition){
-                String tempPref = sharedPref.getString("key_schedule_period_"+Integer.toString(scheduleFormat[i])+"_type","Free or Not Applicable");
+            if ((i + 1) == lunchPeriodPosition) {
+                String tempPref = sharedPref.getString("key_schedule_period_" + scheduleFormat[i] + "_type", "Free or Not Applicable");
+                String tempPrefInfo = sharedPref.getString("key_schedule_period_" + scheduleFormat[i] + "_info", " ");
+
+                Log.i("tempPrefInfo",tempPrefInfo);
+
+                if(tempPrefInfo.equals("No Info")) tempPrefInfo = " ";
+
                 int tempAllowedLunchWave = findAllowedLunchWave(tempPref, currentMonth);
-                Log.i("tempallowedlunchwave",Integer.toString(tempAllowedLunchWave));
+                Log.i("tempallowedlunchwave", Integer.toString(tempAllowedLunchWave));
                 Log.i("tempPref", tempPref);
-                switch (tempAllowedLunchWave){
+                switch (tempAllowedLunchWave) {
                     case 0: //Free or Not Applicable
                         periodNumbers.add(Integer.toString(scheduleFormat[i]));
-                        periodNumbers.add(Integer.toString(scheduleFormat[i]));
-                        periodNumbers.add(Integer.toString(scheduleFormat[i]));
+                        //periodNumbers.add(Integer.toString(scheduleFormat[i]));
+                        //periodNumbers.add(Integer.toString(scheduleFormat[i]));
                         periodNames.add(tempPeriodNameString);
-                        periodNames.add(tempPeriodNameString);
-                        periodNames.add(tempPeriodNameString);
-                        lunchWave.add("1");
-                        lunchWave.add("2");
-                        lunchWave.add("3");
+                        //periodNames.add(tempPeriodNameString);
+                        //periodNames.add(tempPeriodNameString);
+                        lunchWave.add("All");
+                        //lunchWave.add("2");
+                        //lunchWave.add("3");
+                        periodInfo.add(tempPrefInfo);
 
+
+                        /*
                         for(int j = 0; j< inputLunchWaveTimes[0].length;j++) {
                             int tempStartHour = ToTwelveHour(inputLunchWaveTimes[0][j]);
                             int tempEndHour = ToTwelveHour(inputLunchWaveTimes[2][j]);
@@ -626,26 +638,34 @@ public class MainPage extends AppCompatActivity {
                             int tempEndMinute = inputLunchWaveTimes[3][j];
                             String tempStartTimeString;
                             String tempEndTimeString;
+                            */
+                    {
+                        int tempStartHour = ToTwelveHour(inputLunchWaveTimes[0][0]);
+                        int tempStartMinute = inputLunchWaveTimes[1][0];
+                        int tempEndHour = ToTwelveHour(inputLunchWaveTimes[2][2]);
+                        int tempEndMinute = inputLunchWaveTimes[3][2];
+                        String tempStartTimeString;
+                        String tempEndTimeString;
 
-                            if(tempStartMinute >= 10) {
-                                tempStartTimeString = tempStartHour + ":" + tempStartMinute;
-                            }else{
-                                tempStartTimeString = tempStartHour + ":0" + tempStartMinute;
-                            }
-
-                            if(tempEndMinute >= 10) {
-                                tempEndTimeString = tempEndHour + ":" + tempEndMinute;
-                            }else{
-                                tempEndTimeString = tempEndHour + ":0" + tempEndMinute;
-                            }
-
-                            periodStart.add(tempStartTimeString);
-                            periodEnd.add(tempEndTimeString);
+                        if (tempStartMinute >= 10) {
+                            tempStartTimeString = tempStartHour + ":" + tempStartMinute;
+                        } else {
+                            tempStartTimeString = tempStartHour + ":0" + tempStartMinute;
                         }
-                        //periodStart.add(tempStartTimeString);
-                        //periodEnd.add(tempEndTimeString);
 
-                        break;
+                        if (tempEndMinute >= 10) {
+                            tempEndTimeString = tempEndHour + ":" + tempEndMinute;
+                        } else {
+                            tempEndTimeString = tempEndHour + ":0" + tempEndMinute;
+                        }
+
+                        periodStart.add(tempStartTimeString);
+                        periodEnd.add(tempEndTimeString);
+                    }
+                    //periodStart.add(tempStartTimeString);
+                    //periodEnd.add(tempEndTimeString);
+
+                    break;
                     case 1: //First Lunch
                         periodNumbers.add(Integer.toString(scheduleFormat[i]));
                         periodNumbers.add(Integer.toString(scheduleFormat[i]));
@@ -653,6 +673,7 @@ public class MainPage extends AppCompatActivity {
                         periodNames.add("Lunch");
                         lunchWave.add(" ");
                         periodNames.add(tempPeriodNameString);
+                        periodInfo.add(tempPrefInfo);
 
                     {
                         int tempStartHour = ToTwelveHour(inputLunchWaveTimes[0][0]);
@@ -662,15 +683,15 @@ public class MainPage extends AppCompatActivity {
                         String tempStartTimeString;
                         String tempEndTimeString;
 
-                        if(tempStartMinute >= 10) {
+                        if (tempStartMinute >= 10) {
                             tempStartTimeString = tempStartHour + ":" + tempStartMinute;
-                        }else{
+                        } else {
                             tempStartTimeString = tempStartHour + ":0" + tempStartMinute;
                         }
 
-                        if(tempEndMinute >= 10) {
+                        if (tempEndMinute >= 10) {
                             tempEndTimeString = tempEndHour + ":" + tempEndMinute;
-                        }else{
+                        } else {
                             tempEndTimeString = tempEndHour + ":0" + tempEndMinute;
                         }
                         periodStart.add(tempStartTimeString);
@@ -682,15 +703,15 @@ public class MainPage extends AppCompatActivity {
                         tempStartMinute = inputLunchWaveTimes[1][1];
                         tempEndMinute = inputLunchWaveTimes[3][2];
 
-                        if(tempStartMinute >= 10) {
+                        if (tempStartMinute >= 10) {
                             tempStartTimeString = tempStartHour + ":" + tempStartMinute;
-                        }else{
+                        } else {
                             tempStartTimeString = tempStartHour + ":0" + tempStartMinute;
                         }
 
-                        if(tempEndMinute >= 10) {
+                        if (tempEndMinute >= 10) {
                             tempEndTimeString = tempEndHour + ":" + tempEndMinute;
-                        }else{
+                        } else {
                             tempEndTimeString = tempEndHour + ":0" + tempEndMinute;
                         }
                         periodStart.add(tempStartTimeString);
@@ -698,7 +719,7 @@ public class MainPage extends AppCompatActivity {
 
                     }
 
-                        break;
+                    break;
                     case 2: //Second Lunch
                         periodNumbers.add(Integer.toString(scheduleFormat[i]));
                         periodNumbers.add(Integer.toString(scheduleFormat[i]));
@@ -709,23 +730,24 @@ public class MainPage extends AppCompatActivity {
                         periodNames.add("Lunch");
                         lunchWave.add(" ");
                         periodNames.add(tempPeriodNameString);
+                        periodInfo.add(tempPrefInfo);
 
-                        for(int j = 0; j < inputLunchWaveTimes[0].length;j++) {
+                        for (int j = 0; j < inputLunchWaveTimes[0].length; j++) {
                             int tempStartHour = ToTwelveHour(inputLunchWaveTimes[0][j]);
                             int tempEndHour = ToTwelveHour(inputLunchWaveTimes[2][j]);
                             int tempStartMinute = inputLunchWaveTimes[1][j];
                             int tempEndMinute = inputLunchWaveTimes[3][j];
                             String tempStartTimeString;
                             String tempEndTimeString;
-                            if(tempStartMinute >= 10) {
+                            if (tempStartMinute >= 10) {
                                 tempStartTimeString = tempStartHour + ":" + tempStartMinute;
-                            }else{
+                            } else {
                                 tempStartTimeString = tempStartHour + ":0" + tempStartMinute;
                             }
 
-                            if(tempEndMinute >= 10) {
+                            if (tempEndMinute >= 10) {
                                 tempEndTimeString = tempEndHour + ":" + tempEndMinute;
-                            }else{
+                            } else {
                                 tempEndTimeString = tempEndHour + ":0" + tempEndMinute;
                             }
 
@@ -741,6 +763,7 @@ public class MainPage extends AppCompatActivity {
                         periodNames.add(tempPeriodNameString);
                         lunchWave.add("3");
                         periodNames.add("Lunch");
+                        periodInfo.add(tempPrefInfo);
 
                     {
                         int tempStartHour = ToTwelveHour(inputLunchWaveTimes[0][0]);
@@ -750,15 +773,15 @@ public class MainPage extends AppCompatActivity {
                         String tempStartTimeString;
                         String tempEndTimeString;
 
-                        if(tempStartMinute >= 10) {
+                        if (tempStartMinute >= 10) {
                             tempStartTimeString = tempStartHour + ":" + tempStartMinute;
-                        }else{
+                        } else {
                             tempStartTimeString = tempStartHour + ":0" + tempStartMinute;
                         }
 
-                        if(tempEndMinute >= 10) {
+                        if (tempEndMinute >= 10) {
                             tempEndTimeString = tempEndHour + ":" + tempEndMinute;
-                        }else{
+                        } else {
                             tempEndTimeString = tempEndHour + ":0" + tempEndMinute;
                         }
                         periodStart.add(tempStartTimeString);
@@ -769,15 +792,15 @@ public class MainPage extends AppCompatActivity {
                         tempStartMinute = inputLunchWaveTimes[1][2];
                         tempEndMinute = inputLunchWaveTimes[3][2];
 
-                        if(tempStartMinute >= 10) {
+                        if (tempStartMinute >= 10) {
                             tempStartTimeString = tempStartHour + ":" + tempStartMinute;
-                        }else{
+                        } else {
                             tempStartTimeString = tempStartHour + ":0" + tempStartMinute;
                         }
 
-                        if(tempEndMinute >= 10) {
+                        if (tempEndMinute >= 10) {
                             tempEndTimeString = tempEndHour + ":" + tempEndMinute;
-                        }else{
+                        } else {
                             tempEndTimeString = tempEndHour + ":0" + tempEndMinute;
                         }
                         periodStart.add(tempStartTimeString);
@@ -785,7 +808,7 @@ public class MainPage extends AppCompatActivity {
 
                     }
 
-                        break;
+                    break;
                     case 11: //First Lab Lunch
                         periodNumbers.add(Integer.toString(scheduleFormat[i]));
                         periodNumbers.add(Integer.toString(scheduleFormat[i]));
@@ -793,6 +816,8 @@ public class MainPage extends AppCompatActivity {
                         periodNames.add("Lab Lunch");
                         lunchWave.add(" ");
                         periodNames.add(tempPeriodNameString);
+                        periodInfo.add(" ");
+                        periodInfo.add(tempPrefInfo);
 
                     {
                         int tempStartHour = inputLunchWaveTimes[0][0];
@@ -800,11 +825,11 @@ public class MainPage extends AppCompatActivity {
                         int tempStartMinute = inputLunchWaveTimes[1][0];
                         int tempEndMinute;
 
-                        if((tempStartMinute + labLunchLength) > 60){
+                        if ((tempStartMinute + labLunchLength) > 60) {
                             tempEndHour = tempEndHour + 1;
                             tempEndMinute = (tempStartMinute + labLunchLength) - 60;
-                        }else{
-                            tempEndMinute = tempStartMinute +labLunchLength;
+                        } else {
+                            tempEndMinute = tempStartMinute + labLunchLength;
                         }
 
                         tempStartHour = ToTwelveHour(tempStartHour);
@@ -813,15 +838,15 @@ public class MainPage extends AppCompatActivity {
                         String tempStartTimeString;
                         String tempEndTimeString;
 
-                        if(tempStartMinute >= 10) {
+                        if (tempStartMinute >= 10) {
                             tempStartTimeString = tempStartHour + ":" + tempStartMinute;
-                        }else{
+                        } else {
                             tempStartTimeString = tempStartHour + ":0" + tempStartMinute;
                         }
 
-                        if(tempEndMinute >= 10) {
+                        if (tempEndMinute >= 10) {
                             tempEndTimeString = tempEndHour + ":" + tempEndMinute;
-                        }else{
+                        } else {
                             tempEndTimeString = tempEndHour + ":0" + tempEndMinute;
                         }
 
@@ -833,21 +858,21 @@ public class MainPage extends AppCompatActivity {
                         tempStartMinute = tempEndMinute;
                         tempEndMinute = inputLunchWaveTimes[3][2];
 
-                        if(tempStartMinute >= 10) {
+                        if (tempStartMinute >= 10) {
                             tempStartTimeString = tempStartHour + ":" + tempStartMinute;
-                        }else{
+                        } else {
                             tempStartTimeString = tempStartHour + ":0" + tempStartMinute;
                         }
 
-                        if(tempEndMinute >= 10) {
+                        if (tempEndMinute >= 10) {
                             tempEndTimeString = tempEndHour + ":" + tempEndMinute;
-                        }else{
+                        } else {
                             tempEndTimeString = tempEndHour + ":0" + tempEndMinute;
                         }
                         periodStart.add(tempStartTimeString);
                         periodEnd.add(tempEndTimeString);
                     }
-                        break;
+                    break;
                     case 12: //Second Lab Lunch
                         //This will never happen unless the policy somehow changes
                         /*
@@ -866,9 +891,11 @@ public class MainPage extends AppCompatActivity {
                         periodNumbers.add(Integer.toString(scheduleFormat[i]));
                         periodNumbers.add(Integer.toString(scheduleFormat[i]));
                         lunchWave.add(" ");
+                        periodInfo.add(tempPrefInfo);
                         periodNames.add(tempPeriodNameString);
                         lunchWave.add("L3");
                         periodNames.add("Lab Lunch");
+                        periodInfo.add(" ");
 
                     {
                         int tempStartHour = ToTwelveHour(inputLunchWaveTimes[0][0]);
@@ -876,25 +903,25 @@ public class MainPage extends AppCompatActivity {
                         int tempStartMinute = inputLunchWaveTimes[1][0];
                         int tempEndMinute = inputLunchWaveTimes[3][1];
 
-                        if((tempStartMinute + labLunchLength) > 60){
+                        if ((tempStartMinute + labLunchLength) > 60) {
                             tempEndHour = tempEndHour + 1;
                             tempEndMinute = (tempStartMinute + labLunchLength) - 60;
-                        }else{
-                            tempEndMinute = tempStartMinute +labLunchLength;
+                        } else {
+                            tempEndMinute = tempStartMinute + labLunchLength;
                         }
 
                         String tempStartTimeString;
                         String tempEndTimeString;
 
-                        if(tempStartMinute >= 10) {
+                        if (tempStartMinute >= 10) {
                             tempStartTimeString = tempStartHour + ":" + tempStartMinute;
-                        }else{
+                        } else {
                             tempStartTimeString = tempStartHour + ":0" + tempStartMinute;
                         }
 
-                        if(tempEndMinute >= 10) {
+                        if (tempEndMinute >= 10) {
                             tempEndTimeString = tempEndHour + ":" + tempEndMinute;
-                        }else{
+                        } else {
                             tempEndTimeString = tempEndHour + ":0" + tempEndMinute;
                         }
                         periodStart.add(tempStartTimeString);
@@ -905,32 +932,37 @@ public class MainPage extends AppCompatActivity {
                         tempStartMinute = tempEndMinute;
                         tempEndMinute = inputLunchWaveTimes[3][2];
 
-                        if(tempStartMinute >= 10) {
+                        if (tempStartMinute >= 10) {
                             tempStartTimeString = tempStartHour + ":" + tempStartMinute;
-                        }else{
+                        } else {
                             tempStartTimeString = tempStartHour + ":0" + tempStartMinute;
                         }
 
-                        if(tempEndMinute >= 10) {
+                        if (tempEndMinute >= 10) {
                             tempEndTimeString = tempEndHour + ":" + tempEndMinute;
-                        }else{
+                        } else {
                             tempEndTimeString = tempEndHour + ":0" + tempEndMinute;
                         }
                         periodStart.add(tempStartTimeString);
                         periodEnd.add(tempEndTimeString);
                     }
 
-                        break;
+                    break;
 
-                     default:
+                    default:
 
 
                 }
 
-            }else{//List Fill for Normal Periods
+            } else {//List Fill for Normal Periods
                 periodNumbers.add(Integer.toString(scheduleFormat[i]));
                 periodNames.add(tempPeriodNameString);
                 lunchWave.add(" ");
+
+                String tempPrefString = sharedPref.getString("key_schedule_period_" + Integer.toString(scheduleFormat[i]) + "_info", " ");
+                if(tempPrefString.equals("No Info")) tempPrefString = " ";
+                Log.i("tempPrefInfo", tempPrefString);
+                periodInfo.add(tempPrefString);
 
                 int tempStartHour = inputPeriodTimes[0][i];
                 int tempEndHour = inputPeriodTimes[2][i];
@@ -961,13 +993,14 @@ public class MainPage extends AppCompatActivity {
 
 
         // set up the RecyclerView
-        if(!((periodNames.size() == periodNumbers.size())&&(periodStart.size() == periodNumbers.size()) && (periodEnd.size() == periodNumbers.size()) && (periodEnd.size()  == lunchWave.size()))){
+        if (!((periodNames.size() == periodNumbers.size()) && (periodStart.size() == periodNumbers.size()) && (periodEnd.size() == periodNumbers.size()) && (periodEnd.size() == lunchWave.size()) && (periodEnd.size() == periodInfo.size()))) {
             //Throw Error Message
             ErrorPopup("Owen has done Goofed Up", "Code 420");
             periodNumbers.clear();
             periodNames.clear();
             periodStart.clear();
             periodEnd.clear();
+            periodInfo.clear();
 
             periodNumbers.add("420");
             periodNames.add("Bad Error");
@@ -975,16 +1008,16 @@ public class MainPage extends AppCompatActivity {
             periodEnd.add("Goddamit");
         }
 
-        adapter = new MyRecyclerViewAdapter(this, periodNumbers, periodNames, periodStart, periodEnd, lunchWave);
+        adapter = new MyRecyclerViewAdapter(this, periodNumbers, periodNames, periodStart, periodEnd, lunchWave, periodInfo);
         recyclerView.setAdapter(adapter);
 
     }
 
-    int ToTwelveHour(int input){
+    int ToTwelveHour(int input) {
         if (input > 12) {
             input = input - 12;
         }
-       return input;
+        return input;
     }
 
     void displayPeriodString() { //Displays and Highlights the Numbers of the Period String
@@ -1196,180 +1229,213 @@ public class MainPage extends AppCompatActivity {
         int tempEndHour = 0;
         int tempEndMinute = 0;
 
-        int PeriodArrayPosition = currentPeriodNumber - 1 ;
+        int PeriodArrayPosition = currentPeriodNumber - 1;
         int currentPeriodIDNumber = scheduleFormat[PeriodArrayPosition];
         String PeriodType;
 
-        Log.i("periodID",Integer.toString(currentPeriodIDNumber));
-            PeriodType = sharedPref.getString(("key_schedule_period_" + Integer.toString(currentPeriodIDNumber) + "_type"), "Free or Not Applicable");
-            Log.i("periodTypeDef",PeriodType);
-            switch(findAllowedLunchWave(PeriodType,currentMonth)){
-                case 0:
+        Log.i("periodID", Integer.toString(currentPeriodIDNumber));
+        PeriodType = sharedPref.getString(("key_schedule_period_" + Integer.toString(currentPeriodIDNumber) + "_type"), "Free or Not Applicable");
+        Log.i("periodTypeDef", PeriodType);
+        switch (findAllowedLunchWave(PeriodType, currentMonth)) {
+            case 0:
 
-                    tempStartHour = finderinputPeriodTimes[0][tempPosition];
-                    tempStartMinute = finderinputPeriodTimes[1][tempPosition];
-                    tempEndHour = finderinputPeriodTimes[2][tempPosition];
-                    tempEndMinute = finderinputPeriodTimes[3][tempPosition];
+                tempStartHour = finderinputPeriodTimes[0][0];
+                tempStartMinute = finderinputPeriodTimes[1][0];
+                tempEndHour = finderinputPeriodTimes[2][2];
+                tempEndMinute = finderinputPeriodTimes[3][2];
 
-                    break;
-                case 1:
+                break;
+            case 1:
 
-                    switch (tempPosition + 1){
-                        case 1:
-                            tempStartHour = finderinputPeriodTimes[0][0];
-                            tempStartMinute = finderinputPeriodTimes[1][0];
-                            tempEndHour = finderinputPeriodTimes[2][0];
-                            tempEndMinute = finderinputPeriodTimes[3][0];
-                            break;
-                        case 2:
-                            tempStartHour = finderinputPeriodTimes[0][1];
-                            tempStartMinute = finderinputPeriodTimes[1][1];
+                switch (tempPosition + 1) {
+                    case 1:
+                        tempStartHour = finderinputPeriodTimes[0][0];
+                        tempStartMinute = finderinputPeriodTimes[1][0];
+                        tempEndHour = finderinputPeriodTimes[2][0];
+                        tempEndMinute = finderinputPeriodTimes[3][0];
+                        break;
+                    case 2:
+                        tempStartHour = finderinputPeriodTimes[0][1];
+                        tempStartMinute = finderinputPeriodTimes[1][1];
+                        tempEndHour = finderinputPeriodTimes[2][2];
+                        tempEndMinute = finderinputPeriodTimes[3][2];
+
+                        break;
+                    case 3:
+                        tempStartHour = finderinputPeriodTimes[0][1];
+                        tempStartMinute = finderinputPeriodTimes[1][1];
+                        tempEndHour = finderinputPeriodTimes[2][2];
+                        tempEndMinute = finderinputPeriodTimes[3][2];
+                        break;
+                }
+
+                break;
+            case 2:
+
+                tempStartHour = finderinputPeriodTimes[0][tempPosition];
+                tempStartMinute = finderinputPeriodTimes[1][tempPosition];
+                tempEndHour = finderinputPeriodTimes[2][tempPosition];
+                tempEndMinute = finderinputPeriodTimes[3][tempPosition];
+
+                break;
+            case 3:
+
+                switch (tempPosition + 1) {
+                    case 1:
+
+                        tempStartHour = finderinputPeriodTimes[0][0];
+                        tempStartMinute = finderinputPeriodTimes[1][0];
+                        tempEndHour = finderinputPeriodTimes[2][1];
+                        tempEndMinute = finderinputPeriodTimes[3][1];
+
+                        break;
+                    case 2:
+
+                        tempStartHour = finderinputPeriodTimes[0][0];
+                        tempStartMinute = finderinputPeriodTimes[1][0];
+                        tempEndHour = finderinputPeriodTimes[2][1];
+                        tempEndMinute = finderinputPeriodTimes[3][1];
+
+                        break;
+                    case 3:
+
+                        tempStartHour = finderinputPeriodTimes[0][2];
+                        tempStartMinute = finderinputPeriodTimes[1][2];
+                        tempEndHour = finderinputPeriodTimes[2][2];
+                        tempEndMinute = finderinputPeriodTimes[3][2];
+
+                        break;
+                }
+
+                break;
+            case 11:
+
+                switch (tempPosition + 1) {
+                    case 1:
+
+                        tempStartHour = finderinputPeriodTimes[0][0];
+                        tempStartMinute = finderinputPeriodTimes[1][0];
+                        tempEndHour = finderinputPeriodTimes[0][0];
+                        tempEndMinute = finderinputPeriodTimes[1][0];
+
+                        if ((tempStartMinute + labLunchLength) > 60) {
+                            tempEndHour++;
+                            tempEndMinute = (tempStartMinute + labLunchLength) - 60;
+                        } else {
+                            tempEndMinute = tempStartMinute + labLunchLength;
+                        }
+
+                        if (!(((currentHour == tempEndHour) && (currentMinute < tempEndMinute)) || (currentHour < tempEndHour))) {
+                            tempStartHour = tempEndHour;
+                            tempStartMinute = tempEndMinute;
                             tempEndHour = finderinputPeriodTimes[2][2];
                             tempEndMinute = finderinputPeriodTimes[3][2];
+                        }
 
-                            break;
-                        case 3:
-                            tempStartHour = finderinputPeriodTimes[0][1];
-                            tempStartMinute = finderinputPeriodTimes[1][1];
+                        break;
+                    case 2:
+                        tempStartHour = finderinputPeriodTimes[0][0];
+                        tempStartMinute = finderinputPeriodTimes[1][0];
+                        tempEndHour = finderinputPeriodTimes[2][2];
+                        tempEndMinute = finderinputPeriodTimes[3][2];
+
+                        if ((tempStartMinute + labLunchLength) > 60) {
+                            tempStartHour++;
+                            tempStartMinute = (tempStartMinute + labLunchLength) - 60;
+                        } else {
+                            tempStartMinute = tempStartMinute + labLunchLength;
+                        }
+
+
+                        break;
+                    case 3:
+                        tempStartHour = finderinputPeriodTimes[0][0];
+                        tempStartMinute = finderinputPeriodTimes[1][0];
+                        tempEndHour = finderinputPeriodTimes[2][2];
+                        tempEndMinute = finderinputPeriodTimes[3][2];
+
+                        if ((tempStartMinute + labLunchLength) > 60) {
+                            tempStartHour++;
+                            tempStartMinute = (tempStartMinute + labLunchLength) - 60;
+                        } else {
+                            tempStartMinute = tempStartMinute + labLunchLength;
+                        }
+                        break;
+                }
+
+
+                break;
+            case 13:
+
+                switch (tempPosition + 1) {
+                    case 1:
+
+                        tempStartHour = finderinputPeriodTimes[0][0];
+                        tempStartMinute = finderinputPeriodTimes[1][0];
+                        tempEndHour = finderinputPeriodTimes[2][2];
+                        tempEndMinute = finderinputPeriodTimes[3][2];
+
+                        if ((tempEndMinute - labLunchLength) < 0) {
+                            tempEndHour = tempEndHour - 1;
+                            tempEndMinute = 60 + (tempEndMinute - labLunchLength);
+                        } else {
+                            tempEndMinute = tempEndMinute - labLunchLength;
+                        }
+
+                        break;
+                    case 2:
+
+                        tempStartHour = finderinputPeriodTimes[0][0];
+                        tempStartMinute = finderinputPeriodTimes[1][0];
+                        tempEndHour = finderinputPeriodTimes[2][2];
+                        tempEndMinute = finderinputPeriodTimes[3][2];
+
+                        if ((tempEndMinute - labLunchLength) < 0) {
+                            tempEndHour = tempEndHour - 1;
+                            tempEndMinute = 60 + (tempEndMinute - labLunchLength);
+                        } else {
+                            tempEndMinute = tempEndMinute - labLunchLength;
+                        }
+
+                        break;
+                    case 3:
+
+                        tempStartHour = finderinputPeriodTimes[0][0];
+                        tempStartMinute = finderinputPeriodTimes[1][0];
+                        tempEndHour = finderinputPeriodTimes[2][2];
+                        tempEndMinute = finderinputPeriodTimes[3][2];
+
+                        if ((tempEndMinute - labLunchLength) < 0) {
+                            tempEndHour = tempEndHour - 1;
+                            tempEndMinute = 60 + (tempEndMinute - labLunchLength);
+                        } else {
+                            tempEndMinute = tempEndMinute - labLunchLength;
+                        }
+
+                        Log.i("tempendhour", Integer.toString(tempEndHour));
+                        Log.i("tempendMinute", Integer.toString(tempEndMinute));
+
+                        if (((currentHour == tempEndHour) && (currentMinute > tempEndMinute)) || (currentHour > tempEndHour)) {
+                            tempStartHour = tempEndHour;
+                            tempStartMinute = tempEndMinute;
                             tempEndHour = finderinputPeriodTimes[2][2];
                             tempEndMinute = finderinputPeriodTimes[3][2];
-                            break;
-                    }
+                            Log.i("tempstarthour", Integer.toString(tempStartHour));
+                            Log.i("tempstartminute", Integer.toString(tempStartMinute));
+                            Log.i("tempendhour", Integer.toString(tempEndHour));
+                            Log.i("tempendMinute", Integer.toString(tempStartHour));
+                        }
 
-                    break;
-                case 2:
-
-                    tempStartHour = finderinputPeriodTimes[0][tempPosition];
-                    tempStartMinute = finderinputPeriodTimes[1][tempPosition];
-                    tempEndHour = finderinputPeriodTimes[2][tempPosition];
-                    tempEndMinute = finderinputPeriodTimes[3][tempPosition];
-
-                    break;
-                case 3:
-
-                    switch (tempPosition + 1){
-                        case 1:
-
-                            tempStartHour = finderinputPeriodTimes[0][0];
-                            tempStartMinute = finderinputPeriodTimes[1][0];
-                            tempEndHour = finderinputPeriodTimes[2][1];
-                            tempEndMinute = finderinputPeriodTimes[3][1];
-
-                            break;
-                        case 2:
-
-                            tempStartHour = finderinputPeriodTimes[0][0];
-                            tempStartMinute = finderinputPeriodTimes[1][0];
-                            tempEndHour = finderinputPeriodTimes[2][1];
-                            tempEndMinute = finderinputPeriodTimes[3][1];
-
-                            break;
-                        case 3:
-
-                            tempStartHour = finderinputPeriodTimes[0][2];
-                            tempStartMinute = finderinputPeriodTimes[1][2];
-                            tempEndHour = finderinputPeriodTimes[2][2];
-                            tempEndMinute = finderinputPeriodTimes[3][2];
-
-                            break;
-                    }
-
-                    break;
-                case 11:
-
-                    switch (tempPosition + 1){
-                        case 1:
-                            tempStartHour = finderinputPeriodTimes[0][0];
-                            tempStartMinute = finderinputPeriodTimes[1][0];
-                            tempEndHour = finderinputPeriodTimes[2][0];
-                            tempEndMinute = finderinputPeriodTimes[3][0];
-
-                            if((tempStartMinute + labLunchLength) > 60){
-                                tempEndHour++;
-                                tempEndMinute = (tempStartMinute + labLunchLength) - 60;
-                            }else{
-                                tempEndMinute = tempStartMinute +labLunchLength;
-                            }
-
-                            break;
-                        case 2:
-                            tempStartHour = finderinputPeriodTimes[0][1];
-                            tempStartMinute = finderinputPeriodTimes[1][1];
-                            tempEndHour = finderinputPeriodTimes[2][2];
-                            tempEndMinute = finderinputPeriodTimes[3][2];
-
-                            if((tempStartMinute + labLunchLength) > 60){
-                                tempEndHour++;
-                                tempEndMinute = (tempStartMinute + labLunchLength) - 60;
-                            }else{
-                                tempEndMinute = tempStartMinute +labLunchLength;
-                            }
+                        break;
+                }
 
 
-                            break;
-                        case 3:
-                            tempStartHour = finderinputPeriodTimes[0][1];
-                            tempStartMinute = finderinputPeriodTimes[1][1];
-                            tempEndHour = finderinputPeriodTimes[2][2];
-                            tempEndMinute = finderinputPeriodTimes[3][2];
-
-                            if((tempStartMinute + labLunchLength) > 60){
-                                tempStartHour++;
-                                tempStartMinute = (tempStartMinute + labLunchLength) - 60;
-                            }else{
-                                tempStartMinute = tempStartMinute +labLunchLength;
-                            }
-                            break;
-                    }
+                break;
+            default:
 
 
+        }
 
-                    break;
-                case 13:
-
-                    switch (tempPosition + 1){
-                        case 1:
-
-                            tempStartHour = finderinputPeriodTimes[0][0];
-                            tempStartMinute = finderinputPeriodTimes[1][0];
-                            tempEndHour = finderinputPeriodTimes[2][1];
-                            tempEndMinute = finderinputPeriodTimes[3][1];
-
-
-                            break;
-                        case 2:
-
-                            tempStartHour = finderinputPeriodTimes[0][0];
-                            tempStartMinute = finderinputPeriodTimes[1][0];
-                            tempEndHour = finderinputPeriodTimes[2][1];
-                            tempEndMinute = finderinputPeriodTimes[3][1];
-
-
-                            break;
-                        case 3:
-
-                            tempStartHour = finderinputPeriodTimes[0][2];
-                            tempStartMinute = finderinputPeriodTimes[1][2];
-                            tempEndHour = finderinputPeriodTimes[2][2];
-                            tempEndMinute = finderinputPeriodTimes[3][2];
-
-                            break;
-                    }
-
-
-                    break;
-                default:
-
-
-
-            }
-
-
-
-
-
-
-        ///
         int tempCurrentHour = currentHour;
 
         while (true) {
@@ -1416,72 +1482,72 @@ public class MainPage extends AppCompatActivity {
         progressBarTextDescription = "Remaining";
     }
 
-    int findAllowedLunchWave(String periodTypeName, int tempMonth){
+    int findAllowedLunchWave(String periodTypeName, int tempMonth) {
         int lunchStoreListStart = 8; //Tells program where list of period numbers start (Def 8 = August)
         int[] lunchStoreList = {};
         labLunch = false;
-        Log.i("findallowedrun","gggg");
-        switch(periodTypeName) {
+        Log.i("findallowedrun", "gggg");
+        switch (periodTypeName) {
             case "Free or Not Applicable":
-                return -1;
+                return 0;
             case "Academic Support Center":
                 //                         Aug Sep Oct Nov Dec Jan Feb Mar Apr May Jun
-                lunchStoreList = new int[]{ 2 , 2 , 2 , 2 , 2 , 2 , 2 , 2 , 1 , 1 , 1 };
+                lunchStoreList = new int[]{2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1};
                 break;
             case "Art":
                 //                         Aug Sep Oct Nov Dec Jan Feb Mar Apr May Jun
-                lunchStoreList = new int[]{ 3 , 3 , 3 , 3 , 3 , 3 , 3 , 3 , 3 , 3 , 3 };
+                lunchStoreList = new int[]{3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3};
                 break;
             case "English":
                 //                         Aug Sep Oct Nov Dec Jan Feb Mar Apr May Jun
-                lunchStoreList = new int[]{ 2 , 2 , 2 , 2 , 2 , 2 , 3 , 3 , 3 , 3 , 3 };
+                lunchStoreList = new int[]{2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3};
                 break;
             case "Family and Consumer Sciences":
                 //                         Aug Sep Oct Nov Dec Jan Feb Mar Apr May Jun
-                lunchStoreList = new int[]{ 3 , 3 , 3 , 3 , 3 , 3 , 3 , 3 , 3 , 3 , 3 };
+                lunchStoreList = new int[]{3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3};
                 break;
             case "Mathematics":
                 //                         Aug Sep Oct Nov Dec Jan Feb Mar Apr May Jun
-                lunchStoreList = new int[]{ 1 , 1 , 1 , 1 , 1 , 1 , 2 , 2 , 2 , 2 , 2 };
+                lunchStoreList = new int[]{1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2};
                 break;
             case "Media":
                 //                         Aug Sep Oct Nov Dec Jan Feb Mar Apr May Jun
-                lunchStoreList = new int[]{ 1 , 1 , 1 , 3 , 3 , 3 , 1 , 1 , 1 , 1 , 1 };
+                lunchStoreList = new int[]{1, 1, 1, 3, 3, 3, 1, 1, 1, 1, 1};
                 break;
             case "Music":
                 //                         Aug Sep Oct Nov Dec Jan Feb Mar Apr May Jun
-                lunchStoreList = new int[]{ 3 , 3 , 3 , 3 , 3 , 3 , 3 , 3 , 3 , 3 , 3 };
+                lunchStoreList = new int[]{3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3};
                 break;
             case "Physical Education":
                 ///PLEASE REMOVE THIS OMG DON"T RELEASE THIS WITH THIS BELOW STATEMENT
                 labLunch = true;
                 //                         Aug Sep Oct Nov Dec Jan Feb Mar Apr May Jun
-                lunchStoreList = new int[]{ 3 , 3 , 3 , 3 , 3 , 3 , 3 , 3 , 3 , 3 , 3 };
+                lunchStoreList = new int[]{3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3};
                 break;
             case "Science":
                 //                         Aug Sep Oct Nov Dec Jan Feb Mar Apr May Jun
-                lunchStoreList = new int[]{ 3 , 3 , 3 , 1 , 1 , 1 , 1 , 1 , 1 , 1 , 1 };
+                lunchStoreList = new int[]{3, 3, 3, 1, 1, 1, 1, 1, 1, 1, 1};
                 labLunch = true;
                 break;
             case "Social Studies":
                 //                         Aug Sep Oct Nov Dec Jan Feb Mar Apr May Jun
-                lunchStoreList = new int[]{ 1 , 1 , 1 , 3 , 3 , 3 , 2 , 2 , 2 , 2 , 2 };
+                lunchStoreList = new int[]{1, 1, 1, 3, 3, 3, 2, 2, 2, 2, 2};
                 break;
             case "Special Education":
                 //                         Aug Sep Oct Nov Dec Jan Feb Mar Apr May Jun
-                lunchStoreList = new int[]{ 2 , 2 , 2 , 2 , 2 , 2 , 1 , 1 , 2 , 2 , 2 };
+                lunchStoreList = new int[]{2, 2, 2, 2, 2, 2, 1, 1, 2, 2, 2};
                 break;
             case "Technology":
                 //                         Aug Sep Oct Nov Dec Jan Feb Mar Apr May Jun
-                lunchStoreList = new int[]{ 1 , 1 , 1 , 3 , 3 , 3 , 3 , 3 , 3 , 3 , 3 };
+                lunchStoreList = new int[]{1, 1, 1, 3, 3, 3, 3, 3, 3, 3, 3};
                 break;
             case "Theater":
                 //                         Aug Sep Oct Nov Dec Jan Feb Mar Apr May Jun
-                lunchStoreList = new int[]{ 2 , 2 , 2 , 2 , 2 , 2 , 3 , 3 , 2 , 2 , 2 };
+                lunchStoreList = new int[]{2, 2, 2, 2, 2, 2, 3, 3, 2, 2, 2};
                 break;
             case "World Languages":
                 //                         Aug Sep Oct Nov Dec Jan Feb Mar Apr May Jun
-                lunchStoreList = new int[]{ 2 , 2 , 2 , 2 , 2 , 2 , 1 , 1 , 1 , 1 , 1 };
+                lunchStoreList = new int[]{2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1};
                 break;
             case "Unknown: First Lunch":
                 return 1;
@@ -1495,17 +1561,17 @@ public class MainPage extends AppCompatActivity {
 
         int tempSchedulePosition;
 
-        if (tempMonth >= lunchStoreListStart){
+        if (tempMonth >= lunchStoreListStart) {
             tempSchedulePosition = tempMonth - lunchStoreListStart;
-        }else{
-            tempSchedulePosition = tempMonth + (12-lunchStoreListStart);
+        } else {
+            tempSchedulePosition = tempMonth + (12 - lunchStoreListStart);
         }
 
         Log.i("lunchwaveallow", Integer.toString(lunchStoreList[tempSchedulePosition]));
 
-        if(labLunch){
+        if (labLunch) {
             return (lunchStoreList[tempSchedulePosition] + 10);
-        }else {
+        } else {
             return lunchStoreList[tempSchedulePosition];
         }
     }
