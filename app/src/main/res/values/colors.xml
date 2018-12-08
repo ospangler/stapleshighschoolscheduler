@@ -10,4 +10,6 @@
     <color name="colorScheduleHighlighted">#64E207</color>
     <color name="colorLastPeriodScheduleHighlighted">#f44842</color>
     <color name="overallDayProgressColor">#040054</color>
+    <color name="RVGreen">#a4f9a4</color>
+    <color name="RVRed">#fc5353</color>
 </resources>

@@ -67,9 +67,11 @@ public class MainPage extends AppCompatActivity {
     boolean specialSchedule = false; //If true, app is following special schedule from server
     //
     Calendar cal = Calendar.getInstance();
+
     int currentYear = cal.get(Calendar.YEAR);
 
     //int currentDayDay = cal.get(Calendar.DAY_OF_WEEK);
+
     //int currentMonth = (cal.get(Calendar.MONTH) + 1);
     int currentMonth = 12;
 
@@ -77,10 +79,11 @@ public class MainPage extends AppCompatActivity {
     int currentDayNum = 5;
 
     //int currentHour = cal.get(Calendar.HOUR_OF_DAY);
-    int currentHour = 10;
+    int currentHour = 13;
 
     //int currentMinute = cal.get(Calendar.MINUTE);
-    int currentMinute = 41;
+    int currentMinute = 42;
+
     ProgressBar progressBar;
     ProgressBar overallProgressBar;
     MyRecyclerViewAdapter adapter;
@@ -200,8 +203,7 @@ public class MainPage extends AppCompatActivity {
             OfflineDayAlertPopup("No Connection. Pick a Day.");
         } else {//if not offline
 
-            if (!noSchool)
-                // BeforeOrAfterSchoolCheck(periodTimes);//checks to see if before or after school. noSchool checked in getJson
+            if (!noSchool) BeforeOrAfterSchoolCheck(periodTimes);//checks to see if before or after school. noSchool checked in getJson
 
                 if (noSchool) {// if no school
                     NoSchoolProcedures();
@@ -1011,8 +1013,9 @@ public class MainPage extends AppCompatActivity {
             periodInfo.add("For some reason the array lists that populate this are mismatched");
         }
 
-        adapter = new MyRecyclerViewAdapter(this, periodNumbers, periodNames, periodStart, periodEnd, lunchWave, periodInfo);
+        adapter = new MyRecyclerViewAdapter(this, periodNumbers, periodNames, periodStart, periodEnd, lunchWave, periodInfo,1,2);
         recyclerView.setAdapter(adapter);
+        recyclerView.scrollToPosition(1); //put current position here
 
     }
 
@@ -1030,7 +1033,7 @@ public class MainPage extends AppCompatActivity {
         return Integer.toString(inputHour) + ":" + Integer.toString(inputMinute);
     }
 
-    void displayPeriodString() { //Displays and Highlights the Numbers of the Period String
+    void displayPeriodString() { //Displays and Highlights the Numbers of the Period String //REDUNDANT CODE
 
         String tempScheduleString = ""; //Allows for display of numbers by adding a 1 before their numerical equivalent
 

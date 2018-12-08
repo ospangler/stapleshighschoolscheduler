@@ -4,6 +4,8 @@ package owenspangler.stapleshighschoolscheduler;
 //https://stackoverflow.com/a/40584425
 
 import android.content.Context;
+import android.graphics.Color;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,11 +22,14 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
     private List<String> mPeriodEndData;
     private List<String> mLunchWaveData;
     private List<String> mPeriodInfo;
+    private int greenHighlight;
+    private int redHighlight;
+
     private LayoutInflater mInflater;
     private ItemClickListener mClickListener;
 
     // data is passed into the constructor
-    MyRecyclerViewAdapter(Context context, List<String> periodNumberData, List<String> periodNameData, List<String> periodStartData, List<String> periodEndData, List<String> lunchWaveData, List<String> periodInfo) {
+    MyRecyclerViewAdapter(Context context, List<String> periodNumberData, List<String> periodNameData, List<String> periodStartData, List<String> periodEndData, List<String> lunchWaveData, List<String> periodInfo, int _greenhighlight, int _redhighlight) {
         this.mInflater = LayoutInflater.from(context);
         this.mPeriodNumberData = periodNumberData;
         this.mPeriodNameData = periodNameData;
@@ -32,6 +37,8 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
         this.mPeriodEndData = periodEndData;
         this.mLunchWaveData = lunchWaveData;
         this.mPeriodInfo = periodInfo;
+        this.greenHighlight = _greenhighlight;
+        this.redHighlight = _redhighlight;
 }
 
     // inflates the row layout from xml when needed
@@ -51,6 +58,8 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
         String lunchWaveTextData = mLunchWaveData.get(position);
         String periodInfoData = mPeriodInfo.get(position);
 
+        if(position == greenHighlight) holder.itemView.setBackgroundColor(Color.GREEN);
+        if(position == redHighlight) holder.itemView.setBackgroundColor(Color.RED);
 
         holder.PeriodNumberText.setText(periodNumberTextData);
         holder.PeriodNameText.setText(periodNameTextData);
