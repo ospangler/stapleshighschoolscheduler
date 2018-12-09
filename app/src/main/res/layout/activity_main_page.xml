@@ -18,16 +18,6 @@
         tools:layout_editor_absoluteY="81dp">
 
         <TextView
-            android:id="@+id/textView2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/Remaining"
-            app:layout_constraintEnd_toStartOf="@+id/progressBar"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/ProgressBarTextTime"
-            tools:text="@string/Remaining" />
-
-        <TextView
             android:id="@+id/ProgressBarTextTime"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -99,10 +89,6 @@
         https://stackoverflow.com/a/27269329
     -->
 
-        <!--
-        End Code Attribution
-    -->
-
         <ProgressBar
             android:id="@+id/progressBar"
             style="?android:attr/progressBarStyleHorizontal"
@@ -121,32 +107,6 @@
             app:layout_constraintTop_toBottomOf="@+id/toolbar" />
 
         <TextView
-            android:id="@+id/ScheduleLayout"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="8dp"
-            android:text="@string/ERROR"
-            android:textSize="50sp"
-            android:visibility="gone"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/PeriodDisplay" />
-
-        <TextView
-            android:id="@+id/noticeOfTheDay"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="@string/ERROR"
-            android:visibility="gone"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/ScheduleLayout" />
-
-        <TextView
             android:id="@+id/ProgressBarTextPercent"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -159,18 +119,6 @@
             app:layout_constraintHorizontal_bias="0.515"
             app:layout_constraintStart_toEndOf="@+id/progressBar"
             app:layout_constraintTop_toBottomOf="@+id/toolbar" />
-
-        <TextView
-            android:id="@+id/ProgressBarTextDescription"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="@string/ERROR"
-            android:visibility="gone"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/noticeOfTheDay" />
 
 
         <android.support.constraint.Group
@@ -189,16 +137,27 @@
             app:layout_constraintTop_toBottomOf="@+id/ProgressBarTextPercent"
             tools:text="@string/Remaining" />
 
+        <TextView
+            android:id="@+id/textView2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/Remaining"
+            app:layout_constraintEnd_toStartOf="@+id/progressBar"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/ProgressBarTextTime"
+            tools:text="@string/Remaining" />
+
         <android.support.v7.widget.RecyclerView
             android:id="@+id/main_schedule_list"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_marginTop="8dp"
+            android:fadingEdge="none"
             android:scrollbars="vertical"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/ProgressBarTextDescription" />
+            app:layout_constraintTop_toBottomOf="@+id/progressBar" />
 
     </android.support.constraint.ConstraintLayout>
 

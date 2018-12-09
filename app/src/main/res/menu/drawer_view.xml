@@ -6,7 +6,8 @@
         <item
             android:id="@+id/nav_notification"
             android:icon="@drawable/ic_notification_on"
-            android:title="@string/Notifications" />
+            android:title="@string/Notifications"
+            android:visible="false" />
 
         <item
             android:id="@+id/nav_schedule_input"
@@ -16,12 +17,14 @@
         <item
             android:id="@+id/nav_quote"
             android:icon="@drawable/ic_quote"
-            android:title="@string/Quote" />
+            android:title="@string/Quote"
+            android:visible="false" />
 
         <item
             android:id="@+id/nav_date_change"
             android:icon="@drawable/ic_calendar"
-            android:title="@string/Calendar" />
+            android:title="@string/Calendar"
+            android:visible="false" />
 
         <item
             android:id="@+id/nav_force_server_refresh"
@@ -31,7 +34,8 @@
         <item
             android:id="@+id/nav_settings"
             android:icon="@drawable/ic_settings"
-            android:title="@string/Settings" />
+            android:title="@string/Settings"
+            android:visible="false" />
 
         <!-- <item
             android:id="@+id/nav_camera"

@@ -5,7 +5,6 @@ package owenspangler.stapleshighschoolscheduler;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -58,8 +57,11 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
         String lunchWaveTextData = mLunchWaveData.get(position);
         String periodInfoData = mPeriodInfo.get(position);
 
-        if(position == greenHighlight) holder.itemView.setBackgroundColor(Color.GREEN);
-        if(position == redHighlight) holder.itemView.setBackgroundColor(Color.RED);
+        holder.itemView.setBackgroundColor(Color.TRANSPARENT);
+
+        if((greenHighlight != -1)&&(position == greenHighlight)) holder.itemView.setBackgroundColor(Color.GREEN);
+
+        if((redHighlight != -1)&&(position == redHighlight)) holder.itemView.setBackgroundColor(Color.RED);
 
         holder.PeriodNumberText.setText(periodNumberTextData);
         holder.PeriodNameText.setText(periodNameTextData);
