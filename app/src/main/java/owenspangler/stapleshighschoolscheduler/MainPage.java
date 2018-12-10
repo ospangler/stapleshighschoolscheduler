@@ -38,8 +38,8 @@ public class MainPage extends AppCompatActivity {
 
     String jsonData; //Raw Json String Pulled From Async Task
     //
-    int lunchPeriodPosition; //What position in the schedule the lunch period falls on (WARN: NOW STARTS AT 0, not 1)
-    int currentPeriodNumber = -1; //What position in schedule the current period is (WARN: NOW STARTS AT 0, not 1)
+    int lunchPeriodPosition; //What position in the schedule the lunch period falls on
+    int currentPeriodNumber = -1; //What position in schedule the current period is
     int progressForBar = 0; //Progress for Main Progress Bar
     int progressForOverallBar = 0; //Progress for Overall Outer Progress Bar
     int labLunchLength;
@@ -52,7 +52,6 @@ public class MainPage extends AppCompatActivity {
     String jsonNotice; //Quote of the day
     String progressBarTextPercent = ""; //Remaining Time Percent Displayed
     String progressBarTextTime = ""; //Remaining Time Text Displayed
-    String progressBarTextDescription = "Remaining";//REDUNDANT: WILL REMOVE AFTER UPDATE
     //
     boolean noLunch = false; //If true, the day has no lunch period
     boolean noSchool = false; //If true, the entire day has no school
@@ -76,11 +75,11 @@ public class MainPage extends AppCompatActivity {
     //int currentDayNum = cal.get(Calendar.DAY_OF_MONTH);
     int currentDayNum = 5;
 
-    //int currentHour = cal.get(Calendar.HOUR_OF_DAY);
-    int currentHour = 12;
+    int currentHour = cal.get(Calendar.HOUR_OF_DAY);
+    //int currentHour = 11;
 
-    //int currentMinute = cal.get(Calendar.MINUTE);
-    int currentMinute = 10;
+    int currentMinute = cal.get(Calendar.MINUTE);
+    //int currentMinute = 52;
 
     ProgressBar progressBar;
     ProgressBar overallProgressBar;
@@ -233,7 +232,7 @@ public class MainPage extends AppCompatActivity {
                     AfterSchoolProcedures();
                 } else {//normal condition
 
-                    currentPeriodNumber = PeriodNumber(periodTimes);
+                    currentPeriodNumber = PeriodNumber(periodTimes,true);
                     displayScheduleListInfo(periodTimes, lunchWaveTimes);
 
                     if (noLunch) {//if school day does not have lunch
@@ -258,7 +257,7 @@ public class MainPage extends AppCompatActivity {
 
                             Log.i("lunchwavetime", "rah jd");
 
-                            PeriodNumber(periodTimes);
+                            PeriodNumber(periodTimes,true);
 
                             if(passingTime){ //Passing time after normal periods but before lunch waves (10:41 case on normal day)
 
@@ -267,9 +266,11 @@ public class MainPage extends AppCompatActivity {
                                 FinalizingSetupProcedures();
                                 Log.i("lunchbefore", "rah jd 1041");
 
-                            }else {
+                            }else{
 
-                                int tempLunchPeriod = PeriodNumber(lunchWaveTimes); //Resets, sees if passing time during lunch waves
+                                int tempLunchPeriod = PeriodNumber(lunchWaveTimes,true); //Resets, sees if passing time during lunch waves
+                                //ROOT OF PROBLEM RIGHT HERE, DOES NOT ALLOW FOR PERIOD MERGING. MUST BE MOVED INSIDE FIND TIME UNTIL BECAUSE OF POSITONS
+                                //USE LUNCH DURING PASSING TIME TO TEST
 
                                 if (passingTime) {
 
@@ -291,7 +292,7 @@ public class MainPage extends AppCompatActivity {
                         } else {//It is not lunch period
 
                             if (passingTime) {//school day with lunch during non-lunch passing time
-
+                                Log.i("whyareyourunning?","memes aside, why tho?");
                                 FindTimeUntilEndOfDay(periodTimes);
                                 FindTimeUntilEndPassingTime(periodTimes, currentPeriodNumber);
                                 FinalizingSetupProcedures();
@@ -720,10 +721,11 @@ public class MainPage extends AppCompatActivity {
 
 
 
-    int PeriodNumber(int[][] inputPeriodTimes) { //Finds the current period number of the day, and determines if it is passing time or if there is no School
+    int PeriodNumber(int[][] inputPeriodTimes, boolean affectPassingTime) { //Finds the current period number of the day, and determines if it is passing time or if there is no School
 
         if (noSchool) return -1;
-        passingTime = false;
+
+        if(affectPassingTime) passingTime = false;
 
         int i = 0; //array position
         //KEY: 0 start times hour, 1 start times min, 2 end times hour, 3 end times minute
@@ -731,15 +733,24 @@ public class MainPage extends AppCompatActivity {
         while (true) { //runs through all times and counts the period number of the day
             if ((currentHour > inputPeriodTimes[2][i])) {
                 i++;
+                Log.i("1",Integer.toString(i));
             } else if ((currentHour == inputPeriodTimes[2][i]) && (currentMinute >= inputPeriodTimes[3][i])) {
                 i++;
+                Log.i("2",Integer.toString(i));
             } else if ((currentHour == inputPeriodTimes[0][i]) && (currentMinute >= inputPeriodTimes[1][i])) {
+                Log.i("3",Integer.toString(i));
                 break;
             } else if (currentHour > inputPeriodTimes[0][i]) {
+                Log.i("4",Integer.toString(i));
                 break;
-            } else { //If not found, but not No School, it must be passing time
-                passingTime = true;
-                return i;
+            } else { //If not found, but not no School, it must be passing time
+                Log.i("5",Integer.toString(i));
+                if(affectPassingTime) {
+                    passingTime = true;
+                    return i;
+                }else{
+                    return -1;
+                }
             }
         }
         return i;//returns period number array position
@@ -767,6 +778,7 @@ public class MainPage extends AppCompatActivity {
         int greenHighlightPosition = -1;//Position of Green Highlight(If -1, will not display)
         int redHighlightPosition = -1;//Position of Red Highlight(If -1, will not display)
         int tempPositionOffset = 0; //Offset of Positions Due to Addition of Lunch Wave Views
+        int tempLunchWaveOffset = 0;
 
         int tempArrayLength = scheduleFormat.length;
 
@@ -794,13 +806,13 @@ public class MainPage extends AppCompatActivity {
                         lunchWave.add("All");
                         periodInfo.add(tempPrefInfo);
 
-                        int tempStartHour = ToTwelveHour(inputLunchWaveTimes[0][0]);
+                        int tempStartHour = (inputLunchWaveTimes[0][0]);
                         int tempStartMinute = inputLunchWaveTimes[1][0];
-                        int tempEndHour = ToTwelveHour(inputLunchWaveTimes[2][2]);
+                        int tempEndHour = (inputLunchWaveTimes[2][2]);
                         int tempEndMinute = inputLunchWaveTimes[3][2];
 
-                        periodStart.add(DisplayWithPlaceHolder(tempStartHour,tempStartMinute));
-                        periodEnd.add(DisplayWithPlaceHolder(tempEndHour,tempEndMinute));
+                        periodStart.add(DisplayWithPlaceHolder(ToTwelveHour(tempStartHour),tempStartMinute));
+                        periodEnd.add(DisplayWithPlaceHolder(ToTwelveHour(tempEndHour),tempEndMinute));
 
                     }
 
@@ -816,13 +828,14 @@ public class MainPage extends AppCompatActivity {
                         periodNames.add("Lunch");
                         periodInfo.add(" ");
                         //
-                        int tempStartHour = ToTwelveHour(inputLunchWaveTimes[0][0]);
-                        int tempEndHour = ToTwelveHour(inputLunchWaveTimes[2][0]);
+                        int tempStartHour = (inputLunchWaveTimes[0][0]);
+                        int tempEndHour = (inputLunchWaveTimes[2][0]);
                         int tempStartMinute = inputLunchWaveTimes[1][0];
                         int tempEndMinute = inputLunchWaveTimes[3][0];
                         //
-                        periodStart.add(DisplayWithPlaceHolder(tempStartHour,tempStartMinute));
-                        periodEnd.add(DisplayWithPlaceHolder(tempEndHour,tempEndMinute));
+                        periodStart.add(DisplayWithPlaceHolder(ToTwelveHour(tempStartHour),tempStartMinute));
+                        periodEnd.add(DisplayWithPlaceHolder(ToTwelveHour(tempEndHour),tempEndMinute));
+
 
                         //Second View (Class)
                         periodNumbers.add(tempPeriodDisplay);
@@ -830,13 +843,15 @@ public class MainPage extends AppCompatActivity {
                         periodNames.add(tempPeriodNameString);
                         periodInfo.add(tempPrefInfo);
                         //
-                        tempStartHour = ToTwelveHour(inputLunchWaveTimes[0][1]);
-                        tempEndHour = ToTwelveHour(inputLunchWaveTimes[2][2]);
+                        tempStartHour = (inputLunchWaveTimes[0][1]);
+                        tempEndHour = (inputLunchWaveTimes[2][2]);
                         tempStartMinute = inputLunchWaveTimes[1][1];
                         tempEndMinute = inputLunchWaveTimes[3][2];
                         //
-                        periodStart.add(DisplayWithPlaceHolder(tempStartHour,tempStartMinute));
-                        periodEnd.add(DisplayWithPlaceHolder(tempEndHour,tempEndMinute));
+                        periodStart.add(DisplayWithPlaceHolder(ToTwelveHour(tempStartHour),tempStartMinute));
+                        periodEnd.add(DisplayWithPlaceHolder(ToTwelveHour(tempEndHour),tempEndMinute));
+                        //
+                        if(InsideTimes(tempStartHour,tempStartMinute,tempEndHour,tempEndMinute)) tempLunchWaveOffset = 1;
 
                         tempPositionOffset += 1;
 
@@ -868,13 +883,15 @@ public class MainPage extends AppCompatActivity {
 
                         //For All Three Views
                         for (int j = 0; j < inputLunchWaveTimes[0].length; j++) {
-                            int tempStartHour = ToTwelveHour(inputLunchWaveTimes[0][j]);
-                            int tempEndHour = ToTwelveHour(inputLunchWaveTimes[2][j]);
+                            int tempStartHour = (inputLunchWaveTimes[0][j]);
+                            int tempEndHour = (inputLunchWaveTimes[2][j]);
                             int tempStartMinute = inputLunchWaveTimes[1][j];
                             int tempEndMinute = inputLunchWaveTimes[3][j];
 
-                            periodStart.add(DisplayWithPlaceHolder(tempStartHour, tempStartMinute));
-                            periodEnd.add(DisplayWithPlaceHolder(tempEndHour, tempEndMinute));
+                            periodStart.add(DisplayWithPlaceHolder(ToTwelveHour(tempStartHour), tempStartMinute));
+                            periodEnd.add(DisplayWithPlaceHolder(ToTwelveHour(tempEndHour), tempEndMinute));
+
+                            if(InsideTimes(tempStartHour,tempStartMinute,tempEndHour,tempEndMinute)) tempLunchWaveOffset = j;
                         }
 
                         tempPositionOffset += 2;
@@ -892,13 +909,13 @@ public class MainPage extends AppCompatActivity {
                         periodNames.add(tempPeriodNameString);
                         periodInfo.add(tempPrefInfo);
                         //
-                        int tempStartHour = ToTwelveHour(inputLunchWaveTimes[0][0]);
-                        int tempEndHour = ToTwelveHour(inputLunchWaveTimes[2][1]);
+                        int tempStartHour = (inputLunchWaveTimes[0][0]);
+                        int tempEndHour = (inputLunchWaveTimes[2][1]);
                         int tempStartMinute = inputLunchWaveTimes[1][0];
                         int tempEndMinute = inputLunchWaveTimes[3][1];
                         //
-                        periodStart.add(DisplayWithPlaceHolder(tempStartHour, tempStartMinute));
-                        periodEnd.add(DisplayWithPlaceHolder(tempEndHour, tempEndMinute));
+                        periodStart.add(DisplayWithPlaceHolder(ToTwelveHour(tempStartHour), tempStartMinute));
+                        periodEnd.add(DisplayWithPlaceHolder(ToTwelveHour(tempEndHour), tempEndMinute));
 
                         //Second View (Lunch)
                         periodNumbers.add(tempPeriodDisplay);
@@ -906,13 +923,15 @@ public class MainPage extends AppCompatActivity {
                         periodNames.add("Lunch");
                         periodInfo.add(" ");
                         //
-                        tempStartHour = ToTwelveHour(inputLunchWaveTimes[0][2]);
-                        tempEndHour = ToTwelveHour(inputLunchWaveTimes[2][2]);
+                        tempStartHour = (inputLunchWaveTimes[0][2]);
+                        tempEndHour = (inputLunchWaveTimes[2][2]);
                         tempStartMinute = inputLunchWaveTimes[1][2];
                         tempEndMinute = inputLunchWaveTimes[3][2];
                         //
-                        periodStart.add(DisplayWithPlaceHolder(tempStartHour, tempStartMinute));
-                        periodEnd.add(DisplayWithPlaceHolder(tempEndHour, tempEndMinute));
+                        periodStart.add(DisplayWithPlaceHolder(ToTwelveHour(tempStartHour), tempStartMinute));
+                        periodEnd.add(DisplayWithPlaceHolder(ToTwelveHour(tempEndHour), tempEndMinute));
+                        //
+                        if(InsideTimes(tempStartHour,tempStartMinute,tempEndHour,tempEndMinute)) tempLunchWaveOffset = 1;
 
                         tempPositionOffset += 1;
 
@@ -942,11 +961,8 @@ public class MainPage extends AppCompatActivity {
                             tempEndMinute = tempStartMinute + labLunchLength;
                         }
                         //
-                        tempStartHour = ToTwelveHour(tempStartHour);
-                        tempEndHour = ToTwelveHour(tempEndHour);
-                        //
-                        periodStart.add(DisplayWithPlaceHolder(tempStartHour, tempStartMinute));
-                        periodEnd.add(DisplayWithPlaceHolder(tempEndHour, tempEndMinute));
+                        periodStart.add(DisplayWithPlaceHolder(ToTwelveHour(tempStartHour), tempStartMinute));
+                        periodEnd.add(DisplayWithPlaceHolder(ToTwelveHour(tempEndHour), tempEndMinute));
 
                         //Second View (Class)
                         periodNumbers.add(tempPeriodDisplay);
@@ -955,12 +971,14 @@ public class MainPage extends AppCompatActivity {
                         periodInfo.add(tempPrefInfo);
                         //
                         tempStartHour = tempEndHour;
-                        tempEndHour = ToTwelveHour(inputLunchWaveTimes[2][2]);
+                        tempEndHour = inputLunchWaveTimes[2][2];
                         tempStartMinute = tempEndMinute;
                         tempEndMinute = inputLunchWaveTimes[3][2];
                         //
-                        periodStart.add(DisplayWithPlaceHolder(tempStartHour, tempStartMinute));
-                        periodEnd.add(DisplayWithPlaceHolder(tempEndHour, tempEndMinute));
+                        periodStart.add(DisplayWithPlaceHolder(ToTwelveHour(tempStartHour), tempStartMinute));
+                        periodEnd.add(DisplayWithPlaceHolder(ToTwelveHour(tempEndHour), tempEndMinute));
+                        //
+                        if(InsideTimes(tempStartHour,tempStartMinute,tempEndHour,tempEndMinute)) tempLunchWaveOffset = 1;
 
                         tempPositionOffset += 1;
 
@@ -982,8 +1000,8 @@ public class MainPage extends AppCompatActivity {
                         periodNames.add(tempPeriodNameString);
                         periodInfo.add(tempPrefInfo);
                         //
-                        int tempStartHour = ToTwelveHour(inputLunchWaveTimes[0][0]);
-                        int tempEndHour = ToTwelveHour(inputLunchWaveTimes[2][1]);
+                        int tempStartHour = inputLunchWaveTimes[0][0];
+                        int tempEndHour = inputLunchWaveTimes[2][1];
                         int tempStartMinute = inputLunchWaveTimes[1][0];
                         int tempEndMinute;
                         //
@@ -994,8 +1012,8 @@ public class MainPage extends AppCompatActivity {
                             tempEndMinute = tempStartMinute + labLunchLength;
                         }
                         //
-                        periodStart.add(DisplayWithPlaceHolder(tempStartHour, tempStartMinute));
-                        periodEnd.add(DisplayWithPlaceHolder(tempEndHour, tempEndMinute));
+                        periodStart.add(DisplayWithPlaceHolder(ToTwelveHour(tempStartHour), tempStartMinute));
+                        periodEnd.add(DisplayWithPlaceHolder(ToTwelveHour(tempEndHour), tempEndMinute));
 
                         //Second View (Lunch)
                         periodNumbers.add(tempPeriodDisplay);
@@ -1005,12 +1023,14 @@ public class MainPage extends AppCompatActivity {
                         //
                         //
                         tempStartHour = tempEndHour;
-                        tempEndHour = ToTwelveHour(inputLunchWaveTimes[2][2]);
+                        tempEndHour = inputLunchWaveTimes[2][2];
                         tempStartMinute = tempEndMinute;
                         tempEndMinute = inputLunchWaveTimes[3][2];
                         //
-                        periodStart.add(DisplayWithPlaceHolder(tempStartHour, tempStartMinute));
-                        periodEnd.add(DisplayWithPlaceHolder(tempEndHour, tempEndMinute));
+                        periodStart.add(DisplayWithPlaceHolder(ToTwelveHour(tempStartHour), tempStartMinute));
+                        periodEnd.add(DisplayWithPlaceHolder(ToTwelveHour(tempEndHour), tempEndMinute));
+                        //
+                        if(InsideTimes(tempStartHour,tempStartMinute,tempEndHour,tempEndMinute)) tempLunchWaveOffset = 1;
 
                         tempPositionOffset += 1;
 
@@ -1074,30 +1094,54 @@ public class MainPage extends AppCompatActivity {
             periodInfo.add("For some reason the array lists that populate this are mismatched");
         }
 
+        TextView periodNumberDisplay = findViewById(R.id.PeriodDisplay);
+        boolean tempPassingTime = false;
+
         if(!((noSchool)||(beforeSchool)||(afterSchool))){
-            if(passingTime){
-                if((currentPeriodNumber)<lunchPeriodPosition){
-                    greenHighlightPosition = currentPeriodNumber;
-                }else if((currentPeriodNumber)==lunchPeriodPosition){
-                    greenHighlightPosition = lunchPeriodPosition + PeriodNumber(lunchWaveTimes);
-                }else{
-                    greenHighlightPosition = tempPositionOffset+currentPeriodNumber;
+            Log.i("currentperiodnum1",Integer.toString(currentPeriodNumber));
+            Log.i("lunchwavepos",Integer.toString(PeriodNumber(lunchWaveTimes,false)));
+
+            if((currentPeriodNumber)<lunchPeriodPosition){
+
+                greenHighlightPosition = currentPeriodNumber;
+
+            }else if((currentPeriodNumber)==lunchPeriodPosition){
+                Log.i("periodnumberlunch", Integer.toString(PeriodNumber(lunchWaveTimes,false)));
+
+                if(passingTime){ //To handle 10:41 case
+
+                    greenHighlightPosition = lunchPeriodPosition;
+
+                }else {
+
+                    greenHighlightPosition = lunchPeriodPosition + tempLunchWaveOffset;
+
+                    if (PeriodNumber(lunchWaveTimes, false) == -1) { ///FIX THIS TO NOT TRIGGER DURING PASSING TIME OVERWRITTEN BY LONG PERIODS
+                        tempPassingTime = true;
+                        greenHighlightPosition += 1;
+                    }
                 }
-                redHighlightPosition = greenHighlightPosition - 1;
+
+
             }else{
-                if((currentPeriodNumber)<lunchPeriodPosition){
-                    greenHighlightPosition = currentPeriodNumber;
-                }else if((currentPeriodNumber)==lunchPeriodPosition){
-                    greenHighlightPosition = lunchPeriodPosition + PeriodNumber(lunchWaveTimes);
-                }else{
-                    greenHighlightPosition = tempPositionOffset+currentPeriodNumber;
-                }
+                greenHighlightPosition = tempPositionOffset + currentPeriodNumber;
+            }
+
+            if(periodNames.get(greenHighlightPosition).equals("Lunch")){
+                periodNumberDisplay.setText("L");
+            }else{
+                periodNumberDisplay.setText(periodNumbers.get(greenHighlightPosition));
+            }
+
+            if(passingTime || tempPassingTime){
+                redHighlightPosition = greenHighlightPosition - 1;
+                periodNumberDisplay.setText("P");
             }
         }
 
         adapter = new MyRecyclerViewAdapter(this, periodNumbers, periodNames, periodStart, periodEnd, lunchWave, periodInfo,greenHighlightPosition,redHighlightPosition);
         recyclerView.setAdapter(adapter);
-        recyclerView.scrollToPosition(1); //put current position here
+        if(greenHighlightPosition != -1) recyclerView.scrollToPosition(greenHighlightPosition); //put current position here so visible
 
     }
 
@@ -1113,6 +1157,21 @@ public class MainPage extends AppCompatActivity {
         if (inputMinute < 10) return Integer.toString(inputHour) + ":0" + Integer.toString(inputMinute);
 
         return Integer.toString(inputHour) + ":" + Integer.toString(inputMinute);
+    }
+
+    boolean InsideTimes(int _startHour, int _startMinute, int _endHour, int _endMinute){
+
+        if ((currentHour > _endHour)) {
+            return false;
+        } else if ((currentHour == _endHour) && (currentMinute >= _endMinute)){
+            return false;
+        } else if ((currentHour == _startHour) && (currentMinute >= _startMinute)) {
+            return true;
+        } else if (currentHour > _startHour) {
+            return true;
+        }
+
+        return false;
     }
 
     void DisplayNoticeText(String inputText) { //Displays some sick motivational quotes when called
@@ -1171,7 +1230,6 @@ public class MainPage extends AppCompatActivity {
 
             }
         }
-        progressBarTextDescription = "Remaining";
     }
 
     void FindTimeUntilEndPassingTime(int[][] finderInputPeriodTimes, int tempPosition) { //Finds time until end of passing time
@@ -1359,7 +1417,7 @@ public class MainPage extends AppCompatActivity {
                         tempStartHour = finderInputPeriodTimes[0][0];
                         tempStartMinute = finderInputPeriodTimes[1][0];
                         tempEndHour = finderInputPeriodTimes[0][0];
-                        tempEndMinute = finderInputPeriodTimes[1][0];
+                        //tempEndMinute = finderInputPeriodTimes[1][0];
 
                         if ((tempStartMinute + labLunchLength) > 60) {
                             tempEndHour++;
@@ -1520,7 +1578,6 @@ public class MainPage extends AppCompatActivity {
                 break;
             }
         }
-        progressBarTextDescription = "Remaining";
     }
 
     void FinalizingSetupProcedures() { //Final setting of values on the UI
