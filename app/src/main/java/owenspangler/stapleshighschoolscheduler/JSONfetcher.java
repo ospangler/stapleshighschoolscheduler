@@ -42,7 +42,7 @@ class JSONfetcher extends AsyncTask<String, Integer, String> {
         //Portions of Below Code are from code made by Abhishek Panwar
         //The original code can be found at: https://github.com/panwarabhishek345/Receive-JSON-Data
         try {
-            URL url = new URL("https://ospangler.github.io/testschedulechangedatabase.json");
+            URL url = new URL("https://ospangler.github.io/SHSS/newschedulechangedatabase.json");
             HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
             InputStream inputStream = httpURLConnection.getInputStream();
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
@@ -69,7 +69,7 @@ class JSONfetcher extends AsyncTask<String, Integer, String> {
         }
     }
 
-    public boolean InternetConnected() { //Checks for an internet connection to test for offline status to github site
+    private boolean InternetConnected() { //Checks for an internet connection to test for offline status to github site
 
         //The below code was adapted from a StackOverflow answer by YLS
         //The full answer can be found here: https://stackoverflow.com/a/40111665
@@ -81,9 +81,7 @@ class JSONfetcher extends AsyncTask<String, Integer, String> {
             connection.setConnectTimeout(10000);
             connection.connect();
             success = connection.getResponseCode() == 200;
-            ////
             connection.disconnect(); //check to see if this prevents leaking of response body
-            ////
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -18,6 +18,7 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -50,6 +51,7 @@ public class MainPage extends AppCompatActivity {
     //
     String dayLetter; //What the day letter is
     String jsonNotice; //Quote of the day
+    String imageLink;
     String progressBarTextPercent = ""; //Remaining Time Percent Displayed
     String progressBarTextTime = ""; //Remaining Time Text Displayed
     //
@@ -69,17 +71,17 @@ public class MainPage extends AppCompatActivity {
 
     //int currentDayDay = cal.get(Calendar.DAY_OF_WEEK);
 
-    //int currentMonth = (cal.get(Calendar.MONTH) + 1);
-    int currentMonth = 12;
+    int currentMonth = (cal.get(Calendar.MONTH) + 1);
+    //int currentMonth = 12;
 
-    //int currentDayNum = cal.get(Calendar.DAY_OF_MONTH);
-    int currentDayNum = 5;
+    int currentDayNum = cal.get(Calendar.DAY_OF_MONTH);
+    //int currentDayNum = 5;
 
     int currentHour = cal.get(Calendar.HOUR_OF_DAY);
-    //int currentHour = 11;
+    //int currentHour = 13;
 
     int currentMinute = cal.get(Calendar.MINUTE);
-    //int currentMinute = 52;
+    //int currentMinute = 23;
 
     ProgressBar progressBar;
     ProgressBar overallProgressBar;
@@ -131,7 +133,14 @@ public class MainPage extends AppCompatActivity {
             public void onDrawerOpened(View drawerView) {
                 super.onDrawerOpened(drawerView);
                 Log.i("draweropened",jsonNotice);
-                DisplayNoticeText(jsonNotice);
+                //ImageView headerImage = findViewById(R.id.header_image);
+                if(imageLink != null) {
+
+                    new ImageFetcher((ImageView) findViewById(R.id.header_image))
+                            .execute(imageLink);
+                }
+                TextView noticeText = findViewById(R.id.header_text);
+                noticeText.setText(jsonNotice);
                 invalidateOptionsMenu();
             }
 
@@ -170,6 +179,8 @@ public class MainPage extends AppCompatActivity {
                         } else if (id == R.id.nav_settings) {
                             //startActivity(new Intent(MainPage.this, GeneralSettingsActivity.class));
                             return true;
+                        } else if(id == R.id.nav_force_server_refresh){
+                            Main(true);
                         }
 
 
@@ -177,7 +188,7 @@ public class MainPage extends AppCompatActivity {
                     }
                 });
 
-        FirstMain();
+        Main(true);
     }
 
     @Override
@@ -191,8 +202,9 @@ public class MainPage extends AppCompatActivity {
     }
 
     Handler h = new Handler();
-    int delay = 15 * 1000; //sets refresh delay for app
+    int delay = 1000; //sets refresh delay for app
     Runnable runnable;
+    int previousMinute = currentMinute;
 
     @Override
     protected void onResume() {
@@ -200,7 +212,13 @@ public class MainPage extends AppCompatActivity {
 
         h.postDelayed(runnable = new Runnable() {
             public void run() {
-                RepeatedMain();
+                Calendar tempChangeCal;
+                tempChangeCal = Calendar.getInstance();
+                int newMinute = tempChangeCal.get(Calendar.MINUTE);
+                if(previousMinute != newMinute){
+                    previousMinute = newMinute;
+                    Main(false);
+                }
                 h.postDelayed(runnable, delay);
             }
         }, delay);
@@ -214,9 +232,9 @@ public class MainPage extends AppCompatActivity {
         super.onPause();
     }
 
-    void FirstMain() {//Initial Code that executes on startup
+    void Main(boolean first) {//Initial Code that executes on startup
 
-        GetJson();
+        if(first) GetJson();
 
         if (offline) {//if offline
             OfflineDayAlertPopup("No Connection. Pick a Day.");
@@ -268,7 +286,7 @@ public class MainPage extends AppCompatActivity {
 
                             }else{
 
-                                int tempLunchPeriod = PeriodNumber(lunchWaveTimes,true); //Resets, sees if passing time during lunch waves
+                                int tempLunchPeriod = PeriodNumber(lunchWaveTimes,false); //Resets, sees if passing time during lunch waves
                                 //ROOT OF PROBLEM RIGHT HERE, DOES NOT ALLOW FOR PERIOD MERGING. MUST BE MOVED INSIDE FIND TIME UNTIL BECAUSE OF POSITONS
                                 //USE LUNCH DURING PASSING TIME TO TEST
 
@@ -310,8 +328,9 @@ public class MainPage extends AppCompatActivity {
         }
     }
 
-    void RepeatedMain() {//This is the main code that repeats after the initial push
-        /*
+    /*void RepeatedMain() {//This is the main code that repeats after the initial push
+        Log.i("RepeatedMain","New Minute Detected");
+
         passingTime = false;//If set to true in function, school is in passing time, this line resets.
         noSchool = false;//If set to true in function, is before or after school, this line resets.
         Calendar calRefresh = Calendar.getInstance();
@@ -339,8 +358,9 @@ public class MainPage extends AppCompatActivity {
         } else {
             OfflineConditions();
         }
-        */
+
     }
+    */
 
     void OfflineConditions() {
 /*
@@ -421,6 +441,8 @@ public class MainPage extends AppCompatActivity {
             JSONArray scheduleChangeArray = JO.getJSONArray("schedulechange");
 
             jsonNotice = JO.getString("notice");
+
+            imageLink = JO.getString("imagelink");
 
             for (int i = 0; i < scheduleChangeArray.length(); i++) { //checks to see if any days are listed as changed
 
@@ -1098,15 +1120,15 @@ public class MainPage extends AppCompatActivity {
         boolean tempPassingTime = false;
 
         if(!((noSchool)||(beforeSchool)||(afterSchool))){
-            Log.i("currentperiodnum1",Integer.toString(currentPeriodNumber));
-            Log.i("lunchwavepos",Integer.toString(PeriodNumber(lunchWaveTimes,false)));
+            //Log.i("currentperiodnum1",Integer.toString(currentPeriodNumber));
+            //Log.i("lunchwavepos",Integer.toString(PeriodNumber(lunchWaveTimes,false)));
 
             if((currentPeriodNumber)<lunchPeriodPosition){
 
                 greenHighlightPosition = currentPeriodNumber;
 
             }else if((currentPeriodNumber)==lunchPeriodPosition){
-                Log.i("periodnumberlunch", Integer.toString(PeriodNumber(lunchWaveTimes,false)));
+                //Log.i("periodnumberlunch", Integer.toString(PeriodNumber(lunchWaveTimes,false)));
 
                 if(passingTime){ //To handle 10:41 case
 
@@ -1172,11 +1194,6 @@ public class MainPage extends AppCompatActivity {
         }
 
         return false;
-    }
-
-    void DisplayNoticeText(String inputText) { //Displays some sick motivational quotes when called
-        TextView noticeText = findViewById(R.id.header_text);
-        noticeText.setText(inputText);
     }
 
     void FindTimeUntilEndNormal(int finderinputPeriodTimes[][]) { //Finds the time until the end of the period
@@ -1597,22 +1614,28 @@ public class MainPage extends AppCompatActivity {
     }
 
     void NoSchoolProcedures() { //Changes values on UI thread to reflect no school state
-
+/*
         String tempScheduleString = "";
         for (int i = 0; i < scheduleFormat.length; i++) {
             tempScheduleString += scheduleFormat[i];
             if (i < scheduleFormat.length - 1) tempScheduleString += " ";
         }
+        */
 
         progressBar = findViewById(R.id.progressBar);
         overallProgressBar = findViewById(R.id.OverallDayProgressBar);
         progressBar.setProgress(100);
         overallProgressBar.setProgress(100);
-        TextView ProgressBarTextPercent = findViewById(R.id.ProgressBarTextPercent);
-        ProgressBarTextPercent.setText("NO");
         TextView ProgressBarTextTime = findViewById(R.id.ProgressBarTextTime);
         ProgressBarTextTime.setTextSize(30);
-        ProgressBarTextTime.setText("SCHOOL");
+        ProgressBarTextTime.setText("NO");
+        TextView ProgressBarTextPercent = findViewById(R.id.ProgressBarTextPercent);
+        ProgressBarTextPercent.setText("NO");
+        TextView remain1 = findViewById(R.id.remain1);
+        remain1.setText("School");
+        TextView remain2 = findViewById(R.id.remain2);
+        remain2.setText("School");
+
 
     }
 
