@@ -37,7 +37,7 @@ public class MainPage extends AppCompatActivity {
 
     private DrawerLayout mDrawerLayout;
 
-    String jsonData; //Raw Json String Pulled From Async Task
+    //String jsonData; //Raw Json String Pulled From Async Task
     //
     int lunchPeriodPosition; //What position in the schedule the lunch period falls on
     int currentPeriodNumber = -1; //What position in schedule the current period is
@@ -134,11 +134,14 @@ public class MainPage extends AppCompatActivity {
                 super.onDrawerOpened(drawerView);
                 Log.i("draweropened",jsonNotice);
                 //ImageView headerImage = findViewById(R.id.header_image);
+
                 if(imageLink != null) {
 
                     new ImageFetcher((ImageView) findViewById(R.id.header_image))
                             .execute(imageLink);
+
                 }
+
                 TextView noticeText = findViewById(R.id.header_text);
                 noticeText.setText(jsonNotice);
                 invalidateOptionsMenu();
@@ -216,6 +219,7 @@ public class MainPage extends AppCompatActivity {
                 tempChangeCal = Calendar.getInstance();
                 int newMinute = tempChangeCal.get(Calendar.MINUTE);
                 if(previousMinute != newMinute){
+                    RefreshReset();
                     previousMinute = newMinute;
                     Main(false);
                 }
@@ -237,7 +241,7 @@ public class MainPage extends AppCompatActivity {
         if(first) GetJson();
 
         if (offline) {//if offline
-            OfflineDayAlertPopup("No Connection. Pick a Day.");
+
         } else {//if not offline
 
             if (!noSchool) BeforeOrAfterSchoolCheck(periodTimes);//checks to see if before or after school. noSchool checked in getJson
@@ -328,39 +332,6 @@ public class MainPage extends AppCompatActivity {
         }
     }
 
-    /*void RepeatedMain() {//This is the main code that repeats after the initial push
-        Log.i("RepeatedMain","New Minute Detected");
-
-        passingTime = false;//If set to true in function, school is in passing time, this line resets.
-        noSchool = false;//If set to true in function, is before or after school, this line resets.
-        Calendar calRefresh = Calendar.getInstance();
-        currentHour = calRefresh.get(Calendar.HOUR_OF_DAY);
-        currentMinute = calRefresh.get(Calendar.MINUTE);
-
-        PeriodNumber(inputPeriodTimes);//checks to see if there is noSchool
-
-        if (!offline) {
-            if (!noSchool) currentPeriodNumber = PeriodNumber(inputPeriodTimes);
-
-            if (noSchool) { // Online, No School using Current Schedule
-                NoSchoolProcedures();
-
-            } else if (passingTime) { // Online, School in session, but not inside a period detected
-                FindTimeUntilEndOfDay(inputPeriodTimes);
-                FindTimeUntilEndPassingTime(inputPeriodTimes);
-                FinalizingSetupProcedures();
-
-            } else { // Online, School in session and during period
-                FindTimeUntilEndOfDay(inputPeriodTimes);
-                FindTimeUntilEndNormal(inputPeriodTimes);
-                FinalizingSetupProcedures();
-            }
-        } else {
-            OfflineConditions();
-        }
-
-    }
-    */
 
     void OfflineConditions() {
 /*
@@ -390,19 +361,46 @@ public class MainPage extends AppCompatActivity {
     }
 
     void GetJson() {
-
+        String jsonData;
         try {
             jsonData = new JSONfetcher().execute().get();//Will wait for task to finish
         } catch (InterruptedException e) {
+            jsonData = "";
             //I'm not catching anything, I just wanted the error messages to go away
         } catch (ExecutionException e) {
+            jsonData = "";
             //I don't care if I'm defeating the purpose of an Async task, I don't care.
         }
 
         if ((jsonData.equals("NO CONNECTION")) || (jsonData.equals(""))) { //NO CONNECTION CONDITION
             offline = true;
 
+            //Retrieving JSON from Shared Preferences
+            //Below Code adapted from a StackOverflow Answer by
+            //Full answer can be found at: https://stackoverflow.com/a/29607632
+            String offlineJsonData = PreferenceManager.getDefaultSharedPreferences(this).getString("offline_database","");
+
+            if(offlineJsonData.isEmpty()) {
+
+                Log.i("No previous connection", "No database detected");
+                OfflineDayAlertPopup("No Offline Database Detected");
+
+            }else{
+
+                Log.i("Previous Connection", "Using Backup Data");
+                GetInfoFromJSON(offlineJsonData, false, 0, 0);
+            }
+
         } else {//WITH CONNECTION
+
+            Log.i("Is Connection","Writing new data");
+
+            //Saving updated JSON to Shared Preferences
+            //Below Code adapted from a StackOverflow Answer by
+            //Full answer can be found at: https://stackoverflow.com/a/29607632
+
+            PreferenceManager.getDefaultSharedPreferences(this).edit()
+                    .putString("offline_database",jsonData).apply();
 
             GetInfoFromJSON(jsonData, false, 0, 0);
 
@@ -558,6 +556,7 @@ public class MainPage extends AppCompatActivity {
             Log.i("noSchool", Boolean.toString(noSchool));
             Log.i("lunchscheduleFormat", Arrays.deepToString(lunchWaveTimes));
             //Log.i("day", Arrays.toString(scheduleFormat));
+
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -1645,6 +1644,14 @@ public class MainPage extends AppCompatActivity {
 
     void AfterSchoolProcedures() {
 
+    }
+
+    void RefreshReset(){
+        noSchool = false;
+        passingTime = false;
+        beforeSchool = false;
+        afterSchool = false;
+        labLunch = false;
     }
 
 
