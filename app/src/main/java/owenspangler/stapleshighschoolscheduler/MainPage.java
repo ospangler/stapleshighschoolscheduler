@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Handler;
 import android.support.design.widget.NavigationView;
+import android.support.design.widget.Snackbar;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
@@ -21,13 +22,10 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 import android.preference.PreferenceManager;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -64,25 +62,14 @@ public class MainPage extends AppCompatActivity {
     boolean offline = false; //If true, no connection to server can be made
     boolean passingTime = false; //If true, time is between periods
     boolean specialSchedule = false; //If true, app is following special schedule from server
+    boolean firstTime = true;
     //
-    Calendar cal = Calendar.getInstance();
-
-    int currentYear = cal.get(Calendar.YEAR);
-
-    //int currentDayDay = cal.get(Calendar.DAY_OF_WEEK);
-
-    int currentMonth = (cal.get(Calendar.MONTH) + 1);
-    //int currentMonth = 12;
-
-    int currentDayNum = cal.get(Calendar.DAY_OF_MONTH);
-    //int currentDayNum = 5;
-
-    int currentHour = cal.get(Calendar.HOUR_OF_DAY);
-    //int currentHour = 13;
-
-    int currentMinute = cal.get(Calendar.MINUTE);
-    //int currentMinute = 23;
-
+    int currentYear;
+    int currentMonth;
+    int currentDayNum;
+    int currentHour;
+    int currentMinute;
+    //
     ProgressBar progressBar;
     ProgressBar overallProgressBar;
     MyRecyclerViewAdapter adapter;
@@ -132,10 +119,10 @@ public class MainPage extends AppCompatActivity {
             @Override
             public void onDrawerOpened(View drawerView) {
                 super.onDrawerOpened(drawerView);
-                Log.i("draweropened",jsonNotice);
+                Log.i("draweropened", jsonNotice);
                 //ImageView headerImage = findViewById(R.id.header_image);
 
-                if(imageLink != null) {
+                if (imageLink != null) {
 
                     new ImageFetcher((ImageView) findViewById(R.id.header_image))
                             .execute(imageLink);
@@ -150,7 +137,7 @@ public class MainPage extends AppCompatActivity {
             @Override
             public void onDrawerClosed(View drawerView) {
                 super.onDrawerClosed(drawerView);
-                Log.i("drawerclosed","jdjdjd");
+                Log.i("drawerclosed", "jdjdjd");
                 invalidateOptionsMenu();
             }
 
@@ -182,7 +169,7 @@ public class MainPage extends AppCompatActivity {
                         } else if (id == R.id.nav_settings) {
                             //startActivity(new Intent(MainPage.this, GeneralSettingsActivity.class));
                             return true;
-                        } else if(id == R.id.nav_force_server_refresh){
+                        } else if (id == R.id.nav_force_server_refresh) {
                             Main(true);
                         }
 
@@ -218,7 +205,7 @@ public class MainPage extends AppCompatActivity {
                 Calendar tempChangeCal;
                 tempChangeCal = Calendar.getInstance();
                 int newMinute = tempChangeCal.get(Calendar.MINUTE);
-                if(previousMinute != newMinute){
+                if (previousMinute != newMinute) {
                     RefreshReset();
                     previousMinute = newMinute;
                     Main(false);
@@ -238,127 +225,101 @@ public class MainPage extends AppCompatActivity {
 
     void Main(boolean first) {//Initial Code that executes on startup
 
-        if(first) GetJson();
+        RefreshTime();
 
-        if (offline) {//if offline
+        if (first) GetJson();
 
-        } else {//if not offline
+        if (!noSchool)
+            BeforeOrAfterSchoolCheck(periodTimes);//checks to see if before or after school. noSchool checked in getJson
 
-            if (!noSchool) BeforeOrAfterSchoolCheck(periodTimes);//checks to see if before or after school. noSchool checked in getJson
+        if (noSchool) {// if no school
+            NoSchoolProcedures();
+        } else if (beforeSchool) {//if before school
+            BeforeSchoolProcedures();
+        } else if (afterSchool) {//if after school
+            AfterSchoolProcedures();
+        } else {//normal condition
 
-                if (noSchool) {// if no school
-                    NoSchoolProcedures();
-                } else if (beforeSchool) {//if before school
-                    BeforeSchoolProcedures();
-                } else if (afterSchool) {//if after school
-                    AfterSchoolProcedures();
-                } else {//normal condition
+            currentPeriodNumber = PeriodNumber(periodTimes, true);
 
-                    currentPeriodNumber = PeriodNumber(periodTimes,true);
-                    displayScheduleListInfo(periodTimes, lunchWaveTimes);
+            displayScheduleListInfo(periodTimes, lunchWaveTimes);
 
-                    if (noLunch) {//if school day does not have lunch
+            if (noLunch) {//if school day does not have lunch
 
-                        if (passingTime) {//school day w/o lunch during passing time
+                if (passingTime) {//school day w/o lunch during passing time
 
+                    FindTimeUntilEndOfDay(periodTimes);
+                    FindTimeUntilEndPassingTime(periodTimes, currentPeriodNumber);
+                    FinalizingSetupProcedures();
+
+                } else {//school day w/o lunch during class time
+
+                    FindTimeUntilEndOfDay(periodTimes);
+                    FindTimeUntilEndNormal(periodTimes);
+                    FinalizingSetupProcedures();
+
+                }
+
+            } else {//normal school day with lunch
+
+                if (lunchPeriodPosition == currentPeriodNumber) {//It is lunch period
+
+                    Log.i("lunchwavetime", "rah jd");
+
+                    PeriodNumber(periodTimes, true);
+
+                    if (passingTime) { //Passing time after normal periods but before lunch waves (10:41 case on normal day)
+
+                        FindTimeUntilEndPassingTime(periodTimes, currentPeriodNumber);
+                        FindTimeUntilEndOfDay(periodTimes);
+                        FinalizingSetupProcedures();
+                        Log.i("lunchbefore", "rah jd 1041");
+
+                    } else {
+
+                        int tempLunchPeriod = PeriodNumber(lunchWaveTimes, false); //Resets, sees if passing time during lunch waves
+                        //ROOT OF PROBLEM RIGHT HERE, DOES NOT ALLOW FOR PERIOD MERGING. MUST BE MOVED INSIDE FIND TIME UNTIL BECAUSE OF POSITONS
+                        //USE LUNCH DURING PASSING TIME TO TEST
+
+                        if (passingTime) {
+
+                            FindTimeUntilEndPassingTime(lunchWaveTimes, tempLunchPeriod);
+                            Log.i("lunchwavetimepassing", "rah jd");
                             FindTimeUntilEndOfDay(periodTimes);
-                            FindTimeUntilEndPassingTime(periodTimes, currentPeriodNumber);
                             FinalizingSetupProcedures();
 
-                        } else {//school day w/o lunch during class time
+                        } else {
 
+                            Log.i("lunchwavetimeduring", "rah jd");
                             FindTimeUntilEndOfDay(periodTimes);
-                            FindTimeUntilEndNormal(periodTimes);
+                            FindTimeUntilEndLunchWave(lunchWaveTimes, (tempLunchPeriod));
                             FinalizingSetupProcedures();
 
-                        }
-
-                    } else {//normal school day with lunch
-
-                        if (lunchPeriodPosition == currentPeriodNumber) {//It is lunch period
-
-                            Log.i("lunchwavetime", "rah jd");
-
-                            PeriodNumber(periodTimes,true);
-
-                            if(passingTime){ //Passing time after normal periods but before lunch waves (10:41 case on normal day)
-
-                                FindTimeUntilEndPassingTime(periodTimes, currentPeriodNumber);
-                                FindTimeUntilEndOfDay(periodTimes);
-                                FinalizingSetupProcedures();
-                                Log.i("lunchbefore", "rah jd 1041");
-
-                            }else{
-
-                                int tempLunchPeriod = PeriodNumber(lunchWaveTimes,false); //Resets, sees if passing time during lunch waves
-                                //ROOT OF PROBLEM RIGHT HERE, DOES NOT ALLOW FOR PERIOD MERGING. MUST BE MOVED INSIDE FIND TIME UNTIL BECAUSE OF POSITONS
-                                //USE LUNCH DURING PASSING TIME TO TEST
-
-                                if (passingTime) {
-
-                                    FindTimeUntilEndPassingTime(lunchWaveTimes, tempLunchPeriod);
-                                    Log.i("lunchwavetimepassing", "rah jd");
-                                    FindTimeUntilEndOfDay(periodTimes);
-                                    FinalizingSetupProcedures();
-
-                                } else {
-
-                                    Log.i("lunchwavetimeduring", "rah jd");
-                                    FindTimeUntilEndOfDay(periodTimes);
-                                    FindTimeUntilEndLunchWave(lunchWaveTimes, (tempLunchPeriod));
-                                    FinalizingSetupProcedures();
-
-                                }
-                            }
-
-                        } else {//It is not lunch period
-
-                            if (passingTime) {//school day with lunch during non-lunch passing time
-                                Log.i("whyareyourunning?","memes aside, why tho?");
-                                FindTimeUntilEndOfDay(periodTimes);
-                                FindTimeUntilEndPassingTime(periodTimes, currentPeriodNumber);
-                                FinalizingSetupProcedures();
-
-                            } else {//school day with lunch during non-lunch class time
-
-                                FindTimeUntilEndOfDay(periodTimes);
-                                FindTimeUntilEndNormal(periodTimes);
-                                FinalizingSetupProcedures();
-                            }
                         }
                     }
 
+                } else {//It is not lunch period
+
+                    if (passingTime) {//school day with lunch during non-lunch passing time
+                        Log.i("whyareyourunning?", "memes aside, why tho?");
+                        FindTimeUntilEndOfDay(periodTimes);
+                        FindTimeUntilEndPassingTime(periodTimes, currentPeriodNumber);
+                        FinalizingSetupProcedures();
+
+                    } else {//school day with lunch during non-lunch class time
+
+                        FindTimeUntilEndOfDay(periodTimes);
+                        FindTimeUntilEndNormal(periodTimes);
+                        FinalizingSetupProcedures();
+                    }
                 }
+            }
+
         }
+
+        firstTime = false;
     }
 
-
-    void OfflineConditions() {
-/*
-        int[][] offlineInputPeriodTimes;
-
-        offlineInputPeriodTimes = normalPeriodTimes;
-        currentPeriodNumber = PeriodNumber(offlineInputPeriodTimes);
-
-
-        if (noSchool) { // Offline, No School Detected for Normal Schedule
-            OfflineProcedures();
-            NoSchoolProcedures();
-
-        } else if (passingTime) { // Offline, Passing Time Detected for Normal Schedule
-            OfflineProcedures();
-            FindTimeUntilEndOfDay(offlineInputPeriodTimes);
-            FindTimeUntilEndPassingTime(offlineInputPeriodTimes);
-            FinalizingSetupProcedures();
-
-        } else { // Offline, Normal School Conditions Detected
-            OfflineProcedures();
-            FindTimeUntilEndOfDay(offlineInputPeriodTimes);
-            FindTimeUntilEndNormal(offlineInputPeriodTimes);
-            FinalizingSetupProcedures();
-        }
-        */
-    }
 
     void GetJson() {
         String jsonData;
@@ -378,14 +339,21 @@ public class MainPage extends AppCompatActivity {
             //Retrieving JSON from Shared Preferences
             //Below Code adapted from a StackOverflow Answer by
             //Full answer can be found at: https://stackoverflow.com/a/29607632
-            String offlineJsonData = PreferenceManager.getDefaultSharedPreferences(this).getString("offline_database","");
 
-            if(offlineJsonData.isEmpty()) {
+            String offlineJsonData = PreferenceManager.getDefaultSharedPreferences(this).getString("offline_database", "");
+            String offlineJsonDataTime = PreferenceManager.getDefaultSharedPreferences(this).getString("offline_database_time", "");
 
+            if (offlineJsonData.isEmpty()) {
+
+                WarningPopup("No Offline Backup", "Your device is offline and has never retrieved a database backup. Connect your device to the internet.", false);
                 Log.i("No previous connection", "No database detected");
-                OfflineDayAlertPopup("No Offline Database Detected");
 
-            }else{
+            } else {
+
+                //https://developer.android.com/training/snackbar/showing
+                Snackbar.make(findViewById(R.id.myCoordinatorLayout), "Offline. Using database backup from: " + offlineJsonDataTime,
+                        15000).show();
+
 
                 Log.i("Previous Connection", "Using Backup Data");
                 GetInfoFromJSON(offlineJsonData, false, 0, 0);
@@ -393,14 +361,19 @@ public class MainPage extends AppCompatActivity {
 
         } else {//WITH CONNECTION
 
-            Log.i("Is Connection","Writing new data");
+            Log.i("Is Connection", "Writing new data");
 
             //Saving updated JSON to Shared Preferences
             //Below Code adapted from a StackOverflow Answer by
             //Full answer can be found at: https://stackoverflow.com/a/29607632
 
             PreferenceManager.getDefaultSharedPreferences(this).edit()
-                    .putString("offline_database",jsonData).apply();
+                    .putString("offline_database", jsonData).apply();
+
+            String tempUpdateTime = Calendar.getInstance().getTime().toString();
+
+            PreferenceManager.getDefaultSharedPreferences(this).edit()
+                    .putString("offline_database_time", tempUpdateTime).apply();
 
             GetInfoFromJSON(jsonData, false, 0, 0);
 
@@ -639,7 +612,7 @@ public class MainPage extends AppCompatActivity {
             }
             break;
             default: //catch errors here
-                ErrorPopup("Invalid Day Type Found", "3");
+                WarningPopup("Invalid Day Type Found", "Likely caused by server input error. Information may be inaccurate. Contact Developer. Code 3.", true);
                 scheduleFormat = new int[]{4, 1, 2, 8, 5, 6}; //'D' day
 
         }
@@ -741,12 +714,11 @@ public class MainPage extends AppCompatActivity {
     }
 
 
-
     int PeriodNumber(int[][] inputPeriodTimes, boolean affectPassingTime) { //Finds the current period number of the day, and determines if it is passing time or if there is no School
 
         if (noSchool) return -1;
 
-        if(affectPassingTime) passingTime = false;
+        if (affectPassingTime) passingTime = false;
 
         int i = 0; //array position
         //KEY: 0 start times hour, 1 start times min, 2 end times hour, 3 end times minute
@@ -754,22 +726,22 @@ public class MainPage extends AppCompatActivity {
         while (true) { //runs through all times and counts the period number of the day
             if ((currentHour > inputPeriodTimes[2][i])) {
                 i++;
-                Log.i("1",Integer.toString(i));
+                Log.i("1", Integer.toString(i));
             } else if ((currentHour == inputPeriodTimes[2][i]) && (currentMinute >= inputPeriodTimes[3][i])) {
                 i++;
-                Log.i("2",Integer.toString(i));
+                Log.i("2", Integer.toString(i));
             } else if ((currentHour == inputPeriodTimes[0][i]) && (currentMinute >= inputPeriodTimes[1][i])) {
-                Log.i("3",Integer.toString(i));
+                Log.i("3", Integer.toString(i));
                 break;
             } else if (currentHour > inputPeriodTimes[0][i]) {
-                Log.i("4",Integer.toString(i));
+                Log.i("4", Integer.toString(i));
                 break;
             } else { //If not found, but not no School, it must be passing time
-                Log.i("5",Integer.toString(i));
-                if(affectPassingTime) {
+                Log.i("5", Integer.toString(i));
+                if (affectPassingTime) {
                     passingTime = true;
                     return i;
-                }else{
+                } else {
                     return -1;
                 }
             }
@@ -811,9 +783,9 @@ public class MainPage extends AppCompatActivity {
                 String tempPref = sharedPref.getString("key_schedule_period_" + scheduleFormat[i] + "_type", "Free or Not Applicable");
                 String tempPrefInfo = sharedPref.getString("key_schedule_period_" + scheduleFormat[i] + "_info", " ");
 
-                Log.i("tempPrefInfo",tempPrefInfo);
+                Log.i("tempPrefInfo", tempPrefInfo);
 
-                if(tempPrefInfo.equals("No Info")) tempPrefInfo = " ";
+                if (tempPrefInfo.equals("No Info")) tempPrefInfo = " ";
 
                 int tempAllowedLunchWave = findAllowedLunchWave(tempPref, currentMonth);
                 Log.i("tempallowedlunchwave", Integer.toString(tempAllowedLunchWave));
@@ -832,8 +804,8 @@ public class MainPage extends AppCompatActivity {
                         int tempEndHour = (inputLunchWaveTimes[2][2]);
                         int tempEndMinute = inputLunchWaveTimes[3][2];
 
-                        periodStart.add(DisplayWithPlaceHolder(ToTwelveHour(tempStartHour),tempStartMinute));
-                        periodEnd.add(DisplayWithPlaceHolder(ToTwelveHour(tempEndHour),tempEndMinute));
+                        periodStart.add(DisplayWithPlaceHolder(ToTwelveHour(tempStartHour), tempStartMinute));
+                        periodEnd.add(DisplayWithPlaceHolder(ToTwelveHour(tempEndHour), tempEndMinute));
 
                     }
 
@@ -854,8 +826,8 @@ public class MainPage extends AppCompatActivity {
                         int tempStartMinute = inputLunchWaveTimes[1][0];
                         int tempEndMinute = inputLunchWaveTimes[3][0];
                         //
-                        periodStart.add(DisplayWithPlaceHolder(ToTwelveHour(tempStartHour),tempStartMinute));
-                        periodEnd.add(DisplayWithPlaceHolder(ToTwelveHour(tempEndHour),tempEndMinute));
+                        periodStart.add(DisplayWithPlaceHolder(ToTwelveHour(tempStartHour), tempStartMinute));
+                        periodEnd.add(DisplayWithPlaceHolder(ToTwelveHour(tempEndHour), tempEndMinute));
 
 
                         //Second View (Class)
@@ -869,10 +841,11 @@ public class MainPage extends AppCompatActivity {
                         tempStartMinute = inputLunchWaveTimes[1][1];
                         tempEndMinute = inputLunchWaveTimes[3][2];
                         //
-                        periodStart.add(DisplayWithPlaceHolder(ToTwelveHour(tempStartHour),tempStartMinute));
-                        periodEnd.add(DisplayWithPlaceHolder(ToTwelveHour(tempEndHour),tempEndMinute));
+                        periodStart.add(DisplayWithPlaceHolder(ToTwelveHour(tempStartHour), tempStartMinute));
+                        periodEnd.add(DisplayWithPlaceHolder(ToTwelveHour(tempEndHour), tempEndMinute));
                         //
-                        if(InsideTimes(tempStartHour,tempStartMinute,tempEndHour,tempEndMinute)) tempLunchWaveOffset = 1;
+                        if (InsideTimes(tempStartHour, tempStartMinute, tempEndHour, tempEndMinute))
+                            tempLunchWaveOffset = 1;
 
                         tempPositionOffset += 1;
 
@@ -912,7 +885,8 @@ public class MainPage extends AppCompatActivity {
                             periodStart.add(DisplayWithPlaceHolder(ToTwelveHour(tempStartHour), tempStartMinute));
                             periodEnd.add(DisplayWithPlaceHolder(ToTwelveHour(tempEndHour), tempEndMinute));
 
-                            if(InsideTimes(tempStartHour,tempStartMinute,tempEndHour,tempEndMinute)) tempLunchWaveOffset = j;
+                            if (InsideTimes(tempStartHour, tempStartMinute, tempEndHour, tempEndMinute))
+                                tempLunchWaveOffset = j;
                         }
 
                         tempPositionOffset += 2;
@@ -952,7 +926,8 @@ public class MainPage extends AppCompatActivity {
                         periodStart.add(DisplayWithPlaceHolder(ToTwelveHour(tempStartHour), tempStartMinute));
                         periodEnd.add(DisplayWithPlaceHolder(ToTwelveHour(tempEndHour), tempEndMinute));
                         //
-                        if(InsideTimes(tempStartHour,tempStartMinute,tempEndHour,tempEndMinute)) tempLunchWaveOffset = 1;
+                        if (InsideTimes(tempStartHour, tempStartMinute, tempEndHour, tempEndMinute))
+                            tempLunchWaveOffset = 1;
 
                         tempPositionOffset += 1;
 
@@ -999,7 +974,8 @@ public class MainPage extends AppCompatActivity {
                         periodStart.add(DisplayWithPlaceHolder(ToTwelveHour(tempStartHour), tempStartMinute));
                         periodEnd.add(DisplayWithPlaceHolder(ToTwelveHour(tempEndHour), tempEndMinute));
                         //
-                        if(InsideTimes(tempStartHour,tempStartMinute,tempEndHour,tempEndMinute)) tempLunchWaveOffset = 1;
+                        if (InsideTimes(tempStartHour, tempStartMinute, tempEndHour, tempEndMinute))
+                            tempLunchWaveOffset = 1;
 
                         tempPositionOffset += 1;
 
@@ -1051,7 +1027,8 @@ public class MainPage extends AppCompatActivity {
                         periodStart.add(DisplayWithPlaceHolder(ToTwelveHour(tempStartHour), tempStartMinute));
                         periodEnd.add(DisplayWithPlaceHolder(ToTwelveHour(tempEndHour), tempEndMinute));
                         //
-                        if(InsideTimes(tempStartHour,tempStartMinute,tempEndHour,tempEndMinute)) tempLunchWaveOffset = 1;
+                        if (InsideTimes(tempStartHour, tempStartMinute, tempEndHour, tempEndMinute))
+                            tempLunchWaveOffset = 1;
 
                         tempPositionOffset += 1;
 
@@ -1061,7 +1038,7 @@ public class MainPage extends AppCompatActivity {
 
                     default: //catch errors, should never reach here
 
-                        ErrorPopup("Invalid Lunch Wave Type Returned. Lunch schedule may be innacurate", "2");
+                        WarningPopup("Invalid Lunch Wave Type Returned", "Information may be incorrect. Contact Developer. Code 7", true);
                         periodNumbers.add(" ");
                         lunchWave.add(" ");
                         periodNames.add("LUNCH PERIOD ERROR");
@@ -1072,7 +1049,7 @@ public class MainPage extends AppCompatActivity {
             } else {//List Fill for Normal Periods
 
                 String tempPrefString = sharedPref.getString("key_schedule_period_" + Integer.toString(scheduleFormat[i]) + "_info", " ");
-                if(tempPrefString.equals("No Info")) tempPrefString = " ";
+                if (tempPrefString.equals("No Info")) tempPrefString = " ";
 
                 periodNumbers.add(Integer.toString(scheduleFormat[i]));
                 periodNames.add(tempPeriodNameString);
@@ -1100,7 +1077,7 @@ public class MainPage extends AppCompatActivity {
         // set up the RecyclerView
         if (!((periodNames.size() == periodNumbers.size()) && (periodStart.size() == periodNumbers.size()) && (periodEnd.size() == periodNumbers.size()) && (periodEnd.size() == lunchWave.size()) && (periodEnd.size() == periodInfo.size()))) {
             //Throw Error Message
-            ErrorPopup("Owen has done Goofed Up", "Code 420");
+            WarningPopup("Number of Periods Mismatch", "Likely due to incorrect schedule server input. Please contact the developer. Code 3.", true);
             //Clears all array lists
             periodNumbers.clear();
             periodNames.clear();
@@ -1118,22 +1095,22 @@ public class MainPage extends AppCompatActivity {
         TextView periodNumberDisplay = findViewById(R.id.PeriodDisplay);
         boolean tempPassingTime = false;
 
-        if(!((noSchool)||(beforeSchool)||(afterSchool))){
+        if (!((noSchool) || (beforeSchool) || (afterSchool))) {
             //Log.i("currentperiodnum1",Integer.toString(currentPeriodNumber));
             //Log.i("lunchwavepos",Integer.toString(PeriodNumber(lunchWaveTimes,false)));
 
-            if((currentPeriodNumber)<lunchPeriodPosition){
+            if ((currentPeriodNumber) < lunchPeriodPosition) {
 
                 greenHighlightPosition = currentPeriodNumber;
 
-            }else if((currentPeriodNumber)==lunchPeriodPosition){
+            } else if ((currentPeriodNumber) == lunchPeriodPosition) {
                 //Log.i("periodnumberlunch", Integer.toString(PeriodNumber(lunchWaveTimes,false)));
 
-                if(passingTime){ //To handle 10:41 case
+                if (passingTime) { //To handle 10:41 case
 
                     greenHighlightPosition = lunchPeriodPosition;
 
-                }else {
+                } else {
 
                     greenHighlightPosition = lunchPeriodPosition + tempLunchWaveOffset;
 
@@ -1144,25 +1121,27 @@ public class MainPage extends AppCompatActivity {
                 }
 
 
-            }else{
+            } else {
                 greenHighlightPosition = tempPositionOffset + currentPeriodNumber;
             }
 
-            if(periodNames.get(greenHighlightPosition).equals("Lunch")){
+            if (periodNames.get(greenHighlightPosition).equals("Lunch")) {
                 periodNumberDisplay.setText("L");
-            }else{
+            } else {
                 periodNumberDisplay.setText(periodNumbers.get(greenHighlightPosition));
             }
 
-            if(passingTime || tempPassingTime){
+            if (passingTime || tempPassingTime) {
                 redHighlightPosition = greenHighlightPosition - 1;
                 periodNumberDisplay.setText("P");
             }
         }
 
-        adapter = new MyRecyclerViewAdapter(this, periodNumbers, periodNames, periodStart, periodEnd, lunchWave, periodInfo,greenHighlightPosition,redHighlightPosition);
+        adapter = new MyRecyclerViewAdapter(this, periodNumbers, periodNames, periodStart, periodEnd, lunchWave, periodInfo, greenHighlightPosition, redHighlightPosition);
         recyclerView.setAdapter(adapter);
-        if(greenHighlightPosition != -1) recyclerView.scrollToPosition(greenHighlightPosition); //put current position here so visible
+
+        if ((greenHighlightPosition != -1) && (firstTime))
+            recyclerView.scrollToPosition(greenHighlightPosition); //scrolls to current position here so visible
 
     }
 
@@ -1173,18 +1152,19 @@ public class MainPage extends AppCompatActivity {
         return input;
     }
 
-    String DisplayWithPlaceHolder(int inputHour, int inputMinute){//Displays Time in a string with a zero placeholder for numbers under 10
+    String DisplayWithPlaceHolder(int inputHour, int inputMinute) {//Displays Time in a string with a zero placeholder for numbers under 10
 
-        if (inputMinute < 10) return Integer.toString(inputHour) + ":0" + Integer.toString(inputMinute);
+        if (inputMinute < 10)
+            return Integer.toString(inputHour) + ":0" + Integer.toString(inputMinute);
 
         return Integer.toString(inputHour) + ":" + Integer.toString(inputMinute);
     }
 
-    boolean InsideTimes(int _startHour, int _startMinute, int _endHour, int _endMinute){
+    boolean InsideTimes(int _startHour, int _startMinute, int _endHour, int _endMinute) {
 
         if ((currentHour > _endHour)) {
             return false;
-        } else if ((currentHour == _endHour) && (currentMinute >= _endMinute)){
+        } else if ((currentHour == _endHour) && (currentMinute >= _endMinute)) {
             return false;
         } else if ((currentHour == _startHour) && (currentMinute >= _startMinute)) {
             return true;
@@ -1254,7 +1234,7 @@ public class MainPage extends AppCompatActivity {
         int timeUntilEndMinute;
         int totalTimeHour = 0;
         int totalTimeMinute;
-        Log.i("periodposition1",Integer.toString(tempPosition));
+        Log.i("periodposition1", Integer.toString(tempPosition));
         int tempCurrentHour = currentHour;
 
 
@@ -1268,13 +1248,13 @@ public class MainPage extends AppCompatActivity {
             }
         }
 
-        tempCurrentHour = finderInputPeriodTimes[2][tempPosition-1];
+        tempCurrentHour = finderInputPeriodTimes[2][tempPosition - 1];
         while (true) {
             if (tempCurrentHour < finderInputPeriodTimes[0][tempPosition]) {
                 totalTimeHour++;
                 tempCurrentHour++;
             } else {
-                totalTimeMinute = ((finderInputPeriodTimes[3][tempPosition-1]) - (finderInputPeriodTimes[1][tempPosition]));
+                totalTimeMinute = ((finderInputPeriodTimes[3][tempPosition - 1]) - (finderInputPeriodTimes[1][tempPosition]));
                 break;
             }
         }
@@ -1544,14 +1524,14 @@ public class MainPage extends AppCompatActivity {
                         }
 
                         break;
-                        default: //catch errors here
-                            ErrorPopup("Lunch Wave for Calculating Time Not Found", "4");
+                    default: //catch errors here
+                        WarningPopup("Lunch Wave for Calculating Time Not Found", "To fix this, clear the type of class and enter Free or Not Applicable instead. Please contact the developer. Code 4", true);
                 }
 
                 break;
-                default: //catch errors here
+            default: //catch errors here
 
-                    ErrorPopup("Allowed Lunch Wave Not Found", "5");
+                WarningPopup("Allowed Lunch Wave Not Found", "To fix this, clear the type of class and enter Free or Not Applicable instead. Please contact the developer. Code 5", true);
 
         }
 
@@ -1608,18 +1588,8 @@ public class MainPage extends AppCompatActivity {
         ProgressBarTextTime.setText(progressBarTextTime);
     }
 
-    void OfflineProcedures() { //Changes values on UI thread to reflect offline state
-
-    }
 
     void NoSchoolProcedures() { //Changes values on UI thread to reflect no school state
-/*
-        String tempScheduleString = "";
-        for (int i = 0; i < scheduleFormat.length; i++) {
-            tempScheduleString += scheduleFormat[i];
-            if (i < scheduleFormat.length - 1) tempScheduleString += " ";
-        }
-        */
 
         progressBar = findViewById(R.id.progressBar);
         overallProgressBar = findViewById(R.id.OverallDayProgressBar);
@@ -1646,60 +1616,45 @@ public class MainPage extends AppCompatActivity {
 
     }
 
-    void RefreshReset(){
-        noSchool = false;
+    void RefreshReset() {
+        //noSchool = false;
         passingTime = false;
         beforeSchool = false;
         afterSchool = false;
         labLunch = false;
     }
 
+    void RefreshTime() {
+        Calendar cal = Calendar.getInstance();
 
-    void OfflineDayAlertPopup(String title) { //Alert makes users select today's day due to offline state. Will add support for offline schedule loading in next update.
+        currentYear = cal.get(Calendar.YEAR);
 
-        // The Below Code was adapted from a StackOverflow Answer by WhereDatApp
-        //The full answer can be found here: https://stackoverflow.com/a/19658646
-        final AlertDialog.Builder alertbuilder = new AlertDialog.Builder(MainPage.this);
-        alertbuilder.setTitle(title);
-        alertbuilder.setItems(new CharSequence[]
-                        {"A Day", "B Day", "C Day", "D Day", "Help"},
-                new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        switch (which) {
-                            case 0:
-                                NormalScheduleFormat("a");
-                                Toast.makeText(MainPage.this, "Set as 'A' Day", Toast.LENGTH_LONG).show();
-                                OfflineConditions();
-                                break;
-                            case 1:
-                                NormalScheduleFormat("b");
-                                Toast.makeText(MainPage.this, "Set as 'B' Day", Toast.LENGTH_LONG).show();
-                                OfflineConditions();
-                                break;
-                            case 2:
-                                NormalScheduleFormat("c");
-                                Toast.makeText(MainPage.this, "Set as 'C' Day", Toast.LENGTH_LONG).show();
-                                OfflineConditions();
-                                break;
-                            case 3:
-                                NormalScheduleFormat("d");
-                                Toast.makeText(MainPage.this, "Set as 'D' Day", Toast.LENGTH_LONG).show();
-                                OfflineConditions();
-                                break;
-                            case 4:
-                                Toast.makeText(MainPage.this, "Help is currently not supported", Toast.LENGTH_LONG).show();
-                                break;
+        //int currentDayDay = cal.get(Calendar.DAY_OF_WEEK);
 
-                        }
-                    }
-                });
-        alertbuilder.create();
-        alertbuilder.show();
+        currentMonth = (cal.get(Calendar.MONTH) + 1);
+        //int currentMonth = 12;
 
+        currentDayNum = cal.get(Calendar.DAY_OF_MONTH);
+        //int currentDayNum = 5;
+
+        currentHour = cal.get(Calendar.HOUR_OF_DAY);
+        //int currentHour = 13;
+
+        currentMinute = cal.get(Calendar.MINUTE);
     }
-    //END CODE ATTRIBUTION FROM WhatDatApp
 
-    void ErrorPopup(String inputErrorText, String code) {
-
+    void WarningPopup(String inputWarnTitle, String inputWarnText, boolean escape) {
+        AlertDialog alertDialog = new AlertDialog.Builder(MainPage.this).create();
+        alertDialog.setTitle(inputWarnTitle);
+        alertDialog.setMessage(inputWarnText);
+        if (escape) {
+            alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    });
+        }
+        alertDialog.show();
     }
 }
