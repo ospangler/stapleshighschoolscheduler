@@ -13,6 +13,7 @@
     <string name="Blank"> </string>
     <string name="E">E</string>
     <string name="DefaultQuote">No Quote Found</string>
+    <string name="FAQ">FAQs</string>
 
     <!-- Schedule Input Placeholders -->
     <string name="Period_1_Class_Name">Period 1</string>

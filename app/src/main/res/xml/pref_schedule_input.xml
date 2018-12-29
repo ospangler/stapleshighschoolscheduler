@@ -220,7 +220,70 @@
 
         <Preference
             android:selectable="false"
-            android:summary="Pretty simple, just fill out the information above" />
+            android:summary="Q: Your stupid app keeps showing the wrong lunch waves for my class even though I put everything in correctly." />
+
+        <Preference
+            android:selectable="false"
+            android:summary="A: Try going into the app info settings and clearing the cache and data for SHSS." />
+
+        <Preference
+            android:selectable="false"
+            android:summary="Q: Do my classes I input back up to iStaples?" />
+
+        <Preference
+            android:selectable="false"
+            android:summary="A: Hell no. They're backed up to your Google Drive and not some stupid server for normie iOS users." />
+
+        <Preference
+            android:selectable="false"
+            android:summary="Q: Why aren't the changes reflected in the app after I enter my classes?" />
+
+        <Preference
+            android:selectable="false"
+            android:summary="A: Wait a minute for the refresh to run or force quit and restart the app to see changes." />
+
+        <Preference
+            android:selectable="false"
+            android:summary="Q: Between lunch waves, your app keeps showing negative percents." />
+
+        <Preference
+            android:selectable="false"
+            android:summary="A: That's not a bug, that's a feature. If you can't truly appreciate the brilliance of it, just switch all your period types to Unknown: Wave 2." />
+
+        <Preference
+            android:selectable="false"
+            android:summary="Q: Your app looks like it was programmed in Scratch." />
+
+        <Preference
+            android:selectable="false"
+            android:summary="A: Scratch was too advanced for me. I used Java instead." />
+
+        <Preference
+            android:selectable="false"
+            android:summary="Q: Your app keeps triggering my phone's antivirus." />
+
+        <Preference
+            android:selectable="false"
+            android:summary="A: That's normal, I swear." />
+
+        <Preference
+            android:selectable="false"
+            android:summary="Q: Doesn't this look a lot like iSHS?" />
+
+        <Preference
+            android:selectable="false"
+            android:summary="A: Not at all. As you can clearly see, the period number is inside the circle and the time remaining is off to the side. iSHS also doesn't have sick motivational quotes and pictures. Totally different." />
+
+        <Preference
+            android:selectable="false"
+            android:summary="Q: What's your privacy policy so I know I'm not selling my soul and data for a free app that barely works?" />
+
+        <Preference
+            android:selectable="false"
+            android:summary="A: I don't collect any data on users of the app, and the full code can be found on my GitHub. All data is kept locally and with your Google account" />
+
 
     </PreferenceCategory>
+
+
 </PreferenceScreen>

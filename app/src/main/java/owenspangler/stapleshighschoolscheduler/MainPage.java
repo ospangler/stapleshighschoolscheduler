@@ -172,6 +172,8 @@ public class MainPage extends AppCompatActivity {
                             return true;
                         } else if (id == R.id.nav_force_server_refresh) {
                             Main(true);
+                        }else if(id == R.id.nav_faq){
+                            startActivity(new Intent(MainPage.this, FAQActivity.class));
                         }
 
 
@@ -196,6 +198,7 @@ public class MainPage extends AppCompatActivity {
     int delay = 1000; //sets refresh delay for app
     Runnable runnable;
     int previousMinute = currentMinute;
+    int previousHour = currentHour;
 
     @Override
     protected void onResume() {
@@ -206,9 +209,12 @@ public class MainPage extends AppCompatActivity {
                 Calendar tempChangeCal;
                 tempChangeCal = Calendar.getInstance();
                 int newMinute = tempChangeCal.get(Calendar.MINUTE);
-                if (previousMinute != newMinute) {
+                int newHour = tempChangeCal.get(Calendar.HOUR);
+
+                if ((previousMinute != newMinute)||(previousHour != newHour)){
                     RefreshReset();
                     previousMinute = newMinute;
+                    previousHour = newHour;
                     Main(false);
                 }
                 h.postDelayed(runnable, delay);
@@ -230,9 +236,7 @@ public class MainPage extends AppCompatActivity {
 
         if (first) GetJson();
 
-        if(halt){
-
-        }else {
+        if(!halt){
 
             if (!noSchool)
                 BeforeOrAfterSchoolCheck(periodTimes);//checks to see if before or after school. noSchool checked in getJson
@@ -245,7 +249,7 @@ public class MainPage extends AppCompatActivity {
                 AfterSchoolProcedures();
             } else {//normal condition
 
-                currentPeriodNumber = PeriodNumber(periodTimes, true);
+                currentPeriodNumber = PeriodNumber(periodTimes, true, true);
 
                 displayScheduleListInfo(periodTimes, lunchWaveTimes);
 
@@ -271,7 +275,7 @@ public class MainPage extends AppCompatActivity {
 
                         Log.i("lunchwavetime", "rah jd");
 
-                        PeriodNumber(periodTimes, true);
+                        PeriodNumber(periodTimes, true, true);
 
                         if (passingTime) { //Passing time after normal periods but before lunch waves (10:41 case on normal day)
 
@@ -282,10 +286,11 @@ public class MainPage extends AppCompatActivity {
 
                         } else {
 
-                            int tempLunchPeriod = PeriodNumber(lunchWaveTimes, false); //Resets, sees if passing time during lunch waves
+                            int tempLunchPeriod = PeriodNumber(lunchWaveTimes, false, true); //Resets, sees if passing time during lunch waves
                             //ROOT OF PROBLEM RIGHT HERE, DOES NOT ALLOW FOR PERIOD MERGING. MUST BE MOVED INSIDE FIND TIME UNTIL BECAUSE OF POSITONS
                             //USE LUNCH DURING PASSING TIME TO TEST
 
+                            //passingTime = false;
                             if (passingTime) {
 
                                 FindTimeUntilEndPassingTime(lunchWaveTimes, tempLunchPeriod);
@@ -662,8 +667,6 @@ public class MainPage extends AppCompatActivity {
                 lunchStoreList = new int[]{3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3};
                 break;
             case "Physical Education":
-                ///PLEASE REMOVE THIS OMG DON"T RELEASE THIS WITH THIS BELOW STATEMENT
-                labLunch = true;
                 //                         Aug Sep Oct Nov Dec Jan Feb Mar Apr May Jun
                 lunchStoreList = new int[]{3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3};
                 break;
@@ -720,7 +723,7 @@ public class MainPage extends AppCompatActivity {
     }
 
 
-    int PeriodNumber(int[][] inputPeriodTimes, boolean affectPassingTime) { //Finds the current period number of the day, and determines if it is passing time or if there is no School
+    int PeriodNumber(int[][] inputPeriodTimes, boolean affectPassingTime, boolean returnval) { //Finds the current period number of the day, and determines if it is passing time or if there is no School
 
         if (noSchool) return -1;
 
@@ -746,9 +749,11 @@ public class MainPage extends AppCompatActivity {
                 Log.i("5", Integer.toString(i));
                 if (affectPassingTime) {
                     passingTime = true;
-                    return i;
-                } else {
+                }
+                if(!returnval){
                     return -1;
+                }else{
+                    return i;
                 }
             }
         }
@@ -1048,7 +1053,7 @@ public class MainPage extends AppCompatActivity {
                         periodNumbers.add(" ");
                         lunchWave.add(" ");
                         periodNames.add("LUNCH PERIOD ERROR");
-                        periodInfo.add("Inccorrect Information Displayed");
+                        periodInfo.add("Incorrect Information Displayed");
 
                 }
 
@@ -1120,7 +1125,11 @@ public class MainPage extends AppCompatActivity {
 
                     greenHighlightPosition = lunchPeriodPosition + tempLunchWaveOffset;
 
-                    if (PeriodNumber(lunchWaveTimes, false) == -1) { ///FIX THIS TO NOT TRIGGER DURING PASSING TIME OVERWRITTEN BY LONG PERIODS
+                    if (PeriodNumber(lunchWaveTimes, false, false) == -1) { ///FIX THIS TO NOT TRIGGER DURING PASSING TIME OVERWRITTEN BY LONG PERIODS
+
+                        //int tempLunchPos =  PeriodNumber(lunchWaveTimes, false, true);
+                        //if (tempLunchPos+1 = )
+
                         tempPassingTime = true;
                         greenHighlightPosition += 1;
                     }
@@ -1176,9 +1185,9 @@ public class MainPage extends AppCompatActivity {
             return true;
         } else if (currentHour > _startHour) {
             return true;
+        }else {
+            return false;
         }
-
-        return false;
     }
 
     void FindTimeUntilEndNormal(int finderinputPeriodTimes[][]) { //Finds the time until the end of the period
