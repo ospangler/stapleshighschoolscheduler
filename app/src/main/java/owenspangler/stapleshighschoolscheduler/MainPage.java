@@ -63,6 +63,7 @@ public class MainPage extends AppCompatActivity {
     boolean passingTime = false; //If true, time is between periods
     boolean specialSchedule = false; //If true, app is following special schedule from server
     boolean firstTime = true;
+    boolean halt = false;
     //
     int currentYear;
     int currentMonth;
@@ -229,95 +230,100 @@ public class MainPage extends AppCompatActivity {
 
         if (first) GetJson();
 
-        if (!noSchool)
-            BeforeOrAfterSchoolCheck(periodTimes);//checks to see if before or after school. noSchool checked in getJson
+        if(halt){
 
-        if (noSchool) {// if no school
-            NoSchoolProcedures();
-        } else if (beforeSchool) {//if before school
-            BeforeSchoolProcedures();
-        } else if (afterSchool) {//if after school
-            AfterSchoolProcedures();
-        } else {//normal condition
+        }else {
 
-            currentPeriodNumber = PeriodNumber(periodTimes, true);
+            if (!noSchool)
+                BeforeOrAfterSchoolCheck(periodTimes);//checks to see if before or after school. noSchool checked in getJson
 
-            displayScheduleListInfo(periodTimes, lunchWaveTimes);
+            if (noSchool) {// if no school
+                NoSchoolProcedures();
+            } else if (beforeSchool) {//if before school
+                BeforeSchoolProcedures();
+            } else if (afterSchool) {//if after school
+                AfterSchoolProcedures();
+            } else {//normal condition
 
-            if (noLunch) {//if school day does not have lunch
+                currentPeriodNumber = PeriodNumber(periodTimes, true);
 
-                if (passingTime) {//school day w/o lunch during passing time
+                displayScheduleListInfo(periodTimes, lunchWaveTimes);
 
-                    FindTimeUntilEndOfDay(periodTimes);
-                    FindTimeUntilEndPassingTime(periodTimes, currentPeriodNumber);
-                    FinalizingSetupProcedures();
+                if (noLunch) {//if school day does not have lunch
 
-                } else {//school day w/o lunch during class time
+                    if (passingTime) {//school day w/o lunch during passing time
 
-                    FindTimeUntilEndOfDay(periodTimes);
-                    FindTimeUntilEndNormal(periodTimes);
-                    FinalizingSetupProcedures();
-
-                }
-
-            } else {//normal school day with lunch
-
-                if (lunchPeriodPosition == currentPeriodNumber) {//It is lunch period
-
-                    Log.i("lunchwavetime", "rah jd");
-
-                    PeriodNumber(periodTimes, true);
-
-                    if (passingTime) { //Passing time after normal periods but before lunch waves (10:41 case on normal day)
-
-                        FindTimeUntilEndPassingTime(periodTimes, currentPeriodNumber);
-                        FindTimeUntilEndOfDay(periodTimes);
-                        FinalizingSetupProcedures();
-                        Log.i("lunchbefore", "rah jd 1041");
-
-                    } else {
-
-                        int tempLunchPeriod = PeriodNumber(lunchWaveTimes, false); //Resets, sees if passing time during lunch waves
-                        //ROOT OF PROBLEM RIGHT HERE, DOES NOT ALLOW FOR PERIOD MERGING. MUST BE MOVED INSIDE FIND TIME UNTIL BECAUSE OF POSITONS
-                        //USE LUNCH DURING PASSING TIME TO TEST
-
-                        if (passingTime) {
-
-                            FindTimeUntilEndPassingTime(lunchWaveTimes, tempLunchPeriod);
-                            Log.i("lunchwavetimepassing", "rah jd");
-                            FindTimeUntilEndOfDay(periodTimes);
-                            FinalizingSetupProcedures();
-
-                        } else {
-
-                            Log.i("lunchwavetimeduring", "rah jd");
-                            FindTimeUntilEndOfDay(periodTimes);
-                            FindTimeUntilEndLunchWave(lunchWaveTimes, (tempLunchPeriod));
-                            FinalizingSetupProcedures();
-
-                        }
-                    }
-
-                } else {//It is not lunch period
-
-                    if (passingTime) {//school day with lunch during non-lunch passing time
-                        Log.i("whyareyourunning?", "memes aside, why tho?");
                         FindTimeUntilEndOfDay(periodTimes);
                         FindTimeUntilEndPassingTime(periodTimes, currentPeriodNumber);
                         FinalizingSetupProcedures();
 
-                    } else {//school day with lunch during non-lunch class time
+                    } else {//school day w/o lunch during class time
 
                         FindTimeUntilEndOfDay(periodTimes);
                         FindTimeUntilEndNormal(periodTimes);
                         FinalizingSetupProcedures();
+
+                    }
+
+                } else {//normal school day with lunch
+
+                    if (lunchPeriodPosition == currentPeriodNumber) {//It is lunch period
+
+                        Log.i("lunchwavetime", "rah jd");
+
+                        PeriodNumber(periodTimes, true);
+
+                        if (passingTime) { //Passing time after normal periods but before lunch waves (10:41 case on normal day)
+
+                            FindTimeUntilEndPassingTime(periodTimes, currentPeriodNumber);
+                            FindTimeUntilEndOfDay(periodTimes);
+                            FinalizingSetupProcedures();
+                            Log.i("lunchbefore", "rah jd 1041");
+
+                        } else {
+
+                            int tempLunchPeriod = PeriodNumber(lunchWaveTimes, false); //Resets, sees if passing time during lunch waves
+                            //ROOT OF PROBLEM RIGHT HERE, DOES NOT ALLOW FOR PERIOD MERGING. MUST BE MOVED INSIDE FIND TIME UNTIL BECAUSE OF POSITONS
+                            //USE LUNCH DURING PASSING TIME TO TEST
+
+                            if (passingTime) {
+
+                                FindTimeUntilEndPassingTime(lunchWaveTimes, tempLunchPeriod);
+                                Log.i("lunchwavetimepassing", "rah jd");
+                                FindTimeUntilEndOfDay(periodTimes);
+                                FinalizingSetupProcedures();
+
+                            } else {
+
+                                Log.i("lunchwavetimeduring", "rah jd");
+                                FindTimeUntilEndOfDay(periodTimes);
+                                FindTimeUntilEndLunchWave(lunchWaveTimes, (tempLunchPeriod));
+                                FinalizingSetupProcedures();
+
+                            }
+                        }
+
+                    } else {//It is not lunch period
+
+                        if (passingTime) {//school day with lunch during non-lunch passing time
+                            Log.i("whyareyourunning?", "memes aside, why tho?");
+                            FindTimeUntilEndOfDay(periodTimes);
+                            FindTimeUntilEndPassingTime(periodTimes, currentPeriodNumber);
+                            FinalizingSetupProcedures();
+
+                        } else {//school day with lunch during non-lunch class time
+
+                            FindTimeUntilEndOfDay(periodTimes);
+                            FindTimeUntilEndNormal(periodTimes);
+                            FinalizingSetupProcedures();
+                        }
                     }
                 }
+
             }
 
+            firstTime = false;
         }
-
-        firstTime = false;
     }
 
 
@@ -345,7 +351,7 @@ public class MainPage extends AppCompatActivity {
 
             if (offlineJsonData.isEmpty()) {
 
-                WarningPopup("No Offline Backup", "Your device is offline and has never retrieved a database backup. Connect your device to the internet.", false);
+                WarningPopup("No Offline Backup", "Your device is offline and has never retrieved a database backup. Connect your device to the internet.");
                 Log.i("No previous connection", "No database detected");
 
             } else {
@@ -612,7 +618,7 @@ public class MainPage extends AppCompatActivity {
             }
             break;
             default: //catch errors here
-                WarningPopup("Invalid Day Type Found", "Likely caused by server input error. Information may be inaccurate. Contact Developer. Code 3.", true);
+                WarningPopup("Invalid Day Type Found", "Likely caused by server input error. Information may be inaccurate. Contact Developer. Code 3.");
                 scheduleFormat = new int[]{4, 1, 2, 8, 5, 6}; //'D' day
 
         }
@@ -1038,7 +1044,7 @@ public class MainPage extends AppCompatActivity {
 
                     default: //catch errors, should never reach here
 
-                        WarningPopup("Invalid Lunch Wave Type Returned", "Information may be incorrect. Contact Developer. Code 7", true);
+                        WarningPopup("Invalid Lunch Wave Type Returned", "Information may be incorrect. Contact Developer. Code 7");
                         periodNumbers.add(" ");
                         lunchWave.add(" ");
                         periodNames.add("LUNCH PERIOD ERROR");
@@ -1077,7 +1083,7 @@ public class MainPage extends AppCompatActivity {
         // set up the RecyclerView
         if (!((periodNames.size() == periodNumbers.size()) && (periodStart.size() == periodNumbers.size()) && (periodEnd.size() == periodNumbers.size()) && (periodEnd.size() == lunchWave.size()) && (periodEnd.size() == periodInfo.size()))) {
             //Throw Error Message
-            WarningPopup("Number of Periods Mismatch", "Likely due to incorrect schedule server input. Please contact the developer. Code 3.", true);
+            WarningPopup("Number of Periods Mismatch", "Likely due to incorrect schedule server input. Please contact the developer. Code 3.");
             //Clears all array lists
             periodNumbers.clear();
             periodNames.clear();
@@ -1525,13 +1531,13 @@ public class MainPage extends AppCompatActivity {
 
                         break;
                     default: //catch errors here
-                        WarningPopup("Lunch Wave for Calculating Time Not Found", "To fix this, clear the type of class and enter Free or Not Applicable instead. Please contact the developer. Code 4", true);
+                        WarningPopup("Lunch Wave for Calculating Time Not Found", "To fix this, clear the type of class and enter Free or Not Applicable instead. Please contact the developer. Code 4");
                 }
 
                 break;
             default: //catch errors here
 
-                WarningPopup("Allowed Lunch Wave Not Found", "To fix this, clear the type of class and enter Free or Not Applicable instead. Please contact the developer. Code 5", true);
+                WarningPopup("Allowed Lunch Wave Not Found", "To fix this, clear the type of class and enter Free or Not Applicable instead. Please contact the developer. Code 5");
 
         }
 
@@ -1643,18 +1649,20 @@ public class MainPage extends AppCompatActivity {
         currentMinute = cal.get(Calendar.MINUTE);
     }
 
-    void WarningPopup(String inputWarnTitle, String inputWarnText, boolean escape) {
+    void WarningPopup(String inputWarnTitle, String inputWarnText) {
         AlertDialog alertDialog = new AlertDialog.Builder(MainPage.this).create();
         alertDialog.setTitle(inputWarnTitle);
         alertDialog.setMessage(inputWarnText);
-        if (escape) {
+        halt = true;
+
             alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
                     new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
                             dialog.dismiss();
+                            System.exit(0);
                         }
                     });
-        }
+
         alertDialog.show();
     }
 }
