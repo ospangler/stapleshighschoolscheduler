@@ -17,6 +17,7 @@ import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 //import android.util.Log;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
@@ -482,6 +483,7 @@ public class MainPage extends AppCompatActivity {
                     if (tempStartLunchHourArray.length() == 0) { // if nothing in array, no lunch
 
                         noLunch = true;
+                        Log.i("nolunch", "rah");
 
                     } else {//if values in array, has lunch
 
@@ -797,7 +799,7 @@ public class MainPage extends AppCompatActivity {
 
             String tempPeriodNameString = sharedPref.getString("key_schedule_period_" + Integer.toString(scheduleFormat[i]) + "_name", "Period " + Integer.toString(scheduleFormat[i]));
 
-            if (i == lunchPeriodPosition) {
+            if ((i == lunchPeriodPosition)&&(!noLunch)) {
                 String tempPref = sharedPref.getString("key_schedule_period_" + scheduleFormat[i] + "_type", "Free or Not Applicable");
                 String tempPrefInfo = sharedPref.getString("key_schedule_period_" + scheduleFormat[i] + "_info", " ");
 
@@ -1079,8 +1081,20 @@ public class MainPage extends AppCompatActivity {
                     String tempLetter = "";
                     tempLetter += tempAlphabet.charAt(scheduleFormat[i] - 100);
                     periodNumbers.add(tempLetter);
-                    periodNames.add("Unknown Period " + tempLetter);
-                    periodInfo.add("Not a normal class period. Unknown activity.");
+
+                    if(tempLetter.equals("B")){
+                        periodNames.add("Break");
+                        periodInfo.add("No class during this period.");
+                    }else if(tempLetter.equals("H")){
+                        periodNames.add("Homeroom");
+                        periodInfo.add("Proceed to Homeroom");
+                    }else if(tempLetter.equals("A")){
+                        periodNames.add("Assembly");
+                        periodInfo.add("Hopefully it isn't another one about the meme page.");
+                    }else {
+                        periodNames.add("Unknown Period " + tempLetter);
+                        periodInfo.add("Not a normal class period. Unknown activity.");
+                    }
                 }
 
 
@@ -1145,13 +1159,15 @@ public class MainPage extends AppCompatActivity {
 
                     greenHighlightPosition = lunchPeriodPosition + tempLunchWaveOffset;
 
-                    if (PeriodNumber(lunchWaveTimes, false, false) == -1) { ///FIX THIS TO NOT TRIGGER DURING PASSING TIME OVERWRITTEN BY LONG PERIODS
+                    if (!noLunch) {
+                        if (PeriodNumber(lunchWaveTimes, false, false) == -1) { ///FIX THIS TO NOT TRIGGER DURING PASSING TIME OVERWRITTEN BY LONG PERIODS
 
-                        //int tempLunchPos =  PeriodNumber(lunchWaveTimes, false, true);
-                        //if (tempLunchPos+1 = )
+                            //int tempLunchPos =  PeriodNumber(lunchWaveTimes, false, true);
+                            //if (tempLunchPos+1 = )
 
-                        tempPassingTime = true;
-                        greenHighlightPosition += 1;
+                            tempPassingTime = true;
+                            greenHighlightPosition += 1;
+                        }
                     }
                 }
 

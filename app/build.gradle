@@ -6,8 +6,8 @@ android {
         applicationId "owenspangler.stapleshighschoolscheduler"
         minSdkVersion 21
         targetSdkVersion 27
-        versionCode 8
-        versionName "1.01"
+        versionCode 9
+        versionName "1.12"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
