@@ -17,6 +17,7 @@ import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 //import android.util.Log;
+//import android.util.Log;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -24,11 +25,13 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.preference.PreferenceManager;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.util.ArrayList;
-import java.util.Arrays;
+//import java.util.Arrays;
 import java.util.Calendar;
 import java.util.concurrent.ExecutionException;
 
@@ -173,7 +176,7 @@ public class MainPage extends AppCompatActivity {
                             return true;
                         } else if (id == R.id.nav_force_server_refresh) {
                             Main(true);
-                        }else if(id == R.id.nav_faq){
+                        } else if (id == R.id.nav_faq) {
                             startActivity(new Intent(MainPage.this, FAQActivity.class));
                         }
 
@@ -212,7 +215,7 @@ public class MainPage extends AppCompatActivity {
                 int newMinute = tempChangeCal.get(Calendar.MINUTE);
                 int newHour = tempChangeCal.get(Calendar.HOUR);
 
-                if ((previousMinute != newMinute)||(previousHour != newHour)){
+                if ((previousMinute != newMinute) || (previousHour != newHour)) {
                     RefreshReset();
                     previousMinute = newMinute;
                     previousHour = newHour;
@@ -237,11 +240,13 @@ public class MainPage extends AppCompatActivity {
 
         if (first) GetJson();
 
-        if(!halt){
+        if (!halt) {
 
             if (!noSchool)
+
                 BeforeOrAfterSchoolCheck(periodTimes);//checks to see if before or after school. noSchool checked in getJson
 
+            Log.i("noSchool", Boolean.toString(noSchool));
             if (noSchool) {// if no school
                 NoSchoolProcedures();
             } else if (beforeSchool) {//if before school
@@ -295,13 +300,13 @@ public class MainPage extends AppCompatActivity {
                             if (passingTime) {
 
                                 FindTimeUntilEndPassingTime(lunchWaveTimes, tempLunchPeriod);
-                               // Log.i("lunchwavetimepassing", "rah jd");
+                                // Log.i("lunchwavetimepassing", "rah jd");
                                 FindTimeUntilEndOfDay(periodTimes);
                                 FinalizingSetupProcedures();
 
                             } else {
 
-                               // Log.i("lunchwavetimeduring", "rah jd");
+                                // Log.i("lunchwavetimeduring", "rah jd");
                                 FindTimeUntilEndOfDay(periodTimes);
                                 FindTimeUntilEndLunchWave(lunchWaveTimes, (tempLunchPeriod));
                                 FinalizingSetupProcedures();
@@ -373,7 +378,7 @@ public class MainPage extends AppCompatActivity {
 
         } else {//WITH CONNECTION
 
-           // Log.i("Is Connection", "Writing new data");
+            // Log.i("Is Connection", "Writing new data");
 
             //Saving updated JSON to Shared Preferences
             //Below Code adapted from a StackOverflow Answer by
@@ -448,8 +453,8 @@ public class MainPage extends AppCompatActivity {
 
 
                     JSONArray tempscheduleFormat = ARRJO.getJSONArray("newscheduleformat");
-                    scheduleFormat = new  int[tempscheduleFormat.length()];
-                    for(int k = 0; k < tempscheduleFormat.length(); k++){
+                    scheduleFormat = new int[tempscheduleFormat.length()];
+                    for (int k = 0; k < tempscheduleFormat.length(); k++) {
                         scheduleFormat[k] = tempscheduleFormat.getInt(k);
                     }
 
@@ -483,7 +488,7 @@ public class MainPage extends AppCompatActivity {
                     if (tempStartLunchHourArray.length() == 0) { // if nothing in array, no lunch
 
                         noLunch = true;
-                        Log.i("nolunch", "rah");
+                        //Log.i("nolunch", "rah");
 
                     } else {//if values in array, has lunch
 
@@ -755,13 +760,13 @@ public class MainPage extends AppCompatActivity {
                 //Log.i("4", Integer.toString(i));
                 break;
             } else { //If not found, but not no School, it must be passing time
-               // Log.i("5", Integer.toString(i));
+                // Log.i("5", Integer.toString(i));
                 if (affectPassingTime) {
                     passingTime = true;
                 }
-                if(!returnval){
+                if (!returnval) {
                     return -1;
-                }else{
+                } else {
                     return i;
                 }
             }
@@ -770,12 +775,18 @@ public class MainPage extends AppCompatActivity {
     }
 
     void BeforeOrAfterSchoolCheck(int[][] inputPeriodTimes) { //Checks if the current time is before or after school
+        beforeSchool = false;
+        afterSchool = false;
+        int tal = inputPeriodTimes[0].length - 1;
+
         if ((currentHour < inputPeriodTimes[0][0]) ||
-                (currentHour > inputPeriodTimes[2][((inputPeriodTimes[0].length) - 1)])) {
+                ((currentHour == inputPeriodTimes[0][0]) && (currentMinute < inputPeriodTimes[1][0]))) {
+
             beforeSchool = true;
-        } else if ((currentHour == inputPeriodTimes[0][0] && currentMinute < inputPeriodTimes[1][0]) ||
-                (currentHour == inputPeriodTimes[2][((inputPeriodTimes[0].length) - 1)] &&
-                        currentMinute >= inputPeriodTimes[3][((inputPeriodTimes[0].length) - 1)])) { //Checks if the current time is before or after all values entered into the time array for the day
+
+        } else if ((currentHour == inputPeriodTimes[2][tal] && currentMinute > inputPeriodTimes[3][tal]) ||
+                (currentHour > inputPeriodTimes[3][tal])) {
+
             afterSchool = true;
         }
     }
@@ -799,17 +810,17 @@ public class MainPage extends AppCompatActivity {
 
             String tempPeriodNameString = sharedPref.getString("key_schedule_period_" + Integer.toString(scheduleFormat[i]) + "_name", "Period " + Integer.toString(scheduleFormat[i]));
 
-            if ((i == lunchPeriodPosition)&&(!noLunch)) {
+            if ((i == lunchPeriodPosition) && (!noLunch)) {
                 String tempPref = sharedPref.getString("key_schedule_period_" + scheduleFormat[i] + "_type", "Free or Not Applicable");
                 String tempPrefInfo = sharedPref.getString("key_schedule_period_" + scheduleFormat[i] + "_info", " ");
 
-               // Log.i("tempPrefInfo", tempPrefInfo);
+                // Log.i("tempPrefInfo", tempPrefInfo);
 
                 if (tempPrefInfo.equals("No Info")) tempPrefInfo = " ";
 
                 int tempAllowedLunchWave = findAllowedLunchWave(tempPref, currentMonth);
-               // Log.i("tempallowedlunchwave", Integer.toString(tempAllowedLunchWave));
-              //  Log.i("tempPref", tempPref);
+                // Log.i("tempallowedlunchwave", Integer.toString(tempAllowedLunchWave));
+                //  Log.i("tempPref", tempPref);
                 switch (tempAllowedLunchWave) {
                     case 0: //Free or Not Applicable
                     {
@@ -1072,26 +1083,26 @@ public class MainPage extends AppCompatActivity {
                 if (tempPrefString.equals("No Info")) tempPrefString = " ";
 
 
-                if(scheduleFormat[i] < 100) {
+                if (scheduleFormat[i] < 100) {
                     periodNumbers.add(Integer.toString(scheduleFormat[i]));
                     periodInfo.add(tempPrefString);
                     periodNames.add(tempPeriodNameString);
-                }else{
+                } else {
                     String tempAlphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
                     String tempLetter = "";
                     tempLetter += tempAlphabet.charAt(scheduleFormat[i] - 100);
                     periodNumbers.add(tempLetter);
 
-                    if(tempLetter.equals("B")){
+                    if (tempLetter.equals("B")) {
                         periodNames.add("Break");
                         periodInfo.add("No class during this period.");
-                    }else if(tempLetter.equals("H")){
+                    } else if (tempLetter.equals("H")) {
                         periodNames.add("Homeroom");
                         periodInfo.add("Proceed to Homeroom");
-                    }else if(tempLetter.equals("A")){
+                    } else if (tempLetter.equals("A")) {
                         periodNames.add("Assembly");
                         periodInfo.add("Hopefully it isn't another one about the meme page.");
-                    }else {
+                    } else {
                         periodNames.add("Unknown Period " + tempLetter);
                         periodInfo.add("Not a normal class period. Unknown activity.");
                     }
@@ -1112,10 +1123,10 @@ public class MainPage extends AppCompatActivity {
 
         }
 
-       // Log.i("periodnumbers", periodNumbers.toString());
-       // Log.i("periodnames", periodNames.toString());
-       // Log.i("periodstart", periodStart.toString());
-       //Log.i("periodend", periodEnd.toString());
+        // Log.i("periodnumbers", periodNumbers.toString());
+        // Log.i("periodnames", periodNames.toString());
+        // Log.i("periodstart", periodStart.toString());
+        //Log.i("periodend", periodEnd.toString());
         //Log.i("periodinfo", periodInfo.toString());
 
 
@@ -1221,7 +1232,7 @@ public class MainPage extends AppCompatActivity {
             return true;
         } else if (currentHour > _startHour) {
             return true;
-        }else {
+        } else {
             return false;
         }
     }
@@ -1381,9 +1392,9 @@ public class MainPage extends AppCompatActivity {
         int currentPeriodIDNumber = scheduleFormat[PeriodArrayPosition];
         String PeriodType;
 
-       //Log.i("periodID", Integer.toString(currentPeriodIDNumber));
+        //Log.i("periodID", Integer.toString(currentPeriodIDNumber));
         PeriodType = sharedPref.getString(("key_schedule_period_" + Integer.toString(currentPeriodIDNumber) + "_type"), "Free or Not Applicable");
-       // Log.i("periodTypeDef", PeriodType);
+        // Log.i("periodTypeDef", PeriodType);
         switch (findAllowedLunchWave(PeriodType, currentMonth)) {
             case 0:
 
@@ -1560,18 +1571,18 @@ public class MainPage extends AppCompatActivity {
                             tempEndMinute = tempEndMinute - labLunchLength;
                         }
 
-                      //  Log.i("tempendhour", Integer.toString(tempEndHour));
-                     //   Log.i("tempendMinute", Integer.toString(tempEndMinute));
+                        //  Log.i("tempendhour", Integer.toString(tempEndHour));
+                        //   Log.i("tempendMinute", Integer.toString(tempEndMinute));
 
                         if (((currentHour == tempEndHour) && (currentMinute > tempEndMinute)) || (currentHour > tempEndHour)) {
                             tempStartHour = tempEndHour;
                             tempStartMinute = tempEndMinute;
                             tempEndHour = finderInputPeriodTimes[2][2];
                             tempEndMinute = finderInputPeriodTimes[3][2];
-                          //  Log.i("tempstarthour", Integer.toString(tempStartHour));
-                          // Log.i("tempstartminute", Integer.toString(tempStartMinute));
-                           // Log.i("tempendhour", Integer.toString(tempEndHour));
-                          //  Log.i("tempendMinute", Integer.toString(tempStartHour));
+                            //  Log.i("tempstarthour", Integer.toString(tempStartHour));
+                            // Log.i("tempstartminute", Integer.toString(tempStartMinute));
+                            // Log.i("tempendhour", Integer.toString(tempEndHour));
+                            //  Log.i("tempendMinute", Integer.toString(tempStartHour));
                         }
 
                         break;
@@ -1661,10 +1672,54 @@ public class MainPage extends AppCompatActivity {
 
     void BeforeSchoolProcedures() {
 
+        Log.i("before", "school");
+        String beforeSchoolJsonData = PreferenceManager.getDefaultSharedPreferences(this).getString("offline_database", "");
+        if (!beforeSchoolJsonData.isEmpty()) {
+            GetInfoFromJSON(beforeSchoolJsonData, false, 0, 0);
+            displayScheduleListInfo(periodTimes, lunchWaveTimes);
+        }
+
+        progressBar = findViewById(R.id.progressBar);
+        overallProgressBar = findViewById(R.id.OverallDayProgressBar);
+        progressBar.setProgress(100);
+        overallProgressBar.setProgress(100);
+        TextView ProgressBarTextTime = findViewById(R.id.ProgressBarTextTime);
+        ProgressBarTextTime.setTextSize(30);
+        ProgressBarTextTime.setText("Before");
+        TextView ProgressBarTextPercent = findViewById(R.id.ProgressBarTextPercent);
+        ProgressBarTextPercent.setText("Before");
+        TextView remain1 = findViewById(R.id.remain1);
+        remain1.setText("School");
+        TextView remain2 = findViewById(R.id.remain2);
+        remain2.setText("School");
+
     }
 
     void AfterSchoolProcedures() {
 
+        Log.i("after", "school");
+        String afterSchoolJsonData = PreferenceManager.getDefaultSharedPreferences(this).getString("offline_database", "");
+        if (!afterSchoolJsonData.isEmpty()) {
+            GetInfoFromJSON(afterSchoolJsonData, false, 0, 1);
+            displayScheduleListInfo(periodTimes, lunchWaveTimes);
+        }
+
+        progressBar = findViewById(R.id.progressBar);
+        overallProgressBar = findViewById(R.id.OverallDayProgressBar);
+        progressBar.setProgress(100);
+        overallProgressBar.setProgress(100);
+        TextView ProgressBarTextTime = findViewById(R.id.ProgressBarTextTime);
+        ProgressBarTextTime.setTextSize(30);
+        ProgressBarTextTime.setText("After");
+        TextView ProgressBarTextPercent = findViewById(R.id.ProgressBarTextPercent);
+        ProgressBarTextPercent.setText("After");
+        TextView remain1 = findViewById(R.id.remain1);
+        remain1.setText("School");
+        TextView remain2 = findViewById(R.id.remain2);
+        remain2.setText("School");
+
+        Snackbar.make(findViewById(R.id.myCoordinatorLayout), "You are currently viewing tomorrow's schedule",
+                15000).show();
     }
 
     void RefreshReset() {
@@ -1700,13 +1755,13 @@ public class MainPage extends AppCompatActivity {
         alertDialog.setMessage(inputWarnText);
         halt = true;
 
-            alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
-                    new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.dismiss();
-                            System.exit(0);
-                        }
-                    });
+        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                        System.exit(0);
+                    }
+                });
 
         alertDialog.show();
     }

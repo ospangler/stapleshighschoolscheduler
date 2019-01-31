@@ -282,6 +282,10 @@
             android:selectable="false"
             android:summary="A: I don't collect any data on users of the app, and the full code can be found on my GitHub. All data is kept locally and with your Google account" />
 
+        <Preference
+            android:selectable="false"
+            android:summary="Version 1.13 by Owen Spangler" />
+
 
     </PreferenceCategory>
 
