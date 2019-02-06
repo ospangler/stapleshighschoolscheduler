@@ -32,10 +32,7 @@
             </intent-filter>
             -->
         </activity>
-        <activity android:name=".NotificationActivity" />
         <activity android:name=".ScheduleInputActivity" />
-        <activity android:name=".GeneralSettingsActivity" />
-        <activity android:name=".FAQActivity"></activity>
     </application>
 
 </manifest>

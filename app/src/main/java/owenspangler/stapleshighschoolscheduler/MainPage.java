@@ -16,8 +16,6 @@ import android.os.Bundle;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-//import android.util.Log;
-//import android.util.Log;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -25,13 +23,10 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.preference.PreferenceManager;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.util.ArrayList;
-//import java.util.Arrays;
 import java.util.Calendar;
 import java.util.concurrent.ExecutionException;
 
@@ -163,21 +158,17 @@ public class MainPage extends AppCompatActivity {
 
                         if (id == R.id.nav_notification) {
                             // launch settings activity
-                            //startActivity(new Intent(MainPage.this, NotificationActivity.class));
                             return true;
                         } else if (id == R.id.nav_schedule_input) {
                             startActivity(new Intent(MainPage.this, ScheduleInputActivity.class));
                             return true;
                         } else if (id == R.id.nav_quote) {
-                            //startActivity(new Intent(MainPage.this, NotificationActivity.class));
                             return true;
                         } else if (id == R.id.nav_settings) {
-                            //startActivity(new Intent(MainPage.this, GeneralSettingsActivity.class));
                             return true;
                         } else if (id == R.id.nav_force_server_refresh) {
                             Main(true);
                         } else if (id == R.id.nav_faq) {
-                            startActivity(new Intent(MainPage.this, FAQActivity.class));
                         }
 
 
@@ -381,7 +372,7 @@ public class MainPage extends AppCompatActivity {
             // Log.i("Is Connection", "Writing new data");
 
             //Saving updated JSON to Shared Preferences
-            //Below Code adapted from a StackOverflow Answer by
+            //Below Code adapted from a StackOverflow Answer by Darko Petkovski
             //Full answer can be found at: https://stackoverflow.com/a/29607632
 
             PreferenceManager.getDefaultSharedPreferences(this).edit()
@@ -402,28 +393,30 @@ public class MainPage extends AppCompatActivity {
         int monthForJson;
         int dayForJson;
 
-        //Code before try statement allows for reuse if user wants schedule at future date.
-        if (futureViewGet) {//FutureViewGet will set date to one from calendar selected by user
-            monthForJson = inputMonthOffsetJson;
-            dayForJson = inputDayOffsetJson;
+            //Code before try statement allows for reuse if user wants schedule at future date.
+            if (futureViewGet) {//FutureViewGet will set date to one from calendar selected by user
+                monthForJson = inputMonthOffsetJson;
+                dayForJson = inputDayOffsetJson;
 
-        } else {//If not Future View, will simply be offset. Use for after school for next day
-            monthForJson = currentMonth + inputMonthOffsetJson;
-            dayForJson = currentDayNum + inputDayOffsetJson;
-        }
-
-        if (!(DateValidator(monthForJson, dayForJson))) {
-            if (monthForJson >= 12) {
-                monthForJson = 1;
-                dayForJson = 1;
-            } else {
-                monthForJson++;
-                dayForJson = 1;
+            } else {//If not Future View, will simply be offset. Use for after school for next day
+                monthForJson = currentMonth + inputMonthOffsetJson;
+                dayForJson = currentDayNum + inputDayOffsetJson;
             }
-        }
+
+            if (!(DateValidator(monthForJson, dayForJson))) {
+                if (monthForJson >= 12) {
+                    monthForJson = 1;
+                    dayForJson = 1;
+                } else {
+                    monthForJson++;
+                    dayForJson = 1;
+                }
+            }
 
 
         try {
+            specialSchedule = false;
+            noSchool = false;
 
             JSONObject JO = new JSONObject(inputData);
             JSONArray scheduleChangeArray = JO.getJSONArray("schedulechange");
@@ -437,13 +430,9 @@ public class MainPage extends AppCompatActivity {
                 int tempMonth;
                 int tempDay;
                 JSONObject ARRJO = scheduleChangeArray.getJSONObject(i);
-                //JO.getJSONObject("schedulechange").getJSONObject(Integer.toString(i)).getInt("month");
 
                 tempMonth = ARRJO.getInt("month");
                 tempDay = ARRJO.getInt("day");
-                //Log.i("currentmonth", Integer.toString(tempMonth));
-                //Log.i("currentday", Integer.toString(tempDay));
-                //Log.i("arraylength", Integer.toString(scheduleChangeArray.length()));
 
                 if ((tempMonth == (monthForJson)) && (tempDay == (dayForJson))) { //found day listed matches today's date
 
@@ -478,7 +467,6 @@ public class MainPage extends AppCompatActivity {
                         }
 
                     }
-                    //Log.i("dududu", Arrays.deepToString(periodTimes));
 
                     JSONArray tempStartLunchHourArray = ARRJO.getJSONArray("lunchwavesstarthour");
                     JSONArray tempStartLunchMinuteArray = ARRJO.getJSONArray("lunchwavesstartminute");
@@ -488,7 +476,6 @@ public class MainPage extends AppCompatActivity {
                     if (tempStartLunchHourArray.length() == 0) { // if nothing in array, no lunch
 
                         noLunch = true;
-                        //Log.i("nolunch", "rah");
 
                     } else {//if values in array, has lunch
 
@@ -509,7 +496,6 @@ public class MainPage extends AppCompatActivity {
                             }
 
                         }
-                        //Log.i("dududu", Arrays.deepToString(periodTimes));
                     }
                     break;
                 }
@@ -557,6 +543,17 @@ public class MainPage extends AppCompatActivity {
 
         } catch (JSONException e) {
             e.printStackTrace();
+        }
+
+        if(afterSchool){
+
+            if(noSchool) {
+                Snackbar.make(findViewById(R.id.myCoordinatorLayout), "There is no school tomorrow",
+                        15000).show();
+            }else{
+                Snackbar.make(findViewById(R.id.myCoordinatorLayout), "You are currently viewing tomorrow's schedule",
+                        15000).show();
+            }
         }
     }
 
@@ -727,8 +724,6 @@ public class MainPage extends AppCompatActivity {
             tempSchedulePosition = tempMonth + (12 - lunchStoreListStart);
         }
 
-        //Log.i("lunchwaveallow", Integer.toString(lunchStoreList[tempSchedulePosition]));
-
         if (labLunch) {
             return (lunchStoreList[tempSchedulePosition] + 10);
         } else {
@@ -760,7 +755,7 @@ public class MainPage extends AppCompatActivity {
                 //Log.i("4", Integer.toString(i));
                 break;
             } else { //If not found, but not no School, it must be passing time
-                // Log.i("5", Integer.toString(i));
+
                 if (affectPassingTime) {
                     passingTime = true;
                 }
@@ -814,13 +809,10 @@ public class MainPage extends AppCompatActivity {
                 String tempPref = sharedPref.getString("key_schedule_period_" + scheduleFormat[i] + "_type", "Free or Not Applicable");
                 String tempPrefInfo = sharedPref.getString("key_schedule_period_" + scheduleFormat[i] + "_info", " ");
 
-                // Log.i("tempPrefInfo", tempPrefInfo);
-
                 if (tempPrefInfo.equals("No Info")) tempPrefInfo = " ";
 
                 int tempAllowedLunchWave = findAllowedLunchWave(tempPref, currentMonth);
-                // Log.i("tempallowedlunchwave", Integer.toString(tempAllowedLunchWave));
-                //  Log.i("tempPref", tempPref);
+
                 switch (tempAllowedLunchWave) {
                     case 0: //Free or Not Applicable
                     {
@@ -1123,13 +1115,6 @@ public class MainPage extends AppCompatActivity {
 
         }
 
-        // Log.i("periodnumbers", periodNumbers.toString());
-        // Log.i("periodnames", periodNames.toString());
-        // Log.i("periodstart", periodStart.toString());
-        //Log.i("periodend", periodEnd.toString());
-        //Log.i("periodinfo", periodInfo.toString());
-
-
         // set up the RecyclerView
         if (!((periodNames.size() == periodNumbers.size()) && (periodStart.size() == periodNumbers.size()) && (periodEnd.size() == periodNumbers.size()) && (periodEnd.size() == lunchWave.size()) && (periodEnd.size() == periodInfo.size()))) {
             //Throw Error Message
@@ -1152,15 +1137,12 @@ public class MainPage extends AppCompatActivity {
         boolean tempPassingTime = false;
 
         if (!((noSchool) || (beforeSchool) || (afterSchool))) {
-            //Log.i("currentperiodnum1",Integer.toString(currentPeriodNumber));
-            //Log.i("lunchwavepos",Integer.toString(PeriodNumber(lunchWaveTimes,false)));
 
             if ((currentPeriodNumber) < lunchPeriodPosition) {
 
                 greenHighlightPosition = currentPeriodNumber;
 
             } else if ((currentPeriodNumber) == lunchPeriodPosition) {
-                //Log.i("periodnumberlunch", Integer.toString(PeriodNumber(lunchWaveTimes,false)));
 
                 if (passingTime) { //To handle 10:41 case
 
@@ -1172,9 +1154,6 @@ public class MainPage extends AppCompatActivity {
 
                     if (!noLunch) {
                         if (PeriodNumber(lunchWaveTimes, false, false) == -1) { ///FIX THIS TO NOT TRIGGER DURING PASSING TIME OVERWRITTEN BY LONG PERIODS
-
-                            //int tempLunchPos =  PeriodNumber(lunchWaveTimes, false, true);
-                            //if (tempLunchPos+1 = )
 
                             tempPassingTime = true;
                             greenHighlightPosition += 1;
@@ -1296,7 +1275,6 @@ public class MainPage extends AppCompatActivity {
         int timeUntilEndMinute;
         int totalTimeHour = 0;
         int totalTimeMinute;
-        //Log.i("periodposition1", Integer.toString(tempPosition));
         int tempCurrentHour = currentHour;
 
 
@@ -1392,9 +1370,8 @@ public class MainPage extends AppCompatActivity {
         int currentPeriodIDNumber = scheduleFormat[PeriodArrayPosition];
         String PeriodType;
 
-        //Log.i("periodID", Integer.toString(currentPeriodIDNumber));
         PeriodType = sharedPref.getString(("key_schedule_period_" + Integer.toString(currentPeriodIDNumber) + "_type"), "Free or Not Applicable");
-        // Log.i("periodTypeDef", PeriodType);
+
         switch (findAllowedLunchWave(PeriodType, currentMonth)) {
             case 0:
 
@@ -1579,10 +1556,6 @@ public class MainPage extends AppCompatActivity {
                             tempStartMinute = tempEndMinute;
                             tempEndHour = finderInputPeriodTimes[2][2];
                             tempEndMinute = finderInputPeriodTimes[3][2];
-                            //  Log.i("tempstarthour", Integer.toString(tempStartHour));
-                            // Log.i("tempstartminute", Integer.toString(tempStartMinute));
-                            // Log.i("tempendhour", Integer.toString(tempEndHour));
-                            //  Log.i("tempendMinute", Integer.toString(tempStartHour));
                         }
 
                         break;
@@ -1717,9 +1690,6 @@ public class MainPage extends AppCompatActivity {
         remain1.setText("School");
         TextView remain2 = findViewById(R.id.remain2);
         remain2.setText("School");
-
-        Snackbar.make(findViewById(R.id.myCoordinatorLayout), "You are currently viewing tomorrow's schedule",
-                15000).show();
     }
 
     void RefreshReset() {
@@ -1735,16 +1705,11 @@ public class MainPage extends AppCompatActivity {
 
         currentYear = cal.get(Calendar.YEAR);
 
-        //int currentDayDay = cal.get(Calendar.DAY_OF_WEEK);
-
         currentMonth = (cal.get(Calendar.MONTH) + 1);
-        //int currentMonth = 12;
 
         currentDayNum = cal.get(Calendar.DAY_OF_MONTH);
-        //int currentDayNum = 5;
 
         currentHour = cal.get(Calendar.HOUR_OF_DAY);
-        //int currentHour = 13;
 
         currentMinute = cal.get(Calendar.MINUTE);
     }
