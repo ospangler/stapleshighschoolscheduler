@@ -16,7 +16,7 @@ import android.os.Bundle;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
+//import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
@@ -190,7 +190,7 @@ public class MainPage extends AppCompatActivity {
     }
 
     Handler h = new Handler();
-    int delay = 1000; //sets refresh delay for app
+    int delay = 1000; //sets refresh delay for app (1 second)
     Runnable runnable;
     int previousMinute = currentMinute;
     int previousHour = currentHour;
@@ -229,15 +229,23 @@ public class MainPage extends AppCompatActivity {
 
         RefreshTime();
 
+        //noSchool = false;
+        beforeSchool = false;
+        afterSchool = false;
+
         if (first) GetJson();
 
         if (!halt) {
 
-            if (!noSchool)
+            //Log.i("noSchool", Boolean.toString(noSchool));
+            //Log.i("beforeSchool", Boolean.toString(beforeSchool));
+            //Log.i("afterSchool", Boolean.toString(afterSchool));
 
-                BeforeOrAfterSchoolCheck(periodTimes);//checks to see if before or after school. noSchool checked in getJson
+            if (!noSchool) BeforeOrAfterSchoolCheck(periodTimes);//checks to see if before or after school. noSchool checked in getJson
 
-            Log.i("noSchool", Boolean.toString(noSchool));
+            //Log.i("noSchool", Boolean.toString(noSchool));
+            //Log.i("beforeSchool", Boolean.toString(beforeSchool));
+            //Log.i("afterSchool", Boolean.toString(afterSchool));
             if (noSchool) {// if no school
                 NoSchoolProcedures();
             } else if (beforeSchool) {//if before school
@@ -741,7 +749,14 @@ public class MainPage extends AppCompatActivity {
         int i = 0; //array position
         //KEY: 0 start times hour, 1 start times min, 2 end times hour, 3 end times minute
 
+        int temparrlength = inputPeriodTimes[0].length - 1;
+
         while (true) { //runs through all times and counts the period number of the day
+
+            if(i > temparrlength){
+                return -1;
+            }
+
             if ((currentHour > inputPeriodTimes[2][i])) {
                 i++;
                 //Log.i("1", Integer.toString(i));
@@ -779,7 +794,7 @@ public class MainPage extends AppCompatActivity {
 
             beforeSchool = true;
 
-        } else if ((currentHour == inputPeriodTimes[2][tal] && currentMinute > inputPeriodTimes[3][tal]) ||
+        } else if (((currentHour == inputPeriodTimes[2][tal]) && (currentMinute >= inputPeriodTimes[3][tal])) ||
                 (currentHour > inputPeriodTimes[3][tal])) {
 
             afterSchool = true;
@@ -1639,13 +1654,14 @@ public class MainPage extends AppCompatActivity {
         remain1.setText("School");
         TextView remain2 = findViewById(R.id.remain2);
         remain2.setText("School");
+        TextView periodNumberDisplay = findViewById(R.id.PeriodDisplay);
+        periodNumberDisplay.setText("-");
 
 
     }
 
     void BeforeSchoolProcedures() {
 
-        Log.i("before", "school");
         String beforeSchoolJsonData = PreferenceManager.getDefaultSharedPreferences(this).getString("offline_database", "");
         if (!beforeSchoolJsonData.isEmpty()) {
             GetInfoFromJSON(beforeSchoolJsonData, false, 0, 0);
@@ -1665,12 +1681,13 @@ public class MainPage extends AppCompatActivity {
         remain1.setText("School");
         TextView remain2 = findViewById(R.id.remain2);
         remain2.setText("School");
+        TextView periodNumberDisplay = findViewById(R.id.PeriodDisplay);
+        periodNumberDisplay.setText("-");
 
     }
 
     void AfterSchoolProcedures() {
 
-        Log.i("after", "school");
         String afterSchoolJsonData = PreferenceManager.getDefaultSharedPreferences(this).getString("offline_database", "");
         if (!afterSchoolJsonData.isEmpty()) {
             GetInfoFromJSON(afterSchoolJsonData, false, 0, 1);
@@ -1690,6 +1707,8 @@ public class MainPage extends AppCompatActivity {
         remain1.setText("School");
         TextView remain2 = findViewById(R.id.remain2);
         remain2.setText("School");
+        TextView periodNumberDisplay = findViewById(R.id.PeriodDisplay);
+        periodNumberDisplay.setText("-");
     }
 
     void RefreshReset() {
