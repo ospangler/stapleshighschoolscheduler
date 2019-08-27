@@ -220,6 +220,14 @@
 
         <Preference
             android:selectable="false"
+            android:summary="Q: Is this app still supported?" />
+
+        <Preference
+            android:selectable="false"
+            android:summary="A: The app will still get a few updates to keep it functional, but all additional features and a major code overall will not happen." />
+
+        <Preference
+            android:selectable="false"
             android:summary="Q: Your stupid app keeps showing the wrong lunch waves for my class even though I put everything in correctly." />
 
         <Preference
@@ -284,7 +292,7 @@
 
         <Preference
             android:selectable="false"
-            android:summary="Version 1.13 by Owen Spangler" />
+            android:summary="Version 1.14 by Owen Spangler" />
 
 
     </PreferenceCategory>

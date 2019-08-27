@@ -252,7 +252,7 @@ public class MainPage extends AppCompatActivity {
             //Log.i("beforeSchool", Boolean.toString(beforeSchool));
             //Log.i("afterSchool", Boolean.toString(afterSchool));
 
-            Log.i("periodtimes", Arrays.deepToString(periodTimes));
+            //Log.i("periodtimes", Arrays.deepToString(periodTimes));
             if (noSchool) {// if no school
                 NoSchoolProcedures();
             } else if (beforeSchool) {//if before school
