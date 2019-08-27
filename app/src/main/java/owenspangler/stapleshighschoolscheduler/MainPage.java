@@ -17,16 +17,20 @@ import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 //import android.util.Log;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.preference.PreferenceManager;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.concurrent.ExecutionException;
 
@@ -241,11 +245,14 @@ public class MainPage extends AppCompatActivity {
             //Log.i("beforeSchool", Boolean.toString(beforeSchool));
             //Log.i("afterSchool", Boolean.toString(afterSchool));
 
-            if (!noSchool) BeforeOrAfterSchoolCheck(periodTimes);//checks to see if before or after school. noSchool checked in getJson
+            if (!noSchool)
+                BeforeOrAfterSchoolCheck(periodTimes);//checks to see if before or after school. noSchool checked in getJson
 
             //Log.i("noSchool", Boolean.toString(noSchool));
             //Log.i("beforeSchool", Boolean.toString(beforeSchool));
             //Log.i("afterSchool", Boolean.toString(afterSchool));
+
+            Log.i("periodtimes", Arrays.deepToString(periodTimes));
             if (noSchool) {// if no school
                 NoSchoolProcedures();
             } else if (beforeSchool) {//if before school
@@ -292,7 +299,7 @@ public class MainPage extends AppCompatActivity {
                         } else {
 
                             int tempLunchPeriod = PeriodNumber(lunchWaveTimes, false, true); //Resets, sees if passing time during lunch waves
-                            //ROOT OF PROBLEM RIGHT HERE, DOES NOT ALLOW FOR PERIOD MERGING. MUST BE MOVED INSIDE FIND TIME UNTIL BECAUSE OF POSITONS
+                            //ROOT OF PROBLEM RIGHT HERE, DOES NOT ALLOW FOR PERIOD MERGING. MUST BE MOVED INSIDE FIND TIME UNTIL BECAUSE OF POSITIONS
                             //USE LUNCH DURING PASSING TIME TO TEST
 
                             //passingTime = false;
@@ -401,25 +408,25 @@ public class MainPage extends AppCompatActivity {
         int monthForJson;
         int dayForJson;
 
-            //Code before try statement allows for reuse if user wants schedule at future date.
-            if (futureViewGet) {//FutureViewGet will set date to one from calendar selected by user
-                monthForJson = inputMonthOffsetJson;
-                dayForJson = inputDayOffsetJson;
+        //Code before try statement allows for reuse if user wants schedule at future date.
+        if (futureViewGet) {//FutureViewGet will set date to one from calendar selected by user
+            monthForJson = inputMonthOffsetJson;
+            dayForJson = inputDayOffsetJson;
 
-            } else {//If not Future View, will simply be offset. Use for after school for next day
-                monthForJson = currentMonth + inputMonthOffsetJson;
-                dayForJson = currentDayNum + inputDayOffsetJson;
-            }
+        } else {//If not Future View, will simply be offset. Use for after school for next day
+            monthForJson = currentMonth + inputMonthOffsetJson;
+            dayForJson = currentDayNum + inputDayOffsetJson;
+        }
 
-            if (!(DateValidator(monthForJson, dayForJson))) {
-                if (monthForJson >= 12) {
-                    monthForJson = 1;
-                    dayForJson = 1;
-                } else {
-                    monthForJson++;
-                    dayForJson = 1;
-                }
+        if (!(DateValidator(monthForJson, dayForJson))) {
+            if (monthForJson >= 12) {
+                monthForJson = 1;
+                dayForJson = 1;
+            } else {
+                monthForJson++;
+                dayForJson = 1;
             }
+        }
 
 
         try {
@@ -524,7 +531,39 @@ public class MainPage extends AppCompatActivity {
                     }
                 }
 
+                JSONArray ConnectionsListArray = JO.getJSONObject("dayletters").getJSONObject(Integer.toString(monthForJson)).getJSONArray("connectionslist");
+
+                boolean tempFoundConnection = false;
+                int tempPositionConnection = -1;
+
+                for (int i = 0; i < ConnectionsListArray.length(); i++) {
+                    if (ConnectionsListArray.getInt(i) == dayForJson) {
+                        tempFoundConnection = true;
+                        tempPositionConnection = i;
+                        break;
+                    }
+                }
+
                 if (tempFound) {
+
+                    if (tempFoundConnection) { //Normal Day with Connection
+
+                        if (((tempPosition + tempDayListStart) % 4) == 0) {
+                            dayLetter = "a";
+                            ConnectionsScheduleFormat("a");//new int[]{1, 2, 3, 5, 8, 7}; //'A' day
+                        } else if (((tempPositionConnection + tempDayListStart) % 4) == 1) {
+                            dayLetter = "b";
+                            ConnectionsScheduleFormat("b");//new int[]{2, 3, 4, 6, 7, 8}; //'B' day
+                        } else if (((tempPositionConnection + tempDayListStart) % 4) == 2) {
+                            dayLetter = "c";
+                            ConnectionsScheduleFormat("c");//new int[]{3, 4, 1, 7, 6, 5}; //'C' day
+                        } else {
+                            dayLetter = "d";
+                            ConnectionsScheduleFormat("d");//new int[]{4, 1, 2, 8, 5, 6}; //'D' day
+                        }
+
+                    } else { //Normal Day without Connection
+
                     if (((tempPosition + tempDayListStart) % 4) == 0) {
                         dayLetter = "a";
                         NormalScheduleFormat("a");//new int[]{1, 2, 3, 5, 8, 7}; //'A' day
@@ -538,32 +577,39 @@ public class MainPage extends AppCompatActivity {
                         dayLetter = "d";
                         NormalScheduleFormat("d");//new int[]{4, 1, 2, 8, 5, 6}; //'D' day
                     }
-                } else {
-                    noSchool = true;
                 }
+            } else {
+                noSchool = true;
             }
-
-            //Log.i("dayletter", dayLetter);
-            //Log.i("scheduleFormat", Arrays.toString(scheduleFormat));
-            //Log.i("noSchool", Boolean.toString(noSchool));
-            //Log.i("lunchscheduleFormat", Arrays.deepToString(lunchWaveTimes));
-            //Log.i("day", Arrays.toString(scheduleFormat));
-
-        } catch (JSONException e) {
-            e.printStackTrace();
         }
 
-        if(afterSchool){
+        //Log.i("dayletter", dayLetter);
+        //Log.i("scheduleFormat", Arrays.toString(scheduleFormat));
+        //Log.i("noSchool", Boolean.toString(noSchool));
+        //Log.i("lunchscheduleFormat", Arrays.deepToString(lunchWaveTimes));
+        //Log.i("day", Arrays.toString(scheduleFormat));
 
-            if(noSchool) {
-                Snackbar.make(findViewById(R.id.myCoordinatorLayout), "There is no school tomorrow",
-                        15000).show();
-            }else{
-                Snackbar.make(findViewById(R.id.myCoordinatorLayout), "You are currently viewing tomorrow's schedule",
-                        15000).show();
-            }
+    } catch(
+    JSONException e)
+
+    {
+        e.printStackTrace();
+    }
+
+        if(afterSchool)
+
+    {
+
+        if (noSchool) {
+            Snackbar.make(findViewById(R.id.myCoordinatorLayout), "There is no school tomorrow",
+                    15000).show();
+        } else {
+            Snackbar.make(findViewById(R.id.myCoordinatorLayout), "You are currently viewing tomorrow's schedule",
+                    15000).show();
         }
     }
+
+}
 
     boolean DateValidator(int inputMonth, int inputDay) { //checks if generated date is actually a real date
 
@@ -644,6 +690,53 @@ public class MainPage extends AppCompatActivity {
             default: //catch errors here
                 WarningPopup("Invalid Day Type Found", "Likely caused by server input error. Information may be inaccurate. Contact Developer. Code 3.");
                 scheduleFormat = new int[]{4, 1, 2, 8, 5, 6}; //'D' day
+
+        }
+    }
+
+    void ConnectionsScheduleFormat(String inputDayType) { //EDIT THIS FUNCTION IF BASELINE SCHEDULE CHANGES AND PUSH UPDATE
+
+        periodTimes = new int[][]{ //CHANGE BELOW TIMES WHEN SCHEDULE CHANGES
+
+                {7, 8, 9, 10, 10, 12, 13},//START HOUR
+                {30, 20, 40, 5, 55, 40, 30},//START MINUTE
+
+                {8, 9, 10, 10, 12, 13, 14},//END HOUR
+                {15, 35, 0, 50, 35, 25, 15}//END MINUTE
+        };
+
+        lunchPeriodPosition = 4; //Period Position that is extended for lunch waves (WARN: STARTS AT ZERO)
+
+        lunchWaveTimes = new int[][]{ //Lunch Wave Times Within Extended Lunch Period
+                {10, 11, 12},//START HOUR
+                {55, 30, 5},//START MINUTE
+                {11, 12, 12},//END HOUR
+                {25, 0, 35}//END MINUTE
+        };
+
+        labLunchLength = 20; //Length of shortened lab lunch including passing time
+
+        //Period Label Format Below
+        switch (inputDayType) {
+            case "a": {
+                scheduleFormat = new int[]{1, 2, 102, 3, 5, 8, 7}; //'A' day
+            }
+            break;
+            case "b": {
+                scheduleFormat = new int[]{2, 3, 102, 4, 6, 7, 8}; //'B' day
+            }
+            break;
+            case "c": {
+                scheduleFormat = new int[]{3, 4, 102, 1, 7, 6, 5}; //'C' day
+            }
+            break;
+            case "d": {
+                scheduleFormat = new int[]{4, 1, 102, 2, 8, 5, 6}; //'D' day
+            }
+            break;
+            default: //catch errors here
+                WarningPopup("Invalid Day Type Found", "Likely caused by server input error. Information may be inaccurate. Contact Developer. Code 3.");
+                scheduleFormat = new int[]{4, 1, 102, 2, 8, 5, 6}; //'D' day
 
         }
     }
@@ -753,7 +846,7 @@ public class MainPage extends AppCompatActivity {
 
         while (true) { //runs through all times and counts the period number of the day
 
-            if(i > temparrlength){
+            if (i > temparrlength) {
                 return -1;
             }
 
@@ -1109,6 +1202,9 @@ public class MainPage extends AppCompatActivity {
                     } else if (tempLetter.equals("A")) {
                         periodNames.add("Assembly");
                         periodInfo.add("Hopefully it isn't another one about the meme page.");
+                    } else if (tempLetter.equals("C")) {
+                        periodNames.add("Connection");
+                        periodInfo.add("Go to your connections classroom.");
                     } else {
                         periodNames.add("Unknown Period " + tempLetter);
                         periodInfo.add("Not a normal class period. Unknown activity.");
