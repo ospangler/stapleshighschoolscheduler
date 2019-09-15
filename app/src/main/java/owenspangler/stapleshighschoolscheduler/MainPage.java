@@ -67,7 +67,7 @@ public class MainPage extends AppCompatActivity {
     boolean specialSchedule = false; //If true, app is following special schedule from server
     boolean firstTime = true;
     boolean halt = false;
-    boolean timedebug = true; //Using to catch when crashes happen because Google Play won't tell me when.
+    boolean timedebug = false; //Using to catch when crashes happen because Google Play won't tell me when.
     //
     int currentYear;
     int currentMonth;
