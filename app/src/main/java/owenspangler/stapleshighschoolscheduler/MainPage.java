@@ -67,6 +67,7 @@ public class MainPage extends AppCompatActivity {
     boolean specialSchedule = false; //If true, app is following special schedule from server
     boolean firstTime = true;
     boolean halt = false;
+    boolean timedebug = true; //Using to catch when crashes happen because Google Play won't tell me when.
     //
     int currentYear;
     int currentMonth;
@@ -194,7 +195,8 @@ public class MainPage extends AppCompatActivity {
     }
 
     Handler h = new Handler();
-    int delay = 1000; //sets refresh delay for app (1 second)
+        int delay = 10; //sets refresh delay for app (1 second)
+
     Runnable runnable;
     int previousMinute = currentMinute;
     int previousHour = currentHour;
@@ -205,15 +207,31 @@ public class MainPage extends AppCompatActivity {
 
         h.postDelayed(runnable = new Runnable() {
             public void run() {
-                Calendar tempChangeCal;
-                tempChangeCal = Calendar.getInstance();
-                int newMinute = tempChangeCal.get(Calendar.MINUTE);
-                int newHour = tempChangeCal.get(Calendar.HOUR);
 
-                if ((previousMinute != newMinute) || (previousHour != newHour)) {
-                    RefreshReset();
-                    previousMinute = newMinute;
-                    previousHour = newHour;
+                if(!timedebug) {
+                    Calendar tempChangeCal;
+                    tempChangeCal = Calendar.getInstance();
+                    int newMinute = tempChangeCal.get(Calendar.MINUTE);
+                    int newHour = tempChangeCal.get(Calendar.HOUR);
+
+                    if ((previousMinute != newMinute) || (previousHour != newHour)) {
+                        RefreshReset();
+                        previousMinute = newMinute;
+                        previousHour = newHour;
+                        Main(false);
+                    }
+                }else{
+                    if(currentMinute >= 59){
+                        if(currentHour >= 24){
+
+                        }else{
+                            currentHour++;
+                            currentMinute = 0;
+                        }
+                    }else{
+                        currentMinute++;
+                    }
+                    Log.i("Time", "Time is " + currentHour + ":" + currentMinute);
                     Main(false);
                 }
                 h.postDelayed(runnable, delay);
@@ -231,7 +249,22 @@ public class MainPage extends AppCompatActivity {
 
     void Main(boolean first) {//Initial Code that executes on startup
 
-        RefreshTime();
+        if(!timedebug) {
+            RefreshTime();
+        }else{
+            if(first) {
+                Calendar cal = Calendar.getInstance();
+
+                currentHour = 0;
+                currentMinute = 0;
+
+                currentYear = cal.get(Calendar.YEAR);
+
+                currentMonth = (cal.get(Calendar.MONTH) + 1);
+
+                currentDayNum = cal.get(Calendar.DAY_OF_MONTH);
+            }
+        }
 
         //noSchool = false;
         beforeSchool = false;
@@ -1845,4 +1878,13 @@ public class MainPage extends AppCompatActivity {
 
         alertDialog.show();
     }
+
+    void debug(){ //HOLY SHIT DO NOT LET THIS RUN AT ALL IN THE RELEASE VERSION
+
+    }
+
+
+
 }
+
+
